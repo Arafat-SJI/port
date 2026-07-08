@@ -66,6 +66,20 @@
 
   --radius-xl: 0.75rem;
   --radius-lg: 0.5rem;
+
+  --color-border: rgb(66 71 84 / 0.28);
+}
+
+@layer base {
+  .border,
+  .border-t,
+  .border-r,
+  .border-b,
+  .border-l,
+  .border-x,
+  .border-y {
+    border-width: 0.5px;
+  }
 }
 
 body {
@@ -87,6 +101,16 @@ body {
   border-radius: 10px;
 }
 
+.tab-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+}
+
+.tab-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .material-symbols-outlined {
   font-family: "Material Symbols Outlined";
   font-weight: normal;
@@ -103,6 +127,6 @@ body {
 }
 
 .active-tab {
-  border-left: 2px solid #adc6ff;
+  border-left: 1px solid #adc6ff;
   background: rgba(173, 198, 255, 0.05);
 }
