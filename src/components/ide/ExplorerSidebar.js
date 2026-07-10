@@ -42,7 +42,7 @@ export default function ExplorerSidebar({
   const activeNav = NAV_ITEMS.find((item) => item.href === activeHref) ?? NAV_ITEMS[0];
 
   return (
-    <aside className="flex w-[220px] shrink-0 flex-col min-h-0 bg-surface-container-lowest border-r border-border">
+    <aside className="flex w-[280px] shrink-0 flex-col min-h-0 bg-surface-container-lowest border-r border-border">
       <div className="flex flex-1 flex-col min-h-0 overflow-hidden py-1">
         <SidebarSection
           title="PORTFOLIO"

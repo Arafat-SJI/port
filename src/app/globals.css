@@ -159,7 +159,328 @@ mark.search-content-highlight[data-search-active="true"] {
 
 .search-match-highlight {
   background: #6d3f1f;
-  color: #e8bc6d;
+  color: #f0d0a0;
   border-radius: 2px;
   padding: 0 1px;
+}
+
+/* ── Extension: font packs ── */
+html[data-font-pack="system"] {
+  --font-body-md: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-headline-lg: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-headline-md: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+html[data-font-pack="georgia"] {
+  --font-body-md: Georgia, "Times New Roman", Times, serif;
+  --font-headline-lg: Georgia, "Times New Roman", Times, serif;
+  --font-headline-md: Georgia, "Times New Roman", Times, serif;
+}
+
+html[data-font-pack="mono-ui"] {
+  --font-body-md: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+  --font-headline-lg: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+  --font-headline-md: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+}
+
+/* ── Extension: VS Code themes ── */
+html[data-ui-theme="one-dark"] {
+  --color-primary: #61afef;
+  --color-secondary: #98c379;
+  --color-background: #282c34;
+  --color-surface: #282c34;
+  --color-surface-dim: #21252b;
+  --color-surface-container-lowest: #1e2127;
+  --color-surface-container-low: #21252b;
+  --color-surface-container: #282c34;
+  --color-surface-container-high: #2c313a;
+  --color-surface-container-highest: #353b45;
+  --color-surface-container-hover-low: #3a4049;
+  --color-on-surface: #abb2bf;
+  --color-on-background: #abb2bf;
+  --color-on-surface-variant: #7f848e;
+  --color-on-surface-text: #c8ccd4;
+  --color-border: rgb(97 175 239 / 0.12);
+}
+
+html[data-ui-theme="one-dark"] body {
+  background-color: #21252b;
+}
+
+html[data-ui-theme="one-dark"] .active-tab {
+  border-left-color: #61afef;
+  background: #3a4049;
+}
+
+html[data-ui-theme="dracula"] {
+  --color-primary: #bd93f9;
+  --color-secondary: #50fa7b;
+  --color-tertiary: #ffb86c;
+  --color-background: #282a36;
+  --color-surface: #282a36;
+  --color-surface-dim: #1e1f29;
+  --color-surface-container-lowest: #191a21;
+  --color-surface-container-low: #1e1f29;
+  --color-surface-container: #282a36;
+  --color-surface-container-high: #313341;
+  --color-surface-container-highest: #3b3d4a;
+  --color-surface-container-hover-low: #44475a;
+  --color-on-surface: #f8f8f2;
+  --color-on-background: #f8f8f2;
+  --color-on-surface-variant: #a0a4b8;
+  --color-on-surface-text: #e2e4f0;
+  --color-border: rgb(189 147 249 / 0.15);
+}
+
+html[data-ui-theme="dracula"] body {
+  background-color: #1e1f29;
+}
+
+html[data-ui-theme="dracula"] .active-tab {
+  border-left-color: #bd93f9;
+  background: #44475a;
+}
+
+html[data-ui-theme="github-dark"] {
+  --color-primary: #58a6ff;
+  --color-secondary: #3fb950;
+  --color-background: #0d1117;
+  --color-surface: #0d1117;
+  --color-surface-dim: #010409;
+  --color-surface-container-lowest: #010409;
+  --color-surface-container-low: #0d1117;
+  --color-surface-container: #161b22;
+  --color-surface-container-high: #21262d;
+  --color-surface-container-highest: #30363d;
+  --color-surface-container-hover-low: #30363d;
+  --color-on-surface: #c9d1d9;
+  --color-on-background: #c9d1d9;
+  --color-on-surface-variant: #8b949e;
+  --color-on-surface-text: #e6edf3;
+  --color-border: rgb(48 54 61 / 0.8);
+}
+
+html[data-ui-theme="github-dark"] body {
+  background-color: #010409;
+}
+
+html[data-ui-theme="github-dark"] .active-tab {
+  border-left-color: #58a6ff;
+  background: #21262d;
+}
+
+html[data-ui-theme="nord"] {
+  --color-primary: #88c0d0;
+  --color-secondary: #a3be8c;
+  --color-tertiary: #ebcb8b;
+  --color-background: #2e3440;
+  --color-surface: #2e3440;
+  --color-surface-dim: #242933;
+  --color-surface-container-lowest: #1e222a;
+  --color-surface-container-low: #242933;
+  --color-surface-container: #2e3440;
+  --color-surface-container-high: #3b4252;
+  --color-surface-container-highest: #434c5e;
+  --color-surface-container-hover-low: #4c566a;
+  --color-on-surface: #eceff4;
+  --color-on-background: #eceff4;
+  --color-on-surface-variant: #a8b0bd;
+  --color-on-surface-text: #d8dee9;
+  --color-border: rgb(136 192 208 / 0.12);
+}
+
+html[data-ui-theme="nord"] body {
+  background-color: #242933;
+}
+
+html[data-ui-theme="nord"] .active-tab {
+  border-left-color: #88c0d0;
+  background: #4c566a;
+}
+
+html[data-ui-theme="monokai"] {
+  --color-primary: #f92672;
+  --color-secondary: #a6e22e;
+  --color-tertiary: #fd971f;
+  --color-background: #272822;
+  --color-surface: #272822;
+  --color-surface-dim: #1e1f1c;
+  --color-surface-container-lowest: #181915;
+  --color-surface-container-low: #1e1f1c;
+  --color-surface-container: #272822;
+  --color-surface-container-high: #3e3d32;
+  --color-surface-container-highest: #49483e;
+  --color-surface-container-hover-low: #57564a;
+  --color-on-surface: #f8f8f2;
+  --color-on-background: #f8f8f2;
+  --color-on-surface-variant: #a8a8a2;
+  --color-on-surface-text: #e6e6df;
+  --color-border: rgb(249 38 114 / 0.12);
+}
+
+html[data-ui-theme="monokai"] body {
+  background-color: #1e1f1c;
+}
+
+html[data-ui-theme="monokai"] .active-tab {
+  border-left-color: #f92672;
+  background: #49483e;
+}
+
+/* ── Extension: Macintosh theme ── */
+html[data-ui-theme="macos"] {
+  --color-primary: #0a84ff;
+  --color-secondary: #30d158;
+  --color-tertiary: #ff9f0a;
+  --color-error: #ff453a;
+  --color-background: rgb(28 28 30 / 0.94);
+  --color-surface: #1c1c1e;
+  --color-surface-dim: #1c1c1e;
+  --color-surface-container-lowest: rgb(30 30 32 / 0.82);
+  --color-surface-container-low: rgb(36 36 38 / 0.9);
+  --color-surface-container: rgb(44 44 46 / 0.88);
+  --color-surface-container-high: #3a3a3c;
+  --color-surface-container-highest: #48484a;
+  --color-surface-container-hover-low: rgb(255 255 255 / 0.08);
+  --color-on-surface: #f5f5f7;
+  --color-on-background: #f5f5f7;
+  --color-on-surface-variant: #98989d;
+  --color-on-surface-text: #ebebf5;
+  --color-on-primary: #ffffff;
+  --color-border: rgb(255 255 255 / 0.09);
+}
+
+html[data-ui-theme="macos"] body {
+  background-color: #000000;
+}
+
+html[data-ui-theme="macos"] .active-tab {
+  border-left: none;
+  border-radius: 6px;
+  margin-inline: 6px;
+  padding-inline: calc(1rem - 6px);
+  background: rgb(10 132 255 / 0.18);
+  color: #f5f5f7;
+}
+
+html[data-ui-theme="macos"] .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.18);
+}
+
+/* Sonoma — default macOS dark */
+html[data-ui-theme="macos"][data-mac-variant="sonoma"],
+html[data-ui-theme="macos"]:not([data-mac-variant]),
+html[data-ui-theme="macos"][data-mac-variant=""] {
+  --color-primary: #0a84ff;
+  --color-secondary: #30d158;
+}
+
+/* Monterey — cool slate */
+html[data-ui-theme="macos"][data-mac-variant="monterey"] {
+  --color-primary: #409cff;
+  --color-secondary: #32d74b;
+  --color-tertiary: #64d2ff;
+  --color-background: rgb(22 28 38 / 0.94);
+  --color-surface: #1a2332;
+  --color-surface-dim: #141c28;
+  --color-surface-container-lowest: rgb(20 26 36 / 0.84);
+  --color-surface-container-low: rgb(26 34 46 / 0.9);
+  --color-surface-container: rgb(32 42 56 / 0.88);
+  --color-surface-container-high: #2a3648;
+  --color-surface-container-highest: #364458;
+  --color-on-surface-variant: #8a9bb5;
+  --color-border: rgb(64 156 255 / 0.1);
+}
+
+html[data-ui-theme="macos"][data-mac-variant="monterey"] body {
+  background-color: #0a1018;
+}
+
+html[data-ui-theme="macos"][data-mac-variant="monterey"] .active-tab {
+  background: rgb(64 156 255 / 0.16);
+}
+
+/* Sequoia — warm dusk */
+html[data-ui-theme="macos"][data-mac-variant="sequoia"] {
+  --color-primary: #0091ff;
+  --color-secondary: #34c759;
+  --color-tertiary: #ff9f0a;
+  --color-background: rgb(36 30 26 / 0.94);
+  --color-surface: #2a2420;
+  --color-surface-dim: #1e1a16;
+  --color-surface-container-lowest: rgb(32 26 22 / 0.84);
+  --color-surface-container-low: rgb(40 32 28 / 0.9);
+  --color-surface-container: rgb(48 38 32 / 0.88);
+  --color-surface-container-high: #4a3c34;
+  --color-surface-container-highest: #5a4a40;
+  --color-on-surface-variant: #b0a090;
+  --color-border: rgb(255 159 10 / 0.1);
+}
+
+html[data-ui-theme="macos"][data-mac-variant="sequoia"] body {
+  background-color: #14100c;
+}
+
+html[data-ui-theme="macos"][data-mac-variant="sequoia"] .active-tab {
+  background: rgb(0 145 255 / 0.16);
+}
+
+/* Aqua Classic — graphite + classic blue */
+html[data-ui-theme="macos"][data-mac-variant="aqua-classic"] {
+  --color-primary: #0066cc;
+  --color-secondary: #28a745;
+  --color-tertiary: #febc2e;
+  --color-background: rgb(38 38 38 / 0.96);
+  --color-surface: #2d2d2d;
+  --color-surface-dim: #222222;
+  --color-surface-container-lowest: rgb(42 42 42 / 0.9);
+  --color-surface-container-low: rgb(50 50 50 / 0.92);
+  --color-surface-container: rgb(58 58 58 / 0.9);
+  --color-surface-container-high: #484848;
+  --color-surface-container-highest: #565656;
+  --color-on-surface: #ececec;
+  --color-on-surface-variant: #a8a8a8;
+  --color-border: rgb(255 255 255 / 0.12);
+}
+
+html[data-ui-theme="macos"][data-mac-variant="aqua-classic"] body {
+  background-color: #1a1a1a;
+}
+
+html[data-ui-theme="macos"][data-mac-variant="aqua-classic"] .active-tab {
+  background: rgb(0 102 204 / 0.2);
+  border-left: none;
+}
+
+/* ── Extension: Vibrancy Glass ── */
+html[data-glass-ui="true"] .bg-surface-container-lowest,
+html[data-glass-ui="true"] .bg-surface-container-low,
+html[data-glass-ui="true"] .bg-surface-container,
+html[data-glass-ui="true"] .bg-background {
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* macOS traffic lights */
+.mac-traffic-light {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+
+.mac-traffic-close {
+  background: #ff5f57;
+  border: 0.5px solid #e24640;
+}
+
+.mac-traffic-minimize {
+  background: #febc2e;
+  border: 0.5px solid #dea123;
+}
+
+.mac-traffic-maximize {
+  background: #28c840;
+  border: 0.5px solid #1aab29;
 }

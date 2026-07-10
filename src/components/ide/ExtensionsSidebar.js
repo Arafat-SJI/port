@@ -1,0 +1,120 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { EXTENSIONS } from "@/data/extensions";
+import { useExtensions } from "@/hooks/useExtensions";
+
+const searchInputClass =
+  "w-full h-[26px] bg-surface-container-high/80 border border-border/50 rounded-[3px] pl-2 text-[12px] text-on-surface placeholder:text-on-surface-variant/45 focus:outline-none focus:border-primary/35";
+
+function ExtensionRow({ extension, selected, onSelect }) {
+  const { isInstalled, isActive } = useExtensions();
+  const installed = isInstalled(extension.id);
+  const active = isActive(extension.id);
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(extension.id)}
+      className={`w-full flex gap-2 px-2 py-2 text-left border-b border-border/40 transition-colors ${
+        selected
+          ? "bg-surface-container-hover-low"
+          : "hover:bg-surface-container-low/60"
+      }`}
+    >
+      <div
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded"
+        style={{
+          backgroundColor: `${extension.iconColor}22`,
+          color: extension.iconColor,
+        }}
+      >
+        <span className="material-symbols-outlined text-[18px]">{extension.icon}</span>
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <p className="text-[12px] text-on-surface leading-tight truncate">{extension.name}</p>
+          {extension.builtin && (
+            <span className="text-[9px] text-on-surface-variant/70 uppercase shrink-0">built-in</span>
+          )}
+          {active && (
+            <span className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0" title="Active" />
+          )}
+        </div>
+        <p className="text-[10px] text-on-surface-variant/80 truncate">{extension.publisher}</p>
+        <p className="text-[10px] text-on-surface-variant/60 leading-snug mt-0.5 line-clamp-1">
+          {extension.description}
+        </p>
+      </div>
+
+      {installed && !extension.builtin && (
+        <span className="shrink-0 self-center text-[9px] text-on-surface-variant/60 uppercase">
+          installed
+        </span>
+      )}
+    </button>
+  );
+}
+
+export default function ExtensionsSidebar({ selectedExtensionId, onExtensionSelect }) {
+  const inputRef = useRef(null);
+  const [query, setQuery] = useState("");
+  const { installed } = useExtensions();
+
+  const sorted = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let list = [...EXTENSIONS];
+    if (q) {
+      list = list.filter(
+        (ext) =>
+          ext.name.toLowerCase().includes(q) ||
+          ext.publisher.toLowerCase().includes(q) ||
+          ext.description.toLowerCase().includes(q)
+      );
+    }
+    return list.sort((a, b) => {
+      if (a.builtin) return -1;
+      if (b.builtin) return 1;
+      return 0;
+    });
+  }, [query]);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  return (
+    <aside className="flex w-[280px] shrink-0 flex-col min-h-0 bg-surface-container-lowest border-r border-border">
+      <div className="shrink-0 px-[10px] pt-[6px] pb-2 space-y-1">
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search Extensions in Marketplace"
+          className={searchInputClass}
+        />
+        <p className="text-[11px] text-on-surface-variant/80 px-0.5 pt-0.5">
+          {installed.length} installed
+          {query.trim() ? ` · ${sorted.length} shown` : ""}
+        </p>
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+        {sorted.length === 0 ? (
+          <p className="px-4 py-3 text-[11px] text-on-surface-variant/70">No extensions found.</p>
+        ) : (
+          sorted.map((extension) => (
+            <ExtensionRow
+              key={extension.id}
+              extension={extension}
+              selected={selectedExtensionId === extension.id}
+              onSelect={onExtensionSelect}
+            />
+          ))
+        )}
+      </div>
+    </aside>
+  );
+}

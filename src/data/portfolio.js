@@ -276,8 +276,8 @@ export const TERMINAL_MESSAGES = [
 export const ACTIVITY_ITEMS = [
   { id: "explorer", icon: "file_copy", label: "Explorer" },
   { id: "search", icon: "search", label: "Search" },
-  { id: "source-control", icon: "account_tree", label: "Source Control" },
   { id: "extensions", icon: "widgets", label: "Extensions" },
+  { id: "source-control", icon: "account_tree", label: "Source Control" },
 ];
 
 export const ACTIVITY_LABELS = {

@@ -108,7 +108,7 @@ export default function SearchSidebar({
   };
 
   return (
-    <aside className="flex w-[220px] shrink-0 flex-col min-h-0 bg-surface-container-lowest border-r border-border">
+    <aside className="flex w-[280px] shrink-0 flex-col min-h-0 bg-surface-container-lowest border-r border-border">
       <div className="shrink-0 px-[10px] pt-[6px] pb-2 space-y-1">
         <div className="space-y-1">
           <div className="relative">
