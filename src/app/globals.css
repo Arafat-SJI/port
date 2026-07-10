@@ -11,6 +11,8 @@
   --color-on-primary-fixed-variant: #004395;
   --color-on-secondary-container: #00311f;
   --color-on-surface-variant: #c2c6d6;
+  --color-on-surface-variant-hover: #ffffff;
+  --color-on-surface-text: #e4e8f7;
   --color-on-background: #e3e2e8;
   --color-surface-container: #1f1f24;
   --color-on-secondary: #003824;
@@ -20,6 +22,7 @@
   --color-background: #121317;
   --color-primary-fixed-dim: #adc6ff;
   --color-surface-container-low: #1a1b20;
+  --color-surface-container-hover-low: #33384d;
   --color-on-error: #690005;
   --color-surface-dim: #121317;
   --color-on-primary: #002e6a;
@@ -128,5 +131,35 @@ body {
 
 .active-tab {
   border-left: 1px solid #adc6ff;
-  background: rgba(173, 198, 255, 0.05);
+  background: #2b2f40;
+}
+
+.sidebar-collapse {
+  display: grid;
+  transition: grid-template-rows 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-collapse > .sidebar-collapse-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.search-content-highlight {
+  background: #99643f;
+  color: #e8bc6d;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+mark.search-content-highlight[data-search-active="true"] {
+  background: #943c05;
+  color: #f0d0a0;
+  outline: 1px solid rgb(240 208 160 / 0.28);
+}
+
+.search-match-highlight {
+  background: #6d3f1f;
+  color: #e8bc6d;
+  border-radius: 2px;
+  padding: 0 1px;
 }

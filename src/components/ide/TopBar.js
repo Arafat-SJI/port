@@ -1,13 +1,16 @@
+import { ACTIVITY_LABELS } from "@/data/portfolio";
 import EditorTabBar from "./EditorTabBar";
 
-export default function TopBar({ tabStripRef, activeHref, onNavClick }) {
+export default function TopBar({ tabStripRef, activeHref, activeActivity, onNavClick }) {
+  const sidebarTitle = ACTIVITY_LABELS[activeActivity] ?? ACTIVITY_LABELS.explorer;
+
   return (
     <div className="flex h-7 shrink-0 bg-surface-container-lowest border-b border-border">
       <div className="flex w-[220px] shrink-0 items-center justify-between px-4 border-r border-border ml-[-1px]">
         <span className="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase flex items-center gap-1">
-          <span className="material-symbols-outlined text-[14px]">keyboard_arrow_down</span> EXPLORER
-        </span>
-        <span className="material-symbols-outlined text-[14px] text-on-surface-variant">
+          <span className="material-symbols-outlined text-[14px]">keyboard_arrow_down</span>{" "}
+          {sidebarTitle}
+        </span>        <span className="material-symbols-outlined text-[14px] text-on-surface-variant">
           more_horiz
         </span>
       </div>

@@ -280,6 +280,13 @@ export const ACTIVITY_ITEMS = [
   { id: "extensions", icon: "widgets", label: "Extensions" },
 ];
 
+export const ACTIVITY_LABELS = {
+  explorer: "EXPLORER",
+  search: "SEARCH",
+  "source-control": "SOURCE CONTROL",
+  extensions: "EXTENSIONS",
+};
+
 export const CHAT_SUGGESTED_QUESTIONS = [
   "What is Arafat's tech stack?",
   "Tell me about his projects",

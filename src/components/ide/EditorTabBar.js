@@ -16,8 +16,8 @@ export default function EditorTabBar({ tabStripRef, activeHref, onNavClick }) {
             onClick={(e) => onNavClick(e, tab.href)}
             className={`group relative flex items-center gap-1.5 pl-2 pr-2 text-[12px] border-r border-border whitespace-nowrap transition-colors ${
               isActive
-                ? "bg-background text-on-surface"
-                : "text-on-surface-variant/70 hover:bg-surface-container-low hover:text-on-surface-variant"
+                ? "bg-[#181a24] text-on-surface"
+                : "text-on-surface-variant/90 hover:bg-surface-container-low hover:text-on-surface-variant"
             }`}
           >
             {isActive && <span className="absolute inset-x-0 top-0 h-px bg-primary" />}
