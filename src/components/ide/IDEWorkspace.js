@@ -119,14 +119,14 @@ export default function IDEWorkspace() {
       isProgrammaticScrollRef.current = false;
     };
 
-    // Contact / terminal only — scrollToSmooth-style eased animation.
+    // Contact / terminal only — eased scroll without overshoot (Back would dip the wrong way first).
     if (href === "#contact" && behavior !== "auto") {
       smoothScrollTo(main, destination, {
         duration: 800,
         durationRelative: true,
         durationMin: 500,
         durationMax: 1400,
-        easing: "easeInOutBack",
+        easing: "easeInOutCubic",
         onScrollEnd: clearProgrammaticScroll,
       });
       // Safety clear if animation is interrupted.
