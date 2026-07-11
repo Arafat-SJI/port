@@ -43,7 +43,7 @@ export default function ExplorerSidebar({
 
   return (
     <aside className="flex h-full w-full min-h-0 flex-col bg-surface-container-lowest border-r border-border">
-      <div className="flex flex-1 flex-col min-h-0 overflow-hidden py-1">
+      <div className="flex flex-1 flex-col min-h-0 overflow-hidden pt-1">
         <SidebarSection
           title="PORTFOLIO"
           expanded={portfolioExpanded}

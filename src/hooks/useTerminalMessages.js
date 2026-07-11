@@ -1,17 +1,43 @@
 import { useEffect, useState } from "react";
 import { TERMINAL_MESSAGES } from "@/data/portfolio";
+import { readExtensionState } from "@/lib/extensionStorage";
+import { PREFS_CHANGED_EVENT } from "@/lib/sidebarPrefs";
+import { collectWorkspaceChanges } from "@/lib/sourceControl";
+
+function readChangeCount() {
+  if (typeof window === "undefined") return 0;
+  return collectWorkspaceChanges(readExtensionState()).length;
+}
+
+function formatGitStatus(count) {
+  if (count === 0) return "> git status... clean";
+  return `> git status... ${count} modified`;
+}
+
+function messageAt(index, changeCount) {
+  const raw = TERMINAL_MESSAGES[index] ?? TERMINAL_MESSAGES[0];
+  if (raw.includes("git status")) return formatGitStatus(changeCount);
+  return raw;
+}
 
 export function useTerminalMessages() {
-  const [terminalMsg, setTerminalMsg] = useState(TERMINAL_MESSAGES[1]);
+  const [index, setIndex] = useState(1);
+  const [changeCount, setChangeCount] = useState(0);
 
   useEffect(() => {
-    let current = 1;
+    const refresh = () => setChangeCount(readChangeCount());
+    refresh();
+    window.addEventListener(PREFS_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(PREFS_CHANGED_EVENT, refresh);
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
-      current = (current + 1) % TERMINAL_MESSAGES.length;
-      setTerminalMsg(TERMINAL_MESSAGES[current]);
+      setChangeCount(readChangeCount());
+      setIndex((current) => (current + 1) % TERMINAL_MESSAGES.length);
     }, 2000);
     return () => clearInterval(interval);
   }, []);
 
-  return terminalMsg;
+  return messageAt(index, changeCount);
 }

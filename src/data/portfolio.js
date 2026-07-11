@@ -268,7 +268,7 @@ export const CONTACT = {
 
 export const TERMINAL_MESSAGES = [
   "> npm run build... success",
-  "> git status... 2 modified",
+  "> git status...",
   "> indexing local files...",
   "> v8 engine... optimal",
 ];
