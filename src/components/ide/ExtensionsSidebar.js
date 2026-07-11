@@ -34,7 +34,7 @@ function ExtensionRow({ extension, selected, onSelect }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <p className="text-[12px] text-on-surface leading-tight truncate">{extension.name}</p>
+          <p className="text-[12px] text-white leading-tight truncate">{extension.name}</p>
           {extension.builtin && (
             <span className="text-[9px] text-on-surface-variant/70 uppercase shrink-0">built-in</span>
           )}
@@ -42,14 +42,17 @@ function ExtensionRow({ extension, selected, onSelect }) {
             <span className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0" title="Active" />
           )}
         </div>
-        <p className="text-[10px] text-on-surface-variant/80 truncate">{extension.publisher}</p>
-        <p className="text-[10px] text-on-surface-variant/60 leading-snug mt-0.5 line-clamp-1">
+        <p className="text-[10px] text-on-surface-variant/90 truncate">{extension.publisher}</p>
+        <p className="text-[10px] text-on-surface-variant/70 leading-snug mt-0.5 line-clamp-1">
           {extension.description}
         </p>
       </div>
 
       {installed && !extension.builtin && (
-        <span className="shrink-0 self-center text-[9px] text-on-surface-variant/60 uppercase">
+        <span className="shrink-0 self-center flex items-center gap-1 text-[9px] text-on-surface-variant/80 uppercase">
+          <span className="material-symbols-outlined !text-[14px] text-[#7ee8b8] opacity-4s0">
+            select_check_box
+          </span>
           installed
         </span>
       )}

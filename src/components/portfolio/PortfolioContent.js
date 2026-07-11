@@ -2,7 +2,6 @@ import SectionSearchTarget from "./SectionSearchTarget";
 import AboutSection from "./sections/AboutSection";
 import AwardsSection from "./sections/AwardsSection";
 import ClubingSection from "./sections/ClubingSection";
-import ContactSection from "./sections/ContactSection";
 import EducationSection from "./sections/EducationSection";
 import ExperienceSection from "./sections/ExperienceSection";
 import GallerySection from "./sections/GallerySection";
@@ -14,7 +13,7 @@ import SkillsSection from "./sections/SkillsSection";
 
 export default function PortfolioContent({ searchHighlight }) {
   return (
-    <div className="max-w-[900px] mx-auto px-6 py-8 space-y-[76px]">
+    <div className="max-w-[900px] mx-auto px-6 py-8 space-y-[106px]">
       <SectionSearchTarget sectionHref="#about" searchHighlight={searchHighlight}>
         <div id="about" className="space-y-14 scroll-mt-[15px]">
           <HeroSection />
@@ -56,10 +55,6 @@ export default function PortfolioContent({ searchHighlight }) {
 
       <SectionSearchTarget sectionHref="#mentorship" searchHighlight={searchHighlight}>
         <MentorshipSection />
-      </SectionSearchTarget>
-
-      <SectionSearchTarget sectionHref="#contact" searchHighlight={searchHighlight}>
-        <ContactSection />
       </SectionSearchTarget>
     </div>
   );

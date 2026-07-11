@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import FileIcon from "@/components/ui/FileIcon";
 import { searchPortfolio } from "@/lib/searchIndex";
+import { readSearchSession, writeSearchSession } from "@/lib/searchSession";
 
 const searchInputClass =
   "w-full h-[26px] bg-surface-container-high/80 border border-border/50 rounded-[3px] pl-2 text-[12px] text-on-surface placeholder:text-on-surface-variant/45 focus:outline-none focus:border-primary/35";
@@ -52,16 +53,21 @@ export default function SearchSidebar({
 }) {
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
-  const [query, setQuery] = useState("");
-  const [matchCase, setMatchCase] = useState(false);
-  const [wholeWord, setWholeWord] = useState(false);
-  const [useRegex, setUseRegex] = useState(false);
+  const initialSession = useMemo(() => readSearchSession(), []);
+  const [query, setQuery] = useState(initialSession.query);
+  const [matchCase, setMatchCase] = useState(initialSession.matchCase);
+  const [wholeWord, setWholeWord] = useState(initialSession.wholeWord);
+  const [useRegex, setUseRegex] = useState(initialSession.useRegex);
   const [expandedFiles, setExpandedFiles] = useState({});
 
   const results = useMemo(
     () => searchPortfolio(query, { matchCase, wholeWord, useRegex }),
     [query, matchCase, wholeWord, useRegex]
   );
+
+  useEffect(() => {
+    writeSearchSession({ query, matchCase, wholeWord, useRegex });
+  }, [query, matchCase, wholeWord, useRegex]);
 
   useEffect(() => {
     inputRef.current?.focus();

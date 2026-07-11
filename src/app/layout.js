@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var h=document.documentElement,k=["portfolio-extensions-v4","portfolio-extensions-v3","portfolio-extensions-v2"],r=null;for(var i=0;i<k.length;i++){r=localStorage.getItem(k[i]);if(r)break;}if(!r){h.dataset.uiTheme="default";h.dataset.fontPack="inter";return;}var s=JSON.parse(r),t="default";if(s.activeThemeSource==="macintosh-theme"){t="macos";h.dataset.macVariant=s.macVariant||"sonoma";h.dataset.glassUi="true";h.dataset.macWallpaper="true";}else if(s.activeThemeSource==="theme-pack"){t=s.packTheme||"default";}h.dataset.uiTheme=t;h.dataset.fontPack=s.activeTypography?s.fontPack||"inter":"inter";}catch(e){}})();`,
+            __html: `(function(){try{var h=document.documentElement,k=["portfolio-extensions-v5","portfolio-extensions-v4","portfolio-extensions-v3","portfolio-extensions-v2"],r=null;for(var i=0;i<k.length;i++){r=localStorage.getItem(k[i]);if(r)break;}if(!r){h.dataset.uiTheme="default";h.dataset.fontPack="inter";return;}var s=JSON.parse(r),t="default";if(s.activeThemeSource==="macintosh-theme"){t="macos";h.dataset.macVariant=s.macVariant||"sonoma";h.dataset.glassUi="true";h.dataset.macWallpaper="true";}else if(s.activeThemeSource==="theme-pack"){t=s.packTheme||"default";}h.dataset.uiTheme=t;h.dataset.fontPack=s.activeTypography?s.fontPack||"inter":"inter";}catch(e){}})();`,
           }}
         />
         <link

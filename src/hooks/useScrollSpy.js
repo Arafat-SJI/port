@@ -31,6 +31,13 @@ export function useScrollSpy(containerRef, setActiveHref, isProgrammaticScrollRe
         }
       }
 
+      // Keep last section active when pinned to the bottom of the scroll area.
+      const distanceFromBottom =
+        container.scrollHeight - (container.scrollTop + container.clientHeight);
+      if (distanceFromBottom <= 2) {
+        active = NAV_ITEMS[NAV_ITEMS.length - 1].href;
+      }
+
       setActiveHref((prev) => (prev === active ? prev : active));
     };
 

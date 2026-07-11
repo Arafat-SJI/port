@@ -8,7 +8,9 @@ import ChatPanel from "@/components/ide/ChatPanel";
 import StatusBar from "@/components/ide/StatusBar";
 import TopBar from "@/components/ide/TopBar";
 import ExtensionDetailView, { ExtensionsEmptyState } from "@/components/ide/ExtensionDetailView";
+import ContactReveal, { ContactScrollTrack } from "@/components/ide/ContactReveal";
 import PortfolioContent from "@/components/portfolio/PortfolioContent";
+import SectionSearchTarget from "@/components/portfolio/SectionSearchTarget";
 import { NAV_ITEMS } from "@/data/portfolio";
 import { findSearchScrollTarget, scrollContainerToElement } from "@/lib/searchScroll";
 import {
@@ -18,6 +20,7 @@ import {
 import { SECTION_SCROLL_MARGIN, useScrollSpy } from "@/hooks/useScrollSpy";
 import { useTabStripScroll } from "@/hooks/useTabStripScroll";
 import { useTerminalMessages } from "@/hooks/useTerminalMessages";
+import { smoothScrollTo } from "@/lib/smoothScroll";
 
 function isExtensionTab(tab) {
   return tab.startsWith("extension:");
@@ -29,9 +32,11 @@ function extensionIdFromTab(tab) {
 
 export default function IDEWorkspace() {
   const mainRef = useRef(null);
+  const contactTrackRef = useRef(null);
   const tabStripRef = useRef(null);
   const isProgrammaticScrollRef = useRef(false);
   const searchScrollTokenRef = useRef(0);
+  const pendingScrollHrefRef = useRef(null);
   const [activeHref, setActiveHref] = useState("#about");
   const [activeTab, setActiveTab] = useState("#about");
   const [openExtensionTabs, setOpenExtensionTabs] = useState([]);
@@ -64,6 +69,13 @@ export default function IDEWorkspace() {
   useTabStripScroll(tabStripRef, activeTab);
   useScrollSpy(mainRef, setActiveHref, isProgrammaticScrollRef);
 
+  // Keep the top tab strip in sync with scroll-spy (sidebar already uses activeHref).
+  useLayoutEffect(() => {
+    if (isExtensionTab(activeTab)) return;
+    if (activeTab === activeHref) return;
+    setActiveTab(activeHref);
+  }, [activeHref, activeTab]);
+
   useLayoutEffect(() => {
     if (!selectedSearchMatch) return;
 
@@ -73,9 +85,13 @@ export default function IDEWorkspace() {
     setActiveTab(selectedSearchMatch.href);
 
     const main = mainRef.current;
-    if (!main) return;
+    const target = main ? findSearchScrollTarget(main, selectedSearchMatch.href) : null;
 
-    const target = findSearchScrollTarget(main, selectedSearchMatch.href);
+    if (!target) {
+      pendingScrollHrefRef.current = selectedSearchMatch.href;
+      return;
+    }
+
     scrollContainerToElement(main, target, "center");
 
     window.setTimeout(() => {
@@ -85,45 +101,97 @@ export default function IDEWorkspace() {
     }, 120);
   }, [selectedSearchMatch]);
 
-  const scrollToHref = (href) => {
+  const scrollToHref = (href, { behavior = "smooth" } = {}) => {
     const main = mainRef.current;
-    const target = document.querySelector(href);
-    if (!target || !main) return;
+    const target = main?.querySelector(href);
+    if (!target || !main) return false;
 
     const top =
       target.getBoundingClientRect().top -
       main.getBoundingClientRect().top +
       main.scrollTop;
+    const destination = Math.max(0, top - SECTION_SCROLL_MARGIN);
 
     isProgrammaticScrollRef.current = true;
     setActiveHref(href);
-    main.scrollTo({ top: top - SECTION_SCROLL_MARGIN, behavior: "smooth" });
 
     const clearProgrammaticScroll = () => {
       isProgrammaticScrollRef.current = false;
     };
 
+    // Contact / terminal only — scrollToSmooth-style eased animation.
+    if (href === "#contact" && behavior !== "auto") {
+      smoothScrollTo(main, destination, {
+        duration: 800,
+        durationRelative: true,
+        durationMin: 500,
+        durationMax: 1400,
+        easing: "easeInOutBack",
+        onScrollEnd: clearProgrammaticScroll,
+      });
+      // Safety clear if animation is interrupted.
+      setTimeout(clearProgrammaticScroll, 1600);
+      return true;
+    }
+
+    main.scrollTo({ top: destination, behavior });
     main.addEventListener("scrollend", clearProgrammaticScroll, { once: true });
-    setTimeout(clearProgrammaticScroll, 800);
+    setTimeout(clearProgrammaticScroll, behavior === "smooth" ? 800 : 50);
+    return true;
+  };
+
+  useLayoutEffect(() => {
+    if (showExtensionView) return;
+
+    const href = pendingScrollHrefRef.current;
+    if (!href) return;
+
+    pendingScrollHrefRef.current = null;
+
+    const main = mainRef.current;
+    if (!main) return;
+
+    if (selectedSearchMatch?.href === href) {
+      isProgrammaticScrollRef.current = true;
+      const target = findSearchScrollTarget(main, href);
+      scrollContainerToElement(main, target, "center");
+      window.setTimeout(() => {
+        isProgrammaticScrollRef.current = false;
+      }, 120);
+      return;
+    }
+
+    scrollToHref(href, { behavior: "auto" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showExtensionView, activeTab, selectedSearchMatch]);
+
+  const navigateToSection = (href) => {
+    setSelectedSearchMatch(null);
+    setActiveTab(href);
+    setActiveHref(href);
+
+    if (showExtensionView || !mainRef.current?.querySelector(href)) {
+      pendingScrollHrefRef.current = href;
+      return;
+    }
+
+    scrollToHref(href);
   };
 
   const handleNavClick = (e, href) => {
     e.preventDefault();
-    setSelectedSearchMatch(null);
-    setActiveTab(href);
-    scrollToHref(href);
+    navigateToSection(href);
   };
 
   const handleTabSelect = (tabId) => {
-    setSelectedSearchMatch(null);
-    setActiveTab(tabId);
-
     if (isExtensionTab(tabId)) {
+      setSelectedSearchMatch(null);
+      setActiveTab(tabId);
       setActiveActivity("extensions");
       return;
     }
 
-    scrollToHref(tabId);
+    navigateToSection(tabId);
   };
 
   const handleExtensionSelect = (id) => {
@@ -144,6 +212,7 @@ export default function IDEWorkspace() {
           setActiveTab(`extension:${next[next.length - 1]}`);
           setActiveActivity("extensions");
         } else {
+          pendingScrollHrefRef.current = activeHref;
           setActiveTab(activeHref);
         }
       }
@@ -192,14 +261,14 @@ export default function IDEWorkspace() {
               onExtensionSelect={handleExtensionSelect}
             />
 
-            <div className="flex flex-1 flex-col min-w-0">
+            <div className="relative flex flex-1 flex-col min-w-0 min-h-0">
               <Breadcrumb
                 activeNav={activeNav}
                 extensionId={showExtensionView ? activeExtensionId : null}
               />
               <main
                 ref={mainRef}
-                className="flex-1 overflow-y-auto custom-scrollbar relative font-code-sm"
+                className="flex-1 min-h-0 overflow-y-auto custom-scrollbar relative font-code-sm"
               >
                 {showExtensionView ? (
                   activeExtensionId ? (
@@ -208,9 +277,24 @@ export default function IDEWorkspace() {
                     <ExtensionsEmptyState />
                   )
                 ) : (
-                  <PortfolioContent searchHighlight={selectedSearchMatch} />
+                  <>
+                    <PortfolioContent searchHighlight={selectedSearchMatch} />
+                    <SectionSearchTarget
+                      sectionHref="#contact"
+                      searchHighlight={selectedSearchMatch}
+                    >
+                      <ContactScrollTrack trackRef={contactTrackRef} />
+                    </SectionSearchTarget>
+                  </>
                 )}
               </main>
+              {!showExtensionView && (
+                <ContactReveal
+                  scrollContainerRef={mainRef}
+                  trackRef={contactTrackRef}
+                  onCollapse={() => navigateToSection("#mentorship")}
+                />
+              )}
             </div>
 
             <ChatPanel />

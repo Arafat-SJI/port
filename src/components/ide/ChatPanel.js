@@ -27,7 +27,7 @@ export default function ChatPanel() {
               <span className="material-symbols-outlined text-[14px] text-primary/70">
                 arrow_outward
               </span>
-              {q}
+              <b>{q}</b>
             </button>
           ))}
         </div>

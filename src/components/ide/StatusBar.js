@@ -23,19 +23,19 @@ export default function StatusBar({ terminalMsg }) {
         </div>
       </div>
       <div className="flex items-center gap-4 h-full">
-        <span className="font-code-sm text-[11px] text-on-surface-variant px-2 hover:bg-surface-container-highest cursor-default h-full flex items-center">
+        <span className="font-code-sm text-[11px] text-on-surface-variant px-2 hover:bg-surface-container-highest cursor-pointer h-full flex items-center">
           UTF-8
         </span>
-        <span className="font-code-sm text-[11px] text-on-surface-variant px-2 hover:bg-surface-container-highest cursor-default h-full flex items-center">
+        <span className="font-code-sm text-[11px] text-on-surface-variant px-2 hover:bg-surface-container-highest cursor-pointer h-full flex items-center">
           TypeScript JSX
         </span>
-        <span className="font-code-sm text-[11px] text-on-surface-variant px-2 hover:bg-surface-container-highest cursor-default h-full flex items-center">
+        <span className="font-code-sm text-[11px] text-on-surface-variant px-2 hover:bg-surface-container-highest cursor-pointer h-full flex items-center">
           Spaces: 2
         </span>
-        <span className="font-code-sm text-[11px] text-on-surface-variant px-2 hover:bg-surface-container-highest cursor-default h-full flex items-center">
+        <span className="font-code-sm text-[11px] text-on-surface-variant px-2 hover:bg-surface-container-highest cursor-pointer h-full flex items-center">
           CRLF
         </span>
-        <div className="flex items-center gap-1 text-on-surface-variant px-2 h-full border-l border-border">
+        <div className="flex items-center gap-1 text-on-surface-variant px-2 h-full border-l border-border cursor-pointer hover:bg-surface-container-highest transition-colors">
           <span className="material-symbols-outlined text-[14px]">notifications</span>
         </div>
       </div>

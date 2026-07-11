@@ -348,7 +348,7 @@ export default function ExtensionDetailView({ extensionId }) {
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl text-on-surface font-semibold leading-tight">{extension.name}</h1>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-              <span className="text-[13px] text-primary hover:underline cursor-default">
+              <span className="text-[13px] text-primary hover:underline cursor-pointer">
                 {extension.publisher}
               </span>
               <span className="text-[12px] text-on-surface-variant flex items-center gap-1">
@@ -385,7 +385,7 @@ export default function ExtensionDetailView({ extensionId }) {
                     type="button"
                     onClick={handleDeactivate}
                     disabled={builtin && active}
-                    className="h-[26px] px-4 rounded text-[12px] font-medium bg-surface-container-highest text-on-surface hover:bg-surface-bright transition-all disabled:opacity-50 disabled:cursor-default"
+                    className="h-[26px] px-4 rounded text-[12px] font-medium bg-surface-container-highest text-on-surface hover:bg-surface-bright transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Deactivate
                   </button>
@@ -481,9 +481,9 @@ export default function ExtensionDetailView({ extensionId }) {
             <div>
               <p className="text-[11px] font-bold text-on-surface mb-2">Resources</p>
               <ul className="space-y-1 text-[11px] text-primary">
-                <li className="hover:underline cursor-default">Marketplace</li>
-                <li className="hover:underline cursor-default">Repository</li>
-                <li className="hover:underline cursor-default">License</li>
+                <li className="hover:underline cursor-pointer">Marketplace</li>
+                <li className="hover:underline cursor-pointer">Repository</li>
+                <li className="hover:underline cursor-pointer">License</li>
               </ul>
             </div>
           </aside>

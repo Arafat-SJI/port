@@ -170,3 +170,8 @@ export const MAC_THEME_VARIANTS = [
 export function getExtensionById(id) {
   return EXTENSIONS.find((ext) => ext.id === id) ?? null;
 }
+
+/** Non-builtin extensions that ship pre-installed. */
+export const DEFAULT_INSTALLED_EXTENSION_IDS = EXTENSIONS.filter((ext) => !ext.builtin).map(
+  (ext) => ext.id
+);

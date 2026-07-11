@@ -1,8 +1,10 @@
-export const EXTENSIONS_STORAGE_KEY = "portfolio-extensions-v4";
+import { DEFAULT_INSTALLED_EXTENSION_IDS } from "@/data/extensions";
+
+export const EXTENSIONS_STORAGE_KEY = "portfolio-extensions-v5";
 export const WORKSPACE_STORAGE_KEY = "portfolio-workspace-v1";
 
 export const DEFAULT_EXTENSION_STATE = {
-  installed: [],
+  installed: [...DEFAULT_INSTALLED_EXTENSION_IDS],
   activeTypography: false,
   activeThemeSource: "default",
   packTheme: "default",
@@ -30,6 +32,7 @@ export function readExtensionState() {
 
   const keys = [
     EXTENSIONS_STORAGE_KEY,
+    "portfolio-extensions-v4",
     "portfolio-extensions-v3",
     "portfolio-extensions-v2",
     "portfolio-extensions-v1",
@@ -41,9 +44,15 @@ export function readExtensionState() {
     const parsed = safeParse(raw);
     if (!parsed) continue;
 
+    // v5+ keeps the user's install list; older keys adopt the pre-installed defaults.
+    const installed =
+      key === EXTENSIONS_STORAGE_KEY && Array.isArray(parsed.installed)
+        ? parsed.installed
+        : [...DEFAULT_EXTENSION_STATE.installed];
+
     return {
       ...DEFAULT_EXTENSION_STATE,
-      installed: Array.isArray(parsed.installed) ? parsed.installed : [],
+      installed,
       activeTypography: Boolean(parsed.activeTypography),
       activeThemeSource: parsed.activeThemeSource ?? DEFAULT_EXTENSION_STATE.activeThemeSource,
       packTheme: parsed.packTheme ?? DEFAULT_EXTENSION_STATE.packTheme,
