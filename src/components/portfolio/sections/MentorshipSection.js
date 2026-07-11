@@ -3,7 +3,7 @@ import SectionHeader from "@/components/portfolio/SectionHeader";
 
 export default function MentorshipSection() {
   return (
-    <section className="space-y-5 scroll-mt-[15px]" id="mentorship">
+    <section className="space-y-5 scroll-mt-[30px]" id="mentorship">
       <SectionHeader>Mentorship</SectionHeader>
       <div className="grid grid-cols-3 gap-3 mb-1">
         <div className="bg-surface-container-low border border-border rounded-xl p-4 text-center">

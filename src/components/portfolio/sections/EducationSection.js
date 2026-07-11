@@ -3,7 +3,7 @@ import SectionHeader from "@/components/portfolio/SectionHeader";
 
 export default function EducationSection() {
   return (
-    <section className="space-y-5 scroll-mt-[15px]" id="education">
+    <section className="space-y-5 scroll-mt-[30px]" id="education">
       <SectionHeader>Education</SectionHeader>
       <div className="space-y-4">
         {EDUCATION.map((edu) => (

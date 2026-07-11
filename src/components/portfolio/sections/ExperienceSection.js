@@ -3,7 +3,7 @@ import SectionHeader from "@/components/portfolio/SectionHeader";
 
 export default function ExperienceSection() {
   return (
-    <section className="space-y-5 scroll-mt-[15px]" id="experience">
+    <section className="space-y-5 scroll-mt-[30px]" id="experience">
       <SectionHeader>Experience</SectionHeader>
       <div className="relative border-l border-border ml-4 space-y-8 pb-2">
         {EXPERIENCE.map((exp) => (

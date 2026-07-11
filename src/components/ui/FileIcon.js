@@ -73,6 +73,22 @@ export default function FileIcon({ ext, size = 16, className = "" }) {
           <path d="M8 2.5 L12 8 H9.5 V13 H6.5 V8 H4 Z" fill="#42B4D6" />
         </svg>
       );
+    case "sh":
+      return (
+        <svg {...props}>
+          <text
+            x="8"
+            y="12"
+            textAnchor="middle"
+            fill="#89D185"
+            fontSize="10"
+            fontWeight="700"
+            fontFamily="Consolas, monospace"
+          >
+            $
+          </text>
+        </svg>
+      );
     case "css":
       return (
         <svg {...props}>

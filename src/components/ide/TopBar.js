@@ -12,6 +12,8 @@ export default function TopBar({
   activeActivity,
   onTabSelect,
   onExtensionTabClose,
+  leftSidebarWidth = 280,
+  rightSidebarWidth = 360,
 }) {
   const sidebarTitle = ACTIVITY_LABELS[activeActivity] ?? ACTIVITY_LABELS.explorer;
   const { isActive, macTrafficLights } = useExtensions();
@@ -19,11 +21,15 @@ export default function TopBar({
 
   return (
     <div className="flex h-7 shrink-0 bg-surface-container-lowest border-b border-border min-w-0">
-      <div className="flex w-[280px] shrink-0 items-center justify-between px-4 border-r border-border ml-[-1px]">
-        <span className="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase flex items-center gap-1">
+      <div
+        className="flex shrink-0 items-center justify-between px-4 border-r border-border ml-[-1px] min-w-0"
+        style={{ width: leftSidebarWidth }}
+      >
+        <span className="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase flex items-center gap-1 truncate">
           <span className="material-symbols-outlined text-[14px]">keyboard_arrow_down</span>{" "}
           {sidebarTitle}
-        </span>        <span className="material-symbols-outlined text-[14px] text-on-surface-variant">
+        </span>
+        <span className="material-symbols-outlined text-[14px] text-on-surface-variant shrink-0">
           more_horiz
         </span>
       </div>
@@ -34,7 +40,10 @@ export default function TopBar({
         onTabSelect={onTabSelect}
         onExtensionTabClose={onExtensionTabClose}
       />
-      <div className="hidden xl:flex w-[360px] shrink-0 items-stretch border-l border-border min-w-[360px] max-w-[360px]">
+      <div
+        className="hidden xl:flex shrink-0 items-stretch border-l border-border min-w-0"
+        style={{ width: rightSidebarWidth }}
+      >
         <button
           type="button"
           className="relative flex items-center gap-1.5 px-3 text-[11px] text-on-surface bg-background shrink-0"
@@ -44,10 +53,16 @@ export default function TopBar({
           Chat
         </button>
         <div className="flex items-center gap-0.5 px-1 text-on-surface-variant ml-auto shrink-0">
-          <button className="material-symbols-outlined text-[16px] p-1 rounded hover:bg-surface-container-low hover:text-on-surface transition-colors">
+          <button
+            type="button"
+            className="material-symbols-outlined text-[16px] p-1 rounded hover:bg-surface-container-low hover:text-on-surface transition-colors"
+          >
             history
           </button>
-          <button className="material-symbols-outlined text-[16px] p-1 rounded hover:bg-surface-container-low hover:text-on-surface transition-colors">
+          <button
+            type="button"
+            className="material-symbols-outlined text-[16px] p-1 rounded hover:bg-surface-container-low hover:text-on-surface transition-colors"
+          >
             more_horiz
           </button>
         </div>

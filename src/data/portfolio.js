@@ -9,7 +9,7 @@ export const NAV_ITEMS = [
   { href: "#gallery", label: "Gallery.tsx", ext: "tsx" },
   { href: "#clubing", label: "Clubing.ts", ext: "ts" },
   { href: "#mentorship", label: "Mentorship.ts", ext: "ts" },
-  { href: "#contact", label: "Contact.ts", ext: "ts" },
+  { href: "#contact", label: "Contact.sh", ext: "sh" },
 ];
 
 export const OPEN_TABS = NAV_ITEMS;

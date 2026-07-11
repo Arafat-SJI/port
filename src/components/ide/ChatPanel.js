@@ -1,11 +1,23 @@
+"use client";
+
 import { CHAT_SUGGESTED_QUESTIONS } from "@/data/portfolio";
+import { useExtensions } from "@/hooks/useExtensions";
 
 export default function ChatPanel() {
+  const { isActive, chatTheme } = useExtensions();
+  const skin = isActive("chat-theme") ? chatTheme : "";
+
   return (
-    <aside className="hidden xl:flex w-[360px] shrink-0 flex-col bg-surface-container-lowest border-l border-border">
-      <div className="flex-1 overflow-y-auto px-3 py-6 custom-scrollbar text-[13px]">
+    <aside
+      data-chat-skin={skin || undefined}
+      className="chat-panel relative flex h-full w-full min-h-0 flex-col bg-surface-container-lowest border-l border-border overflow-hidden"
+    >
+      <div className="chat-live-layer pointer-events-none absolute inset-0" aria-hidden />
+      <div className="relative z-[1] flex-1 overflow-y-auto px-3 py-6 custom-scrollbar text-[13px]">
         <div className="flex flex-col items-center text-center px-2 pt-4 space-y-3">
-          <span className="material-symbols-outlined !text-[40px] text-primary/80">auto_awesome</span>
+          <span className="material-symbols-outlined !text-[40px] text-primary/80 chat-accent">
+            auto_awesome
+          </span>
           <p className="text-on-surface text-[14px] leading-relaxed max-w-[340px]">
             Ask anything about me, AI has the context.
           </p>
@@ -22,9 +34,9 @@ export default function ChatPanel() {
             <button
               key={q}
               type="button"
-              className="w-full text-left px-3 py-2 rounded-md border border-border bg-surface-container-lowest hover:bg-surface-container-low hover:border-primary/30 transition-all text-[12px] text-on-surface-variant flex items-center gap-2"
+              className="chat-suggest w-full text-left px-3 py-2 rounded-md border border-border bg-surface-container-lowest hover:bg-surface-container-low hover:border-primary/30 transition-all text-[12px] text-on-surface-variant flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-[14px] text-primary/70">
+              <span className="material-symbols-outlined text-[14px] text-primary/70 chat-accent">
                 arrow_outward
               </span>
               <b>{q}</b>
@@ -33,8 +45,8 @@ export default function ChatPanel() {
         </div>
       </div>
 
-      <div className="px-3 py-2 shrink-0">
-        <div className="rounded-lg border border-border bg-surface-container-low focus-within:border-primary/60 transition-colors">
+      <div className="relative z-[1] px-3 py-2 shrink-0">
+        <div className="chat-composer rounded-lg border border-border bg-surface-container-low focus-within:border-primary/60 transition-colors">
           <textarea
             rows={2}
             placeholder="Ask anything about me..."
@@ -58,7 +70,10 @@ export default function ChatPanel() {
                 <span className="material-symbols-outlined text-[13px]">expand_more</span>
               </button>
             </div>
-            <button className="flex items-center justify-center w-6 h-6 rounded-md bg-primary text-on-primary hover:brightness-110 transition-all">
+            <button
+              type="button"
+              className="chat-send flex items-center justify-center w-6 h-6 rounded-md bg-primary text-on-primary hover:brightness-110 transition-all"
+            >
               <span className="material-symbols-outlined text-[15px]">arrow_upward</span>
             </button>
           </div>

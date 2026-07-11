@@ -3,7 +3,7 @@ import SectionHeader from "@/components/portfolio/SectionHeader";
 
 export default function AwardsSection() {
   return (
-    <section className="space-y-5 scroll-mt-[15px]" id="awards">
+    <section className="space-y-5 scroll-mt-[30px]" id="awards">
       <SectionHeader>Awards</SectionHeader>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {AWARDS.map((award) => (

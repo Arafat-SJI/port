@@ -3,7 +3,7 @@ import SectionHeader from "@/components/portfolio/SectionHeader";
 
 export default function ProjectsSection() {
   return (
-    <section className="space-y-5 scroll-mt-[15px]" id="projects">
+    <section className="space-y-5 scroll-mt-[30px]" id="projects">
       <div className="flex justify-between items-end">
         <div>
           <SectionHeader>Selected Projects</SectionHeader>

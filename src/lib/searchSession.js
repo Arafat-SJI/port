@@ -1,4 +1,5 @@
-const SEARCH_SESSION_KEY = "portfolio-search-session-v1";
+const SEARCH_STORAGE_KEY = "portfolio-search-session-v1";
+const EXTENSION_SEARCH_STORAGE_KEY = "portfolio-extension-search-v1";
 
 export const DEFAULT_SEARCH_SESSION = {
   query: "",
@@ -7,24 +8,26 @@ export const DEFAULT_SEARCH_SESSION = {
   useRegex: false,
 };
 
-let bootstrapped = false;
-
-/** Wipe prior-page search once per full page load; keep writes for in-tab remounts. */
-function bootstrap() {
-  if (bootstrapped || typeof window === "undefined") return;
-  bootstrapped = true;
-  sessionStorage.removeItem(SEARCH_SESSION_KEY);
+function safeParse(raw) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 export function readSearchSession() {
-  bootstrap();
   if (typeof window === "undefined") return { ...DEFAULT_SEARCH_SESSION };
 
   try {
-    const raw = sessionStorage.getItem(SEARCH_SESSION_KEY);
+    const raw =
+      localStorage.getItem(SEARCH_STORAGE_KEY) ??
+      sessionStorage.getItem(SEARCH_STORAGE_KEY);
     if (!raw) return { ...DEFAULT_SEARCH_SESSION };
 
-    const parsed = JSON.parse(raw);
+    const parsed = safeParse(raw);
+    if (!parsed) return { ...DEFAULT_SEARCH_SESSION };
+
     return {
       query: typeof parsed.query === "string" ? parsed.query : "",
       matchCase: Boolean(parsed.matchCase),
@@ -37,16 +40,57 @@ export function readSearchSession() {
 }
 
 export function writeSearchSession(state) {
-  bootstrap();
   if (typeof window === "undefined") return;
 
-  sessionStorage.setItem(
-    SEARCH_SESSION_KEY,
+  localStorage.setItem(
+    SEARCH_STORAGE_KEY,
     JSON.stringify({
       query: state.query ?? "",
       matchCase: Boolean(state.matchCase),
       wholeWord: Boolean(state.wholeWord),
       useRegex: Boolean(state.useRegex),
     })
+  );
+}
+
+export function clearSearchSession() {
+  if (typeof window === "undefined") return;
+  writeSearchSession(DEFAULT_SEARCH_SESSION);
+}
+
+export function readExtensionSearchSession() {
+  if (typeof window === "undefined") return "";
+
+  try {
+    const raw =
+      localStorage.getItem(EXTENSION_SEARCH_STORAGE_KEY) ??
+      sessionStorage.getItem(EXTENSION_SEARCH_STORAGE_KEY);
+    if (!raw) return "";
+    const parsed = safeParse(raw);
+    return typeof parsed?.query === "string" ? parsed.query : "";
+  } catch {
+    return "";
+  }
+}
+
+export function writeExtensionSearchSession(query) {
+  if (typeof window === "undefined") return;
+
+  localStorage.setItem(
+    EXTENSION_SEARCH_STORAGE_KEY,
+    JSON.stringify({ query: query ?? "" })
+  );
+}
+
+export function clearExtensionSearchSession() {
+  writeExtensionSearchSession("");
+}
+
+export function isSearchSessionDirty(session = readSearchSession()) {
+  return (
+    session.query.trim() !== "" ||
+    session.matchCase ||
+    session.wholeWord ||
+    session.useRegex
   );
 }

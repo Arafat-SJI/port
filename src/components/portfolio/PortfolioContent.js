@@ -15,7 +15,7 @@ export default function PortfolioContent({ searchHighlight }) {
   return (
     <div className="max-w-[900px] mx-auto px-6 py-8 space-y-[106px]">
       <SectionSearchTarget sectionHref="#about" searchHighlight={searchHighlight}>
-        <div id="about" className="space-y-14 scroll-mt-[15px]">
+        <div id="about" className="space-y-14 scroll-mt-[30px]">
           <HeroSection />
           <AboutSection />
         </div>

@@ -3,7 +3,7 @@ import SectionHeader from "@/components/portfolio/SectionHeader";
 
 export default function PublicationSection() {
   return (
-    <section className="space-y-5 scroll-mt-[15px]" id="publication">
+    <section className="space-y-5 scroll-mt-[30px]" id="publication">
       <SectionHeader>Publication</SectionHeader>
       <div className="space-y-3">
         {PUBLICATIONS.map((pub) => (

@@ -3,7 +3,7 @@ import SectionHeader from "@/components/portfolio/SectionHeader";
 
 export default function ClubingSection() {
   return (
-    <section className="space-y-5 scroll-mt-[15px]" id="clubing">
+    <section className="space-y-5 scroll-mt-[30px]" id="clubing">
       <SectionHeader>Clubing</SectionHeader>
       <div className="space-y-3">
         {CLUBS.map((club) => (

@@ -3,7 +3,7 @@ import SectionHeader from "@/components/portfolio/SectionHeader";
 
 export default function SkillsSection() {
   return (
-    <section className="space-y-5 scroll-mt-[15px]" id="skills">
+    <section className="space-y-5 scroll-mt-[30px]" id="skills">
       <SectionHeader>Tech Stack</SectionHeader>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {SKILLS.map((group) => (

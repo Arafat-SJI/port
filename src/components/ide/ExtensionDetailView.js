@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import {
+  CHAT_THEME_OPTIONS,
   FONT_PACK_OPTIONS,
+  LIVE_ANIMATION_OPTIONS,
   MAC_THEME_VARIANTS,
+  TERMINAL_THEME_OPTIONS,
   THEME_PACK_OPTIONS,
   getExtensionById,
 } from "@/data/extensions";
@@ -75,8 +78,9 @@ function DetailTabContent({ extension, tab }) {
 }
 
 function TypographySettings() {
-  const { fontPack, setFontPack, isActive, isInstalled } = useExtensions();
+  const { fontPack, setFontPack, isActive, isInstalled, activate } = useExtensions();
   const installed = isInstalled("typograph");
+  const active = isActive("typograph");
 
   return (
     <div className="mt-6 border border-border rounded-lg overflow-hidden">
@@ -90,19 +94,24 @@ function TypographySettings() {
           <button
             key={opt.value}
             type="button"
-            disabled={!installed || !isActive("typograph")}
-            onClick={() => setFontPack(opt.value)}
+            disabled={!installed}
+            onClick={() => {
+              setFontPack(opt.value);
+              if (!active) activate("typograph");
+            }}
             className={`w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors ${
-              fontPack === opt.value
+              fontPack === opt.value && active
                 ? "bg-primary/10"
-                : "hover:bg-surface-container-low"
-            } ${!installed || !isActive("typograph") ? "opacity-50 cursor-not-allowed" : ""}`}
+                : installed
+                  ? "hover:bg-surface-container-low"
+                  : ""
+            } ${!installed ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div>
               <p className="text-[12px] text-on-surface">{opt.label}</p>
               <p className="text-[11px] text-on-surface-variant">{opt.description}</p>
             </div>
-            {fontPack === opt.value && isActive("typograph") && (
+            {fontPack === opt.value && active && (
               <span className="material-symbols-outlined text-[16px] text-primary">check</span>
             )}
           </button>
@@ -113,11 +122,6 @@ function TypographySettings() {
           Install Typograph to choose a font pack.
         </p>
       )}
-      {installed && !isActive("typograph") && (
-        <p className="px-4 py-2 text-[11px] text-on-surface-variant/70">
-          Activate Typograph to apply a font pack.
-        </p>
-      )}
     </div>
   );
 }
@@ -125,6 +129,7 @@ function TypographySettings() {
 function ThemePackGallery() {
   const { packTheme, setPackTheme, isActive, isInstalled, activate } = useExtensions();
   const installed = isInstalled("theme-pack");
+  const active = isActive("theme-pack");
 
   return (
     <div className="mt-6 border border-border rounded-lg overflow-hidden">
@@ -141,12 +146,14 @@ function ThemePackGallery() {
             disabled={!installed}
             onClick={() => {
               setPackTheme(opt.value);
-              if (!isActive("theme-pack")) activate("theme-pack");
+              if (!active) activate("theme-pack");
             }}
             className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
-              packTheme === opt.value && isActive("theme-pack")
+              packTheme === opt.value && active
                 ? "bg-primary/10"
-                : "hover:bg-surface-container-low"
+                : installed
+                  ? "hover:bg-surface-container-low"
+                  : ""
             } ${!installed ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <ThemeSwatch colors={opt.swatch} />
@@ -156,7 +163,7 @@ function ThemePackGallery() {
                 <p className="text-[10px] text-on-surface-variant">Current default palette</p>
               )}
             </div>
-            {packTheme === opt.value && isActive("theme-pack") && (
+            {packTheme === opt.value && active && (
               <span className="material-symbols-outlined text-[16px] text-primary shrink-0">check</span>
             )}
           </button>
@@ -174,6 +181,7 @@ function ThemePackGallery() {
 function MacVariantGallery() {
   const { macVariant, setMacVariant, isActive, isInstalled, activate } = useExtensions();
   const installed = isInstalled("macintosh-theme");
+  const active = isActive("macintosh-theme");
 
   return (
     <div className="mt-6 border border-border rounded-lg overflow-hidden">
@@ -190,12 +198,14 @@ function MacVariantGallery() {
             disabled={!installed}
             onClick={() => {
               setMacVariant(variant.value);
-              if (!isActive("macintosh-theme")) activate("macintosh-theme");
+              if (!active) activate("macintosh-theme");
             }}
             className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
-              macVariant === variant.value && isActive("macintosh-theme")
+              macVariant === variant.value && active
                 ? "bg-primary/10"
-                : "hover:bg-surface-container-low"
+                : installed
+                  ? "hover:bg-surface-container-low"
+                  : ""
             } ${!installed ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div className="flex flex-col gap-1 shrink-0">
@@ -213,7 +223,7 @@ function MacVariantGallery() {
               <p className="text-[12px] text-on-surface">{variant.label}</p>
               <p className="text-[10px] text-on-surface-variant">{variant.description}</p>
             </div>
-            {macVariant === variant.value && isActive("macintosh-theme") && (
+            {macVariant === variant.value && active && (
               <span className="material-symbols-outlined text-[16px] text-primary shrink-0">check</span>
             )}
           </button>
@@ -224,18 +234,14 @@ function MacVariantGallery() {
           Install Aqua Desktop to switch between macOS variants.
         </p>
       )}
-      {installed && !isActive("macintosh-theme") && (
-        <p className="px-4 py-2 text-[11px] text-on-surface-variant/70">
-          Activate Aqua Desktop to apply a variant.
-        </p>
-      )}
     </div>
   );
 }
 
 function MacTrafficLightsToggle() {
-  const { macTrafficLights, setMacTrafficLights, isInstalled } = useExtensions();
+  const { macTrafficLights, setMacTrafficLights, isActive, isInstalled, activate } = useExtensions();
   const installed = isInstalled("macintosh-theme");
+  const active = isActive("macintosh-theme");
 
   return (
     <div className="mt-4 border border-border rounded-lg overflow-hidden">
@@ -251,19 +257,22 @@ function MacTrafficLightsToggle() {
           role="switch"
           aria-checked={macTrafficLights}
           disabled={!installed}
-          onClick={() => setMacTrafficLights(!macTrafficLights)}
+          onClick={() => {
+            setMacTrafficLights(!macTrafficLights);
+            if (!active) activate("macintosh-theme");
+          }}
           className={`relative shrink-0 w-[34px] h-[18px] rounded-full transition-colors ${
             !installed ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-          } ${macTrafficLights ? "bg-secondary" : "bg-surface-container-highest"}`}
+          } ${macTrafficLights && active ? "bg-secondary" : "bg-surface-container-highest"}`}
         >
           <span
             className={`absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full bg-white shadow transition-transform ${
-              macTrafficLights ? "translate-x-[16px]" : "translate-x-0"
+              macTrafficLights && active ? "translate-x-[16px]" : "translate-x-0"
             }`}
           />
         </button>
       </div>
-      {installed && macTrafficLights && (
+      {installed && macTrafficLights && active && (
           <div className="px-4 pb-3 flex items-center gap-2">
             <div className="flex items-center gap-[6px]">
             <span className="mac-traffic-light mac-traffic-close" />
@@ -279,6 +288,155 @@ function MacTrafficLightsToggle() {
         </p>
       )}
     </div>
+  );
+}
+
+function LiveAnimationGallery() {
+  const { liveAnimation, setLiveAnimation, isActive, isInstalled, activate } = useExtensions();
+  const installed = isInstalled("live-animation");
+  const active = isActive("live-animation");
+
+  return (
+    <div className="mt-6 border border-border rounded-lg overflow-hidden">
+      <div className="px-4 py-2 bg-surface-container-low border-b border-border">
+        <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wide">
+          Live animations
+        </p>
+      </div>
+      <div className="divide-y divide-border/50">
+        {LIVE_ANIMATION_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            disabled={!installed}
+            onClick={() => {
+              setLiveAnimation(opt.value);
+              if (!active) activate("live-animation");
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+              liveAnimation === opt.value && active
+                ? "bg-primary/10"
+                : installed
+                  ? "hover:bg-surface-container-low"
+                  : ""
+            } ${!installed ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
+            <ThemeSwatch colors={opt.swatch} />
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] text-on-surface">{opt.label}</p>
+              <p className="text-[10px] text-on-surface-variant">{opt.description}</p>
+            </div>
+            {liveAnimation === opt.value && active && (
+              <span className="material-symbols-outlined text-[16px] text-primary shrink-0">
+                check
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+      {!installed && (
+        <p className="px-4 py-2 text-[11px] text-on-surface-variant/70">
+          Install Live Animation Theme to run a background animation.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function PanelSkinGallery({
+  title,
+  options,
+  extensionId,
+  selectedValue,
+  setValue,
+  installHint,
+}) {
+  const { isActive, isInstalled, activate } = useExtensions();
+  const installed = isInstalled(extensionId);
+  const active = isActive(extensionId);
+  const staticOpts = options.filter((o) => o.kind === "static");
+  const liveOpts = options.filter((o) => o.kind === "live");
+
+  const renderGroup = (label, items) => (
+    <>
+      <div className="px-4 py-2 bg-surface-container-low border-b border-border">
+        <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wide">
+          {label}
+        </p>
+      </div>
+      <div className="divide-y divide-border/50">
+        {items.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            disabled={!installed}
+            onClick={() => {
+              setValue(opt.value);
+              if (!active) activate(extensionId);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+              selectedValue === opt.value && active
+                ? "bg-primary/10"
+                : installed
+                  ? "hover:bg-surface-container-low"
+                  : ""
+            } ${!installed ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
+            <ThemeSwatch colors={opt.swatch} />
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] text-on-surface">{opt.label}</p>
+              <p className="text-[10px] text-on-surface-variant">{opt.description}</p>
+            </div>
+            {selectedValue === opt.value && active && (
+              <span className="material-symbols-outlined text-[16px] text-primary shrink-0">
+                check
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+    </>
+  );
+
+  return (
+    <div className="mt-6 border border-border rounded-lg overflow-hidden">
+      <div className="px-4 py-2 bg-surface-container border-b border-border">
+        <p className="text-[11px] font-bold text-on-surface uppercase tracking-wide">{title}</p>
+      </div>
+      {renderGroup("Static themes", staticOpts)}
+      {renderGroup("Live themes", liveOpts)}
+      {!installed && (
+        <p className="px-4 py-2 text-[11px] text-on-surface-variant/70">{installHint}</p>
+      )}
+    </div>
+  );
+}
+
+function TerminalThemeGallery() {
+  const { terminalTheme, setTerminalTheme } = useExtensions();
+  return (
+    <PanelSkinGallery
+      title="Terminal skins"
+      options={TERMINAL_THEME_OPTIONS}
+      extensionId="terminal-theme"
+      selectedValue={terminalTheme}
+      setValue={setTerminalTheme}
+      installHint="Install Terminal Skins to restyle the contact terminal."
+    />
+  );
+}
+
+function ChatThemeGallery() {
+  const { chatTheme, setChatTheme } = useExtensions();
+  return (
+    <PanelSkinGallery
+      title="Chat skins"
+      options={CHAT_THEME_OPTIONS}
+      extensionId="chat-theme"
+      selectedValue={chatTheme}
+      setValue={setChatTheme}
+      installHint="Install Chat Skins to restyle the AI sidebar."
+    />
   );
 }
 
@@ -342,7 +500,7 @@ export default function ExtensionDetailView({ extensionId }) {
             className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl"
             style={{ backgroundColor: `${extension.iconColor}22`, color: extension.iconColor }}
           >
-            <span className="material-symbols-outlined text-[36px]">{extension.icon}</span>
+            <span className="material-symbols-outlined !text-[38px]">{extension.icon}</span>
           </div>
 
           <div className="flex-1 min-w-0">
@@ -450,6 +608,9 @@ export default function ExtensionDetailView({ extensionId }) {
                 <MacTrafficLightsToggle />
               </>
             )}
+            {tab === "DETAILS" && extension.id === "live-animation" && <LiveAnimationGallery />}
+            {tab === "DETAILS" && extension.id === "terminal-theme" && <TerminalThemeGallery />}
+            {tab === "DETAILS" && extension.id === "chat-theme" && <ChatThemeGallery />}
           </div>
 
           <aside className="w-[200px] shrink-0 space-y-5">

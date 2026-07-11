@@ -3,6 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EXTENSIONS } from "@/data/extensions";
 import { useExtensions } from "@/hooks/useExtensions";
+import {
+  readExtensionSearchSession,
+  writeExtensionSearchSession,
+} from "@/lib/searchSession";
+import { PREFS_CHANGED_EVENT } from "@/lib/sidebarPrefs";
 
 const searchInputClass =
   "w-full h-[26px] bg-surface-container-high/80 border border-border/50 rounded-[3px] pl-2 text-[12px] text-on-surface placeholder:text-on-surface-variant/45 focus:outline-none focus:border-primary/35";
@@ -34,22 +39,22 @@ function ExtensionRow({ extension, selected, onSelect }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <p className="text-[12px] text-white leading-tight truncate">{extension.name}</p>
+          <p className="text-[12px] text-white opacity-70 leading-tight truncate">{extension.name}</p>
           {extension.builtin && (
-            <span className="text-[9px] text-on-surface-variant/70 uppercase shrink-0">built-in</span>
+            <span className="text-[9px] text-on-surface-variant/70 opacity-70 uppercase shrink-0">built-in</span>
           )}
           {active && (
             <span className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0" title="Active" />
           )}
         </div>
-        <p className="text-[10px] text-on-surface-variant/90 truncate">{extension.publisher}</p>
-        <p className="text-[10px] text-on-surface-variant/70 leading-snug mt-0.5 line-clamp-1">
+        <p className="text-[10px] opacity-70 text-on-surface-variant/90 truncate">{extension.publisher}</p>
+        <p className="text-[10px] opacity-70 text-on-surface-variant/70 leading-snug mt-0.5 line-clamp-1">
           {extension.description}
         </p>
       </div>
 
       {installed && !extension.builtin && (
-        <span className="shrink-0 self-center flex items-center gap-1 text-[9px] text-on-surface-variant/80 uppercase">
+        <span className="shrink-0 opacity-70 self-center flex items-center gap-1 text-[9px] text-on-surface-variant/80 uppercase">
           <span className="material-symbols-outlined !text-[14px] text-[#7ee8b8] opacity-4s0">
             select_check_box
           </span>
@@ -62,7 +67,8 @@ function ExtensionRow({ extension, selected, onSelect }) {
 
 export default function ExtensionsSidebar({ selectedExtensionId, onExtensionSelect }) {
   const inputRef = useRef(null);
-  const [query, setQuery] = useState("");
+  const initialQuery = useMemo(() => readExtensionSearchSession(), []);
+  const [query, setQuery] = useState(initialQuery);
   const { installed } = useExtensions();
 
   const sorted = useMemo(() => {
@@ -84,11 +90,25 @@ export default function ExtensionsSidebar({ selectedExtensionId, onExtensionSele
   }, [query]);
 
   useEffect(() => {
+    writeExtensionSearchSession(query);
+  }, [query]);
+
+  useEffect(() => {
+    const onPrefs = (event) => {
+      const keys = event.detail?.keys;
+      if (keys && !keys.includes("extension-search")) return;
+      setQuery(readExtensionSearchSession());
+    };
+    window.addEventListener(PREFS_CHANGED_EVENT, onPrefs);
+    return () => window.removeEventListener(PREFS_CHANGED_EVENT, onPrefs);
+  }, []);
+
+  useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
   return (
-    <aside className="flex w-[280px] shrink-0 flex-col min-h-0 bg-surface-container-lowest border-r border-border">
+    <aside className="flex h-full w-full min-h-0 flex-col bg-surface-container-lowest border-r border-border">
       <div className="shrink-0 px-[10px] pt-[6px] pb-2 space-y-1">
         <input
           ref={inputRef}

@@ -118,6 +118,84 @@ Expect **#0A84FF** system blue, Finder-style sidebar selections, translucent pan
       "2.0.0 — System blue palette",
     ],
   },
+  {
+    id: "live-animation",
+    name: "Live Animation Theme",
+    publisher: "arafat.workspace",
+    tagline: "Soft living motion for your workspace background.",
+    description:
+      "Five smooth ambient animations — aurora, particles, waves, orbits, and constellation — that drift quietly behind the IDE.",
+    longDescription: `Live Animation Theme adds a calm, motion-driven backdrop without changing your editor colors.
+
+Pick an animation from the gallery, and it will **activate instantly** and keep running behind the panels. Animations are lightweight canvas loops tuned for smooth idle motion.`,
+    version: "1.0.0",
+    icon: "animation",
+    iconColor: "#7dd3fc",
+    downloads: "1.8K",
+    rating: 5,
+    category: "Themes",
+    identifier: "arafat.workspace.live-animation",
+    published: "2025-07-11",
+    features: [
+      "5 live ambient animations",
+      "Aurora, Particles, Waves, Orbits, Constellation",
+      "Keeps default IDE color tokens",
+      "One-click activate from the gallery",
+    ],
+    changelog: ["1.0.0 — Initial release with 5 animations"],
+  },
+  {
+    id: "terminal-theme",
+    name: "Terminal Skins",
+    publisher: "arafat.workspace",
+    tagline: "Dedicated looks for the Let's Connect terminal.",
+    description:
+      "Six terminal-only skins — three static palettes and three live motion themes — without changing the rest of the IDE.",
+    longDescription: `Terminal Skins restyles only the contact terminal panel.
+
+Choose a **static** look for solid color polish, or a **live** theme for soft motion inside the terminal chrome. Activating an option applies instantly and leaves other extensions untouched.`,
+    version: "1.0.0",
+    icon: "terminal",
+    iconColor: "#4edea3",
+    downloads: "920",
+    rating: 5,
+    category: "Themes",
+    identifier: "arafat.workspace.terminal-skins",
+    published: "2025-07-11",
+    features: [
+      "3 static terminal palettes",
+      "3 live terminal motion themes",
+      "Scoped to Let's Connect only",
+      "One-click activate from the gallery",
+    ],
+    changelog: ["1.0.0 — Initial release"],
+  },
+  {
+    id: "chat-theme",
+    name: "Chat Skins",
+    publisher: "arafat.workspace",
+    tagline: "Dedicated looks for the AI chat sidebar.",
+    description:
+      "Six chat-only skins — three static palettes and three live motion themes — scoped to the right sidebar.",
+    longDescription: `Chat Skins restyles only the AI chat panel.
+
+Pick a **static** palette or a **live** motion theme. Options activate instantly and do not alter the editor, explorer, or terminal.`,
+    version: "1.0.0",
+    icon: "forum",
+    iconColor: "#c4b5fd",
+    downloads: "870",
+    rating: 5,
+    category: "Themes",
+    identifier: "arafat.workspace.chat-skins",
+    published: "2025-07-11",
+    features: [
+      "3 static chat palettes",
+      "3 live chat motion themes",
+      "Scoped to the AI sidebar only",
+      "One-click activate from the gallery",
+    ],
+    changelog: ["1.0.0 — Initial release"],
+  },
 ];
 
 export const FONT_PACK_OPTIONS = [
@@ -164,6 +242,129 @@ export const MAC_THEME_VARIANTS = [
     description: "Classic graphite with silver titlebar feel",
     swatch: ["#2d2d2d", "#0066cc", "#c8c8c8"],
     wallpaper: "linear-gradient(180deg, #e8e8ec 0%, #b8b8be 45%, #9898a0 100%)",
+  },
+];
+
+export const LIVE_ANIMATION_OPTIONS = [
+  {
+    value: "aurora",
+    label: "Aurora Drift",
+    description: "Soft northern-light ribbons across a deep sky",
+    swatch: ["#0b1220", "#38bdf8", "#a78bfa"],
+  },
+  {
+    value: "particles",
+    label: "Floating Particles",
+    description: "Gentle sparks floating through dark space",
+    swatch: ["#0c0f14", "#adc6ff", "#4edea3"],
+  },
+  {
+    value: "waves",
+    label: "Silk Waves",
+    description: "Slow layered sine waves with cool tones",
+    swatch: ["#10141c", "#60a5fa", "#34d399"],
+  },
+  {
+    value: "orbits",
+    label: "Orbital Glow",
+    description: "Large blurred orbs orbiting in soft haze",
+    swatch: ["#0e1016", "#c4b5fd", "#67e8f9"],
+  },
+  {
+    value: "constellation",
+    label: "Constellation",
+    description: "Stars linked by faint drifting filaments",
+    swatch: ["#080a10", "#e2e8f0", "#7dd3fc"],
+  },
+];
+
+export const TERMINAL_THEME_OPTIONS = [
+  {
+    value: "slate",
+    label: "Slate Console",
+    description: "Cool steel blues — static",
+    kind: "static",
+    swatch: ["#12161e", "#8ba3c7", "#1c2430"],
+  },
+  {
+    value: "ember",
+    label: "Ember Shell",
+    description: "Warm amber terminal glow — static",
+    kind: "static",
+    swatch: ["#1a120e", "#f0a46a", "#2a1a14"],
+  },
+  {
+    value: "moss",
+    label: "Moss Prompt",
+    description: "Muted forest greens — static",
+    kind: "static",
+    swatch: ["#101612", "#7dba8a", "#1a241c"],
+  },
+  {
+    value: "pulse",
+    label: "Floating Particles",
+    description: "Soft particles drifting upward — live",
+    kind: "live",
+    swatch: ["#121417", "#9aa3ad", "#2a2e34"],
+  },
+  {
+    value: "scan",
+    label: "Constellation",
+    description: "Linked points with a quiet drift — live",
+    kind: "live",
+    swatch: ["#111315", "#a8b0b8", "#262a2e"],
+  },
+  {
+    value: "neon-wave",
+    label: "Star Twinkle",
+    description: "Minimal twinkling points — live",
+    kind: "live",
+    swatch: ["#131518", "#8b93a0", "#2c3036"],
+  },
+];
+
+export const CHAT_THEME_OPTIONS = [
+  {
+    value: "midnight",
+    label: "Midnight Ask",
+    description: "Deep navy chat panel — static",
+    kind: "static",
+    swatch: ["#0f1420", "#93c5fd", "#1e293b"],
+  },
+  {
+    value: "violet",
+    label: "Violet Thread",
+    description: "Soft purple conversation — static",
+    kind: "static",
+    swatch: ["#15121c", "#c4b5fd", "#2e2440"],
+  },
+  {
+    value: "sand",
+    label: "Sand Desk",
+    description: "Warm neutral chat tones — static",
+    kind: "static",
+    swatch: ["#17140f", "#d6b891", "#2a241c"],
+  },
+  {
+    value: "shimmer",
+    label: "Shimmer Fog",
+    description: "Gentle shimmering haze — live",
+    kind: "live",
+    swatch: ["#10141c", "#a5b4fc", "#312e81"],
+  },
+  {
+    value: "ripple",
+    label: "Soft Ripple",
+    description: "Expanding soft ripples — live",
+    kind: "live",
+    swatch: ["#0f1614", "#6ee7b7", "#134e4a"],
+  },
+  {
+    value: "spark",
+    label: "Spark Trail",
+    description: "Tiny drifting sparks — live",
+    kind: "live",
+    swatch: ["#141018", "#f9a8d4", "#701a75"],
   },
 ];
 

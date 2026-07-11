@@ -1,17 +1,7 @@
 import ExplorerSidebar from "@/components/ide/ExplorerSidebar";
 import ExtensionsSidebar from "@/components/ide/ExtensionsSidebar";
 import SearchSidebar from "@/components/ide/SearchSidebar";
-
-function PlaceholderSidebar({ title, message }) {
-  return (
-    <aside className="flex w-[280px] shrink-0 flex-col min-h-0 bg-surface-container-lowest border-r border-border">
-      <div className="px-4 py-6 text-[11px] text-on-surface-variant/70 leading-relaxed">
-        <p className="font-bold text-on-surface-variant uppercase text-[10px] mb-2">{title}</p>
-        <p>{message}</p>
-      </div>
-    </aside>
-  );
-}
+import SourceControlSidebar from "@/components/ide/SourceControlSidebar";
 
 export default function ActivitySidebar({
   activeActivity,
@@ -35,12 +25,7 @@ export default function ActivitySidebar({
         />
       );
     case "source-control":
-      return (
-        <PlaceholderSidebar
-          title="Source Control"
-          message="No source control providers registered."
-        />
-      );
+      return <SourceControlSidebar />;
     case "extensions":
       return (
         <ExtensionsSidebar

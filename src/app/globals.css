@@ -486,6 +486,27 @@ html[data-glass-ui="true"] .bg-background {
   backdrop-filter: saturate(180%) blur(20px);
 }
 
+/* ── Extension: Live Animation Theme (subtle see-through panels) ── */
+html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container-lowest {
+  background-color: rgb(13 14 18 / 0.82);
+}
+html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container-low {
+  background-color: rgb(26 27 32 / 0.78);
+}
+html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container {
+  background-color: rgb(31 31 36 / 0.78);
+}
+html[data-live-animation]:not([data-live-animation=""]) .bg-background {
+  background-color: rgb(18 19 23 / 0.72);
+}
+html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container-lowest,
+html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container-low,
+html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container,
+html[data-live-animation]:not([data-live-animation=""]) .bg-background {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
 /* macOS traffic lights */
 .mac-traffic-light {
   display: block;
@@ -508,4 +529,267 @@ html[data-glass-ui="true"] .bg-background {
 .mac-traffic-maximize {
   background: #28c840;
   border: 0.5px solid #1aab29;
+}
+
+/* ── Extension: Terminal Skins ── */
+.contact-terminal[data-terminal-skin="slate"] {
+  background: #12161e;
+  border-color: rgb(139 163 199 / 0.28);
+}
+.contact-terminal[data-terminal-skin="slate"] .terminal-header {
+  background: rgb(28 36 48 / 0.95);
+}
+.contact-terminal[data-terminal-skin="slate"] .terminal-accent {
+  color: #8ba3c7;
+}
+.contact-terminal[data-terminal-skin="slate"] .terminal-cursor {
+  background-color: #8ba3c7;
+}
+.contact-terminal[data-terminal-skin="slate"] .terminal-submit {
+  background: #8ba3c7;
+  color: #10141c;
+  border-color: rgb(139 163 199 / 0.4);
+}
+
+.contact-terminal[data-terminal-skin="ember"] {
+  background: #1a120e;
+  border-color: rgb(240 164 106 / 0.28);
+}
+.contact-terminal[data-terminal-skin="ember"] .terminal-header {
+  background: rgb(42 26 20 / 0.95);
+}
+.contact-terminal[data-terminal-skin="ember"] .terminal-accent {
+  color: #f0a46a;
+}
+.contact-terminal[data-terminal-skin="ember"] .terminal-cursor {
+  background-color: #f0a46a;
+}
+.contact-terminal[data-terminal-skin="ember"] .terminal-submit {
+  background: #f0a46a;
+  color: #1a120e;
+  border-color: rgb(240 164 106 / 0.4);
+}
+
+.contact-terminal[data-terminal-skin="moss"] {
+  background: #101612;
+  border-color: rgb(125 186 138 / 0.28);
+}
+.contact-terminal[data-terminal-skin="moss"] .terminal-header {
+  background: rgb(26 36 28 / 0.95);
+}
+.contact-terminal[data-terminal-skin="moss"] .terminal-accent {
+  color: #7dba8a;
+}
+.contact-terminal[data-terminal-skin="moss"] .terminal-cursor {
+  background-color: #7dba8a;
+}
+.contact-terminal[data-terminal-skin="moss"] .terminal-submit {
+  background: #7dba8a;
+  color: #101612;
+  border-color: rgb(125 186 138 / 0.4);
+}
+
+.contact-terminal[data-terminal-skin="pulse"] {
+  background: #121417;
+  border-color: rgb(154 163 173 / 0.22);
+}
+.contact-terminal[data-terminal-skin="pulse"] .terminal-header {
+  background: rgb(32 36 40 / 0.94);
+}
+.contact-terminal[data-terminal-skin="pulse"] .terminal-accent {
+  color: #9aa3ad;
+}
+.contact-terminal[data-terminal-skin="pulse"] .terminal-cursor {
+  background-color: #9aa3ad;
+}
+.contact-terminal[data-terminal-skin="pulse"] .terminal-submit {
+  background: #9aa3ad;
+  color: #121417;
+}
+
+.contact-terminal[data-terminal-skin="scan"] {
+  background: #111315;
+  border-color: rgb(168 176 184 / 0.22);
+}
+.contact-terminal[data-terminal-skin="scan"] .terminal-header {
+  background: rgb(30 34 38 / 0.9);
+}
+.contact-terminal[data-terminal-skin="scan"] .terminal-accent {
+  color: #a8b0b8;
+}
+.contact-terminal[data-terminal-skin="scan"] .terminal-cursor {
+  background-color: #a8b0b8;
+}
+.contact-terminal[data-terminal-skin="scan"] .terminal-submit {
+  background: #a8b0b8;
+  color: #111315;
+}
+
+.contact-terminal[data-terminal-skin="neon-wave"] {
+  background: #131518;
+  border-color: rgb(139 147 160 / 0.22);
+}
+.contact-terminal[data-terminal-skin="neon-wave"] .terminal-header {
+  background: rgb(34 38 44 / 0.9);
+}
+.contact-terminal[data-terminal-skin="neon-wave"] .terminal-accent {
+  color: #8b93a0;
+}
+.contact-terminal[data-terminal-skin="neon-wave"] .terminal-cursor {
+  background-color: #8b93a0;
+}
+.contact-terminal[data-terminal-skin="neon-wave"] .terminal-submit {
+  background: #8b93a0;
+  color: #131518;
+}
+
+.contact-terminal[data-terminal-skin="pulse"] .terminal-panel,
+.contact-terminal[data-terminal-skin="scan"] .terminal-panel,
+.contact-terminal[data-terminal-skin="neon-wave"] .terminal-panel {
+  background: rgb(18 20 24 / 0.35);
+}
+
+/* ── Extension: Chat Skins ── */
+.chat-panel[data-chat-skin="midnight"] {
+  background: #0f1420;
+  border-color: rgb(147 197 253 / 0.28);
+}
+.chat-panel[data-chat-skin="midnight"] .chat-accent {
+  color: #93c5fd;
+}
+.chat-panel[data-chat-skin="midnight"] .chat-send {
+  background: #93c5fd;
+  color: #0f1420;
+}
+.chat-panel[data-chat-skin="midnight"] .chat-composer {
+  background: rgb(30 41 59 / 0.7);
+  border-color: rgb(147 197 253 / 0.28);
+}
+
+.chat-panel[data-chat-skin="violet"] {
+  background: #15121c;
+  border-color: rgb(196 181 253 / 0.28);
+}
+.chat-panel[data-chat-skin="violet"] .chat-accent {
+  color: #c4b5fd;
+}
+.chat-panel[data-chat-skin="violet"] .chat-send {
+  background: #c4b5fd;
+  color: #15121c;
+}
+.chat-panel[data-chat-skin="violet"] .chat-composer {
+  background: rgb(46 36 64 / 0.7);
+  border-color: rgb(196 181 253 / 0.28);
+}
+
+.chat-panel[data-chat-skin="sand"] {
+  background: #17140f;
+  border-color: rgb(214 184 145 / 0.28);
+}
+.chat-panel[data-chat-skin="sand"] .chat-accent {
+  color: #d6b891;
+}
+.chat-panel[data-chat-skin="sand"] .chat-send {
+  background: #d6b891;
+  color: #17140f;
+}
+.chat-panel[data-chat-skin="sand"] .chat-composer {
+  background: rgb(42 36 28 / 0.7);
+  border-color: rgb(214 184 145 / 0.28);
+}
+
+.chat-panel[data-chat-skin="shimmer"] {
+  background: #10141c;
+  border-color: rgb(165 180 252 / 0.3);
+}
+.chat-panel[data-chat-skin="shimmer"] .chat-accent {
+  color: #a5b4fc;
+}
+.chat-panel[data-chat-skin="shimmer"] .chat-send {
+  background: #a5b4fc;
+  color: #10141c;
+}
+.chat-panel[data-chat-skin="shimmer"] .chat-live-layer {
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    rgb(165 180 252 / 0.12) 45%,
+    transparent 70%
+  );
+  background-size: 220% 100%;
+  animation: chat-shimmer 5s ease-in-out infinite;
+}
+
+.chat-panel[data-chat-skin="ripple"] {
+  background: #0f1614;
+  border-color: rgb(110 231 183 / 0.3);
+}
+.chat-panel[data-chat-skin="ripple"] .chat-accent {
+  color: #6ee7b7;
+}
+.chat-panel[data-chat-skin="ripple"] .chat-send {
+  background: #6ee7b7;
+  color: #0f1614;
+}
+.chat-panel[data-chat-skin="ripple"] .chat-live-layer {
+  background: radial-gradient(circle at 50% 20%, rgb(110 231 183 / 0.16), transparent 42%);
+  animation: chat-ripple 4.5s ease-out infinite;
+}
+
+.chat-panel[data-chat-skin="spark"] {
+  background: #141018;
+  border-color: rgb(249 168 212 / 0.3);
+}
+.chat-panel[data-chat-skin="spark"] .chat-accent {
+  color: #f9a8d4;
+}
+.chat-panel[data-chat-skin="spark"] .chat-send {
+  background: #f9a8d4;
+  color: #141018;
+}
+.chat-panel[data-chat-skin="spark"] .chat-live-layer {
+  background-image: radial-gradient(circle, rgb(249 168 212 / 0.55) 0 1px, transparent 1.5px);
+  background-size: 42px 42px;
+  animation: chat-spark 8s linear infinite;
+}
+
+@keyframes chat-shimmer {
+  0%,
+  100% {
+    background-position: 100% 0;
+  }
+  50% {
+    background-position: 0% 0;
+  }
+}
+
+@keyframes chat-ripple {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+@keyframes chat-spark {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 42px -42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal-live-layer,
+  .chat-live-layer {
+    animation: none !important;
+  }
 }

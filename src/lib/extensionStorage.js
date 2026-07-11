@@ -1,6 +1,6 @@
 import { DEFAULT_INSTALLED_EXTENSION_IDS } from "@/data/extensions";
 
-export const EXTENSIONS_STORAGE_KEY = "portfolio-extensions-v5";
+export const EXTENSIONS_STORAGE_KEY = "portfolio-extensions-v7";
 export const WORKSPACE_STORAGE_KEY = "portfolio-workspace-v1";
 
 export const DEFAULT_EXTENSION_STATE = {
@@ -11,6 +11,11 @@ export const DEFAULT_EXTENSION_STATE = {
   fontPack: "inter",
   macVariant: "sonoma",
   macTrafficLights: true,
+  liveAnimation: "aurora",
+  activeTerminalTheme: false,
+  terminalTheme: "slate",
+  activeChatTheme: false,
+  chatTheme: "midnight",
 };
 
 export const DEFAULT_WORKSPACE_STATE = {
@@ -32,6 +37,8 @@ export function readExtensionState() {
 
   const keys = [
     EXTENSIONS_STORAGE_KEY,
+    "portfolio-extensions-v6",
+    "portfolio-extensions-v5",
     "portfolio-extensions-v4",
     "portfolio-extensions-v3",
     "portfolio-extensions-v2",
@@ -44,7 +51,6 @@ export function readExtensionState() {
     const parsed = safeParse(raw);
     if (!parsed) continue;
 
-    // v5+ keeps the user's install list; older keys adopt the pre-installed defaults.
     const installed =
       key === EXTENSIONS_STORAGE_KEY && Array.isArray(parsed.installed)
         ? parsed.installed
@@ -59,6 +65,11 @@ export function readExtensionState() {
       fontPack: parsed.fontPack ?? DEFAULT_EXTENSION_STATE.fontPack,
       macVariant: parsed.macVariant ?? DEFAULT_EXTENSION_STATE.macVariant,
       macTrafficLights: parsed.macTrafficLights ?? DEFAULT_EXTENSION_STATE.macTrafficLights,
+      liveAnimation: parsed.liveAnimation ?? DEFAULT_EXTENSION_STATE.liveAnimation,
+      activeTerminalTheme: Boolean(parsed.activeTerminalTheme),
+      terminalTheme: parsed.terminalTheme ?? DEFAULT_EXTENSION_STATE.terminalTheme,
+      activeChatTheme: Boolean(parsed.activeChatTheme),
+      chatTheme: parsed.chatTheme ?? DEFAULT_EXTENSION_STATE.chatTheme,
     };
   }
 
@@ -77,6 +88,11 @@ export function writeExtensionState(state) {
       fontPack: state.fontPack,
       macVariant: state.macVariant,
       macTrafficLights: state.macTrafficLights,
+      liveAnimation: state.liveAnimation,
+      activeTerminalTheme: state.activeTerminalTheme,
+      terminalTheme: state.terminalTheme,
+      activeChatTheme: state.activeChatTheme,
+      chatTheme: state.chatTheme,
     })
   );
 }
@@ -116,9 +132,15 @@ export function computeUiTheme(state) {
 export function applyExtensionStateToDocument(state) {
   const html = document.documentElement;
   const macActive = state.activeThemeSource === "macintosh-theme";
+  const liveActive = state.activeThemeSource === "live-animation";
   html.dataset.uiTheme = computeUiTheme(state);
   html.dataset.fontPack = state.activeTypography ? state.fontPack : "inter";
   html.dataset.macVariant = macActive ? state.macVariant : "";
   html.dataset.glassUi = macActive ? "true" : "false";
   html.dataset.macWallpaper = macActive ? "true" : "false";
+  html.dataset.liveAnimation = liveActive ? state.liveAnimation || "aurora" : "";
+  html.dataset.terminalTheme = state.activeTerminalTheme
+    ? state.terminalTheme || "slate"
+    : "";
+  html.dataset.chatTheme = state.activeChatTheme ? state.chatTheme || "midnight" : "";
 }

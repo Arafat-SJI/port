@@ -4,9 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import FileIcon from "@/components/ui/FileIcon";
 import { searchPortfolio } from "@/lib/searchIndex";
 import { readSearchSession, writeSearchSession } from "@/lib/searchSession";
+import { PREFS_CHANGED_EVENT } from "@/lib/sidebarPrefs";
 
 const searchInputClass =
-  "w-full h-[26px] bg-surface-container-high/80 border border-border/50 rounded-[3px] pl-2 text-[12px] text-on-surface placeholder:text-on-surface-variant/45 focus:outline-none focus:border-primary/35";
+  "w-full h-[26px] bg-surface-container-high/80  border border-border/50 rounded-[3px] pl-2 text-[12px] text-on-surface placeholder:text-on-surface-variant/45 focus:outline-none focus:border-primary/35";
 
 function InlineToggle({ title, active, onClick, children }) {
   return (
@@ -70,6 +71,21 @@ export default function SearchSidebar({
   }, [query, matchCase, wholeWord, useRegex]);
 
   useEffect(() => {
+    const onPrefs = (event) => {
+      const keys = event.detail?.keys;
+      if (keys && !keys.includes("file-search")) return;
+      const saved = readSearchSession();
+      setQuery(saved.query);
+      setMatchCase(saved.matchCase);
+      setWholeWord(saved.wholeWord);
+      setUseRegex(saved.useRegex);
+      if (!saved.query.trim()) onSearchQueryChange?.();
+    };
+    window.addEventListener(PREFS_CHANGED_EVENT, onPrefs);
+    return () => window.removeEventListener(PREFS_CHANGED_EVENT, onPrefs);
+  }, [onSearchQueryChange]);
+
+  useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
@@ -114,7 +130,7 @@ export default function SearchSidebar({
   };
 
   return (
-    <aside className="flex w-[280px] shrink-0 flex-col min-h-0 bg-surface-container-lowest border-r border-border">
+    <aside className="flex h-full w-full min-h-0 flex-col bg-surface-container-lowest border-r border-border">
       <div className="shrink-0 px-[10px] pt-[6px] pb-2 space-y-1">
         <div className="space-y-1">
           <div className="relative">

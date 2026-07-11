@@ -21,7 +21,15 @@ import { SECTION_SCROLL_MARGIN, useScrollSpy } from "@/hooks/useScrollSpy";
 import { useTabStripScroll } from "@/hooks/useTabStripScroll";
 import { useTerminalMessages } from "@/hooks/useTerminalMessages";
 import { smoothScrollTo } from "@/lib/smoothScroll";
-
+import SidebarResizeHandle, {
+  useSidebarWidth,
+} from "@/components/ide/SidebarResizeHandle";
+import {
+  LEFT_SIDEBAR_DEFAULT,
+  LEFT_SIDEBAR_WIDTH_KEY,
+  RIGHT_SIDEBAR_DEFAULT,
+  RIGHT_SIDEBAR_WIDTH_KEY,
+} from "@/lib/sidebarPrefs";
 function isExtensionTab(tab) {
   return tab.startsWith("extension:");
 }
@@ -45,6 +53,24 @@ export default function IDEWorkspace() {
   const [selectedSearchMatch, setSelectedSearchMatch] = useState(null);
   const [workspaceHydrated, setWorkspaceHydrated] = useState(false);
   const terminalMsg = useTerminalMessages();
+  const {
+    width: leftSidebarWidth,
+    handleResize: handleLeftSidebarResize,
+  } = useSidebarWidth(LEFT_SIDEBAR_DEFAULT, {
+    min: 180,
+    max: 480,
+    storageKey: LEFT_SIDEBAR_WIDTH_KEY,
+    prefsKey: "left-sidebar",
+  });
+  const {
+    width: rightSidebarWidth,
+    handleResize: handleRightSidebarResize,
+  } = useSidebarWidth(RIGHT_SIDEBAR_DEFAULT, {
+    min: 260,
+    max: 560,
+    storageKey: RIGHT_SIDEBAR_WIDTH_KEY,
+    prefsKey: "right-sidebar",
+  });
 
   useLayoutEffect(() => {
     const saved = readWorkspaceState();
@@ -245,21 +271,32 @@ export default function IDEWorkspace() {
             activeActivity={activeActivity}
             onTabSelect={handleTabSelect}
             onExtensionTabClose={handleExtensionTabClose}
+            leftSidebarWidth={leftSidebarWidth}
+            rightSidebarWidth={rightSidebarWidth}
           />
 
           <div className="flex flex-1 min-h-0">
-            <ActivitySidebar
-              activeActivity={activeActivity}
-              activeHref={activeHref}
-              portfolioExpanded={portfolioExpanded}
-              onPortfolioToggle={() => setPortfolioExpanded((expanded) => !expanded)}
-              onNavClick={handleNavClick}
-              selectedSearchMatch={selectedSearchMatch}
-              onSearchResultClick={handleSearchResultClick}
-              onSearchQueryChange={() => setSelectedSearchMatch(null)}
-              selectedExtensionId={sidebarSelectedExtension}
-              onExtensionSelect={handleExtensionSelect}
-            />
+            <div
+              className="relative flex shrink-0 flex-col min-h-0 min-w-0"
+              style={{ width: leftSidebarWidth }}
+            >
+              <ActivitySidebar
+                activeActivity={activeActivity}
+                activeHref={activeHref}
+                portfolioExpanded={portfolioExpanded}
+                onPortfolioToggle={() => setPortfolioExpanded((expanded) => !expanded)}
+                onNavClick={handleNavClick}
+                selectedSearchMatch={selectedSearchMatch}
+                onSearchResultClick={handleSearchResultClick}
+                onSearchQueryChange={() => setSelectedSearchMatch(null)}
+                selectedExtensionId={sidebarSelectedExtension}
+                onExtensionSelect={handleExtensionSelect}
+              />
+              <SidebarResizeHandle
+                side="left"
+                onResize={(event) => handleLeftSidebarResize(event, "left")}
+              />
+            </div>
 
             <div className="relative flex flex-1 flex-col min-w-0 min-h-0">
               <Breadcrumb
@@ -297,7 +334,16 @@ export default function IDEWorkspace() {
               )}
             </div>
 
-            <ChatPanel />
+            <div
+              className="relative hidden xl:flex shrink-0 flex-col min-h-0 min-w-0"
+              style={{ width: rightSidebarWidth }}
+            >
+              <SidebarResizeHandle
+                side="right"
+                onResize={(event) => handleRightSidebarResize(event, "right")}
+              />
+              <ChatPanel />
+            </div>
           </div>
         </div>
       </div>

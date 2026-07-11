@@ -3,7 +3,7 @@ import SectionHeader from "@/components/portfolio/SectionHeader";
 
 export default function GallerySection() {
   return (
-    <section className="space-y-5 scroll-mt-[15px]" id="gallery">
+    <section className="space-y-5 scroll-mt-[30px]" id="gallery">
       <SectionHeader>Gallery</SectionHeader>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {GALLERY.map((item) => (

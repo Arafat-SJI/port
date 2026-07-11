@@ -103,9 +103,11 @@ export default function ShaderBackground() {
   const canvasRef = useRef(null);
   const { isActive, macVariant } = useExtensions();
   const macWallpaper = isActive("macintosh-theme");
+  const liveAnimationActive = isActive("live-animation");
   const variant = macVariant || "sonoma";
 
   useEffect(() => {
+    if (liveAnimationActive) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -176,7 +178,9 @@ void main() {
       cancelAnimationFrame(raf);
       if (resizeObserver) resizeObserver.disconnect();
     };
-  }, [macWallpaper, variant]);
+  }, [macWallpaper, variant, liveAnimationActive]);
+
+  if (liveAnimationActive) return null;
 
   const opacityClass = macWallpaper ? (OPACITY[variant] ?? "opacity-55") : "opacity-40";
 

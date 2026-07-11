@@ -18,7 +18,7 @@ export default function ActivityBar({ activeActivity, onActivityChange }) {
                   : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low"
               }`}
             >
-              <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+              <span className="material-symbols-outlined !text-[18px]">{item.icon}</span>
             </button>
           );
         })}

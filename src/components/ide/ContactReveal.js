@@ -3,8 +3,10 @@
 import { useEffect, useRef } from "react";
 import ContactTerminal from "@/components/ide/ContactTerminal";
 
-/** Scroll distance through which the terminal eases fully open */
-const REVEAL_DISTANCE_PX = 280;
+/** Fallback reveal runway until the terminal height is measured */
+const REVEAL_DISTANCE_FALLBACK_PX = 280;
+/** Fixed gap between Mentorship bottom and terminal top */
+const CONTENT_GAP_PX = 60;
 /** Wheel delta multiplier inside the reveal zone */
 const WHEEL_DAMPING = 0.42;
 /** Visual follow smoothing */
@@ -14,12 +16,12 @@ const LERP = 0.14;
 export function ContactScrollTrack({ trackRef }) {
   return (
     <>
-      <div className="h-[60px] shrink-0" aria-hidden />
+      <div className="shrink-0" style={{ height: CONTENT_GAP_PX }} aria-hidden />
       <div
         id="contact"
         ref={trackRef}
-        className="w-full shrink-0 scroll-mt-[15px] pointer-events-none"
-        style={{ height: REVEAL_DISTANCE_PX }}
+        className="w-full shrink-0 scroll-mt-[30px] pointer-events-none"
+        style={{ height: REVEAL_DISTANCE_FALLBACK_PX }}
         aria-label="Let's Connect"
       />
     </>
@@ -51,6 +53,14 @@ export default function ContactReveal({
     let visualProgress = reducedMotion ? 1 : 0;
     let rafId = 0;
     let running = false;
+
+    const syncTrackToTerminal = () => {
+      // Runway must match terminal height so Mentorship + 60px gap sit above it.
+      const height = panel.offsetHeight;
+      if (height > 0) {
+        track.style.height = `${height}px`;
+      }
+    };
 
     const apply = (p) => {
       const v = Math.min(1, Math.max(0, p));
@@ -126,17 +136,31 @@ export default function ContactReveal({
       syncTarget();
     };
 
+    const onResize = () => {
+      syncTrackToTerminal();
+      syncTarget();
+    };
+
+    syncTrackToTerminal();
     apply(visualProgress);
     syncTarget();
+
+    const resizeObserver = new ResizeObserver(() => {
+      syncTrackToTerminal();
+      syncTarget();
+    });
+    resizeObserver.observe(panel);
+
     container.addEventListener("wheel", onWheel, { passive: false });
     container.addEventListener("scroll", syncTarget, { passive: true });
-    window.addEventListener("resize", syncTarget);
+    window.addEventListener("resize", onResize);
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      resizeObserver.disconnect();
       container.removeEventListener("wheel", onWheel);
       container.removeEventListener("scroll", syncTarget);
-      window.removeEventListener("resize", syncTarget);
+      window.removeEventListener("resize", onResize);
     };
   }, [scrollContainerRef, trackRef]);
 

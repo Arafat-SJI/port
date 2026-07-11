@@ -42,7 +42,7 @@ export default function ExplorerSidebar({
   const activeNav = NAV_ITEMS.find((item) => item.href === activeHref) ?? NAV_ITEMS[0];
 
   return (
-    <aside className="flex w-[280px] shrink-0 flex-col min-h-0 bg-surface-container-lowest border-r border-border">
+    <aside className="flex h-full w-full min-h-0 flex-col bg-surface-container-lowest border-r border-border">
       <div className="flex flex-1 flex-col min-h-0 overflow-hidden py-1">
         <SidebarSection
           title="PORTFOLIO"
@@ -58,7 +58,7 @@ export default function ExplorerSidebar({
                 className={`flex items-center gap-1.5 px-4 py-1 text-[12px] leading-tight transition-colors ${
                   activeHref === item.href
                     ? "active-tab text-secondary"
-                    : "text-on-surface-text hover:text-on-surface-variant-hover hover:bg-surface-container-hover-low"
+                    : "text-on-surface-text opacity-70 hover:text-on-surface-variant-hover hover:bg-surface-container-hover-low"
                 }`}
               >
                 <FileIcon ext={item.ext} size={16} /> {item.label}

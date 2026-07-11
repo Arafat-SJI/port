@@ -39,9 +39,12 @@ export function ExtensionsProvider({ children }) {
       if (id === "typograph") return state.activeTypography;
       if (id === "theme-pack") return state.activeThemeSource === "theme-pack";
       if (id === "macintosh-theme") return state.activeThemeSource === "macintosh-theme";
+      if (id === "live-animation") return state.activeThemeSource === "live-animation";
+      if (id === "terminal-theme") return state.activeTerminalTheme;
+      if (id === "chat-theme") return state.activeChatTheme;
       return false;
     },
-    [state.activeThemeSource, state.activeTypography]
+    [state.activeThemeSource, state.activeTypography, state.activeTerminalTheme, state.activeChatTheme]
   );
 
   const install = useCallback((id) => {
@@ -69,6 +72,15 @@ export function ExtensionsProvider({ children }) {
       if (id === "macintosh-theme" && next.activeThemeSource === "macintosh-theme") {
         next = { ...next, activeThemeSource: "default" };
       }
+      if (id === "live-animation" && next.activeThemeSource === "live-animation") {
+        next = { ...next, activeThemeSource: "default" };
+      }
+      if (id === "terminal-theme" && next.activeTerminalTheme) {
+        next = { ...next, activeTerminalTheme: false };
+      }
+      if (id === "chat-theme" && next.activeChatTheme) {
+        next = { ...next, activeChatTheme: false };
+      }
       return next;
     });
   }, []);
@@ -90,6 +102,18 @@ export function ExtensionsProvider({ children }) {
         if (!prev.installed.includes("macintosh-theme")) return prev;
         return { ...prev, activeThemeSource: "macintosh-theme" };
       }
+      if (id === "live-animation") {
+        if (!prev.installed.includes("live-animation")) return prev;
+        return { ...prev, activeThemeSource: "live-animation" };
+      }
+      if (id === "terminal-theme") {
+        if (!prev.installed.includes("terminal-theme")) return prev;
+        return { ...prev, activeTerminalTheme: true };
+      }
+      if (id === "chat-theme") {
+        if (!prev.installed.includes("chat-theme")) return prev;
+        return { ...prev, activeChatTheme: true };
+      }
       return prev;
     });
   }, []);
@@ -100,9 +124,19 @@ export function ExtensionsProvider({ children }) {
       if (id === "typograph") {
         return { ...prev, activeTypography: false };
       }
-      if (id === "theme-pack" || id === "macintosh-theme") {
+      if (
+        id === "theme-pack" ||
+        id === "macintosh-theme" ||
+        id === "live-animation"
+      ) {
         if (prev.activeThemeSource !== id) return prev;
         return { ...prev, activeThemeSource: "default" };
+      }
+      if (id === "terminal-theme") {
+        return { ...prev, activeTerminalTheme: false };
+      }
+      if (id === "chat-theme") {
+        return { ...prev, activeChatTheme: false };
       }
       return prev;
     });
@@ -124,6 +158,23 @@ export function ExtensionsProvider({ children }) {
     setState((prev) => ({ ...prev, macTrafficLights }));
   }, []);
 
+  const setLiveAnimation = useCallback((liveAnimation) => {
+    setState((prev) => ({ ...prev, liveAnimation }));
+  }, []);
+
+  const setTerminalTheme = useCallback((terminalTheme) => {
+    setState((prev) => ({ ...prev, terminalTheme }));
+  }, []);
+
+  const setChatTheme = useCallback((chatTheme) => {
+    setState((prev) => ({ ...prev, chatTheme }));
+  }, []);
+
+  const applyExternalState = useCallback((next) => {
+    if (!next) return;
+    setState((prev) => ({ ...prev, ...next }));
+  }, []);
+
   const uiTheme = computeUiTheme(state);
 
   const value = useMemo(
@@ -141,6 +192,10 @@ export function ExtensionsProvider({ children }) {
       setPackTheme,
       setMacVariant,
       setMacTrafficLights,
+      setLiveAnimation,
+      setTerminalTheme,
+      setChatTheme,
+      applyExternalState,
     }),
     [
       state,
@@ -156,6 +211,10 @@ export function ExtensionsProvider({ children }) {
       setPackTheme,
       setMacVariant,
       setMacTrafficLights,
+      setLiveAnimation,
+      setTerminalTheme,
+      setChatTheme,
+      applyExternalState,
     ]
   );
 
