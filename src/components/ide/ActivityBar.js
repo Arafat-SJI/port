@@ -1,10 +1,12 @@
-import { ACTIVITY_ITEMS } from "@/data/portfolio";
+import { getVisibleActivityItems } from "@/data/portfolio";
 
-export default function ActivityBar({ activeActivity, onActivityChange }) {
+export default function ActivityBar({ activeActivity, onActivityChange, includeChat = false }) {
+  const items = getVisibleActivityItems(includeChat);
+
   return (
     <aside className="flex flex-col w-12 bg-surface-container-lowest border-r border-border z-40 shrink-0">
       <div className="flex flex-col items-center pt-2 gap-1">
-        {ACTIVITY_ITEMS.map((item) => {
+        {items.map((item) => {
           const isActive = activeActivity === item.id;
           return (
             <button

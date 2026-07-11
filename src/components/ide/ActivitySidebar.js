@@ -2,6 +2,7 @@ import ExplorerSidebar from "@/components/ide/ExplorerSidebar";
 import ExtensionsSidebar from "@/components/ide/ExtensionsSidebar";
 import SearchSidebar from "@/components/ide/SearchSidebar";
 import SourceControlSidebar from "@/components/ide/SourceControlSidebar";
+import ChatPanel from "@/components/ide/ChatPanel";
 
 export default function ActivitySidebar({
   activeActivity,
@@ -33,6 +34,8 @@ export default function ActivitySidebar({
           onExtensionSelect={onExtensionSelect}
         />
       );
+    case "chat":
+      return <ChatPanel />;
     case "explorer":
     default:
       return (

@@ -152,6 +152,11 @@ body {
   direction: ltr;
   font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 14;
   font-size: 14px !important;
+  /* Clip ligature names (folder, error, …) before the icon font loads */
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
+  user-select: none;
 }
 
 .active-tab {

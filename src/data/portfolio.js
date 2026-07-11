@@ -273,11 +273,14 @@ export const TERMINAL_MESSAGES = [
   "> v8 engine... optimal",
 ];
 
+export const CHAT_SIDEBAR_BREAKPOINT = 1020;
+
 export const ACTIVITY_ITEMS = [
   { id: "explorer", icon: "file_copy", label: "Explorer" },
   { id: "search", icon: "search", label: "Search" },
   { id: "extensions", icon: "widgets", label: "Extensions" },
   { id: "source-control", icon: "account_tree", label: "Source Control" },
+  { id: "chat", icon: "chat_bubble", label: "Chat" },
 ];
 
 export const ACTIVITY_LABELS = {
@@ -285,7 +288,19 @@ export const ACTIVITY_LABELS = {
   search: "SEARCH",
   "source-control": "SOURCE CONTROL",
   extensions: "EXTENSIONS",
+  chat: "CHAT",
 };
+
+/** Short labels for narrow drawer header (< 820px). */
+export function getActivityLabel(id, { compact = false } = {}) {
+  if (compact && id === "source-control") return "SOURCE";
+  return ACTIVITY_LABELS[id] ?? ACTIVITY_LABELS.explorer;
+}
+
+export function getVisibleActivityItems(includeChat) {
+  if (includeChat) return ACTIVITY_ITEMS;
+  return ACTIVITY_ITEMS.filter((item) => item.id !== "chat");
+}
 
 export const CHAT_SUGGESTED_QUESTIONS = [
   "What is Arafat's tech stack?",

@@ -21,7 +21,7 @@ function ExtensionRow({ extension, selected, onSelect }) {
     <button
       type="button"
       onClick={() => onSelect(extension.id)}
-      className={`w-full flex gap-2 px-2 py-2 text-left border-b border-border/40 transition-colors ${
+      className={`w-full flex flex-col min-[1305px]:flex-row gap-2 px-2 py-2 text-left border-b border-border/40 transition-colors ${
         selected
           ? "bg-surface-container-hover-low"
           : "hover:bg-surface-container-low/60"
@@ -54,7 +54,7 @@ function ExtensionRow({ extension, selected, onSelect }) {
       </div>
 
       {installed && !extension.builtin && (
-        <span className="shrink-0 opacity-70 self-center flex items-center gap-1 text-[9px] text-on-surface-variant/80 uppercase">
+        <span className="shrink-0 opacity-70 self-start flex items-center gap-1 text-[9px] text-on-surface-variant/80 uppercase">
           <span className="material-symbols-outlined !text-[14px] text-[#7ee8b8] opacity-4s0">
             select_check_box
           </span>

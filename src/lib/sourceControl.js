@@ -13,13 +13,10 @@ import {
   readSearchSession,
 } from "@/lib/searchSession";
 import {
-  LEFT_SIDEBAR_DEFAULT,
-  LEFT_SIDEBAR_WIDTH_KEY,
   PREFS_CHANGED_EVENT,
-  RIGHT_SIDEBAR_DEFAULT,
-  RIGHT_SIDEBAR_WIDTH_KEY,
   clearSidebarWidth,
   emitPrefsChanged,
+  getSidebarLayout,
   readSidebarWidth,
 } from "@/lib/sidebarPrefs";
 
@@ -45,6 +42,7 @@ function getActiveExtensionIds(state) {
 export function collectWorkspaceChanges(extensionState) {
   const changes = [];
   const extState = extensionState ?? readExtensionState();
+  const layout = getSidebarLayout();
 
   for (const id of getActiveExtensionIds(extState)) {
     changes.push({
@@ -81,29 +79,29 @@ export function collectWorkspaceChanges(extensionState) {
     });
   }
 
-  const left = readSidebarWidth(LEFT_SIDEBAR_WIDTH_KEY, LEFT_SIDEBAR_DEFAULT, {
-    min: 180,
-    max: 480,
+  const left = readSidebarWidth(layout.left.storageKey, layout.left.defaultWidth, {
+    min: layout.left.min,
+    max: layout.left.max,
   });
-  if (left !== LEFT_SIDEBAR_DEFAULT) {
+  if (!layout.left.fixed && left !== layout.left.defaultWidth) {
     changes.push({
       id: "layout:left-sidebar",
       kind: "left-sidebar",
       path: "layout/left-sidebar",
-      detail: `${left}px (default ${LEFT_SIDEBAR_DEFAULT}px)`,
+      detail: `${left}px (default ${layout.left.defaultWidth}px)`,
     });
   }
 
-  const right = readSidebarWidth(RIGHT_SIDEBAR_WIDTH_KEY, RIGHT_SIDEBAR_DEFAULT, {
-    min: 260,
-    max: 560,
+  const right = readSidebarWidth(layout.right.storageKey, layout.right.defaultWidth, {
+    min: layout.right.min,
+    max: layout.right.max,
   });
-  if (right !== RIGHT_SIDEBAR_DEFAULT) {
+  if (!layout.right.fixed && right !== layout.right.defaultWidth) {
     changes.push({
       id: "layout:right-sidebar",
       kind: "right-sidebar",
       path: "layout/right-sidebar",
-      detail: `${right}px (default ${RIGHT_SIDEBAR_DEFAULT}px)`,
+      detail: `${right}px (default ${layout.right.defaultWidth}px)`,
     });
   }
 
@@ -153,6 +151,7 @@ function resetExtensionActivations(state) {
 export function discardWorkspaceChange(changeId, extensionState) {
   const keys = [];
   let nextExtensionState = extensionState ?? readExtensionState();
+  const layout = getSidebarLayout();
 
   if (changeId.startsWith("extension:")) {
     const extensionId = changeId.slice("extension:".length);
@@ -167,10 +166,10 @@ export function discardWorkspaceChange(changeId, extensionState) {
     clearExtensionSearchSession();
     keys.push("extension-search");
   } else if (changeId === "layout:left-sidebar") {
-    clearSidebarWidth(LEFT_SIDEBAR_WIDTH_KEY, LEFT_SIDEBAR_DEFAULT);
+    clearSidebarWidth(layout.left.storageKey, layout.left.defaultWidth);
     keys.push("left-sidebar");
   } else if (changeId === "layout:right-sidebar") {
-    clearSidebarWidth(RIGHT_SIDEBAR_WIDTH_KEY, RIGHT_SIDEBAR_DEFAULT);
+    clearSidebarWidth(layout.right.storageKey, layout.right.defaultWidth);
     keys.push("right-sidebar");
   }
 
@@ -186,6 +185,7 @@ export function discardAllWorkspaceChanges(extensionState) {
     "left-sidebar",
     "right-sidebar",
   ];
+  const layout = getSidebarLayout();
   let nextExtensionState = resetExtensionActivations(
     extensionState ?? readExtensionState()
   );
@@ -193,8 +193,8 @@ export function discardAllWorkspaceChanges(extensionState) {
   applyExtensionStateToDocument(nextExtensionState);
   clearSearchSession();
   clearExtensionSearchSession();
-  clearSidebarWidth(LEFT_SIDEBAR_WIDTH_KEY, LEFT_SIDEBAR_DEFAULT);
-  clearSidebarWidth(RIGHT_SIDEBAR_WIDTH_KEY, RIGHT_SIDEBAR_DEFAULT);
+  clearSidebarWidth(layout.left.storageKey, layout.left.defaultWidth);
+  clearSidebarWidth(layout.right.storageKey, layout.right.defaultWidth);
   emitPrefsChanged({ keys, nextExtensionState });
   return { keys, nextExtensionState };
 }

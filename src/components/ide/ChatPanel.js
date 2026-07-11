@@ -45,7 +45,7 @@ export default function ChatPanel() {
         </div>
       </div>
 
-      <div className="relative z-[1] px-3 py-2 shrink-0">
+      <div className="relative z-[1] px-2 py-2 shrink-0">
         <div className="chat-composer rounded-lg border border-border bg-surface-container-low focus-within:border-primary/60 transition-colors">
           <textarea
             rows={2}
@@ -64,9 +64,10 @@ export default function ChatPanel() {
               </button>
               <button
                 type="button"
-                className="flex items-center gap-0.5 px-0.5 py-0.5 text-[11px] text-on-surface-variant hover:text-on-surface transition-colors"
+                className="hidden max-[819px]:flex min-[1020px]:flex items-center gap-0.5 px-0.5 py-0.5 text-[11px] text-on-surface-variant hover:text-on-surface transition-colors"
               >
-                gemini flash 2.5
+                <span className="min-[1150px]:hidden">gemini</span>
+                <span className="hidden min-[1150px]:inline">gemini flash 2.5</span>
                 <span className="material-symbols-outlined text-[13px]">expand_more</span>
               </button>
             </div>

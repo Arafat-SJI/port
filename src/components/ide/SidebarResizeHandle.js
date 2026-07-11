@@ -66,9 +66,12 @@ export function useSidebarWidth(defaultWidth, { min, max, storageKey, prefsKey }
   const [width, setWidth] = useState(defaultWidth);
   const [hydrated, setHydrated] = useState(false);
   const startWidthRef = useRef(defaultWidth);
+  const activeKeyRef = useRef(storageKey);
 
   useEffect(() => {
+    activeKeyRef.current = storageKey;
     if (!storageKey) {
+      setWidth(defaultWidth);
       setHydrated(true);
       return;
     }
@@ -79,8 +82,14 @@ export function useSidebarWidth(defaultWidth, { min, max, storageKey, prefsKey }
 
   useEffect(() => {
     if (!storageKey || !hydrated) return;
+    if (activeKeyRef.current !== storageKey) return;
+    const clamped = Math.min(max, Math.max(min, width));
+    if (clamped !== width) {
+      setWidth(clamped);
+      return;
+    }
     writeSidebarWidth(storageKey, width);
-  }, [storageKey, width, hydrated]);
+  }, [storageKey, width, hydrated, min, max]);
 
   useEffect(() => {
     if (!prefsKey || !storageKey) return;

@@ -103,16 +103,6 @@ export default function SourceControlSidebar() {
         <p className="text-[11px] font-bold text-on-surface-variant opacity-80 uppercase">
           Source Control
         </p>
-        {changes.length > 0 && (
-          <button
-            type="button"
-            title="Discard All Changes"
-            onClick={handleDiscardAll}
-            className="flex h-6 w-6 items-center justify-center rounded text-on-surface-variant/70 hover:bg-surface-container-high hover:text-on-surface"
-          >
-            <span className="material-symbols-outlined !text-[16px]">delete_sweep</span>
-          </button>
-        )}
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar py-1">
@@ -122,13 +112,21 @@ export default function SourceControlSidebar() {
           </p>
         ) : (
           <div>
-            <div className="px-4 py-1 flex items-center justify-between">
+            <div className="px-4 py-1 flex items-center gap-2.5">
               <p className="text-[11px] font-bold text-on-surface-variant opacity-80 uppercase">
                 Changes
                 <span className="ml-1.5 opacity-70 normal-case font-medium">
                   {changes.length}
                 </span>
               </p>
+              <button
+                type="button"
+                title="Discard All Changes"
+                onClick={handleDiscardAll}
+                className="flex h-6 w-6 items-center justify-center rounded bg-surface-container-high/80 text-on-surface-variant/80 hover:bg-surface-container-highest hover:text-on-surface"
+              >
+                <span className="material-symbols-outlined !text-[16px]">undo</span>
+              </button>
             </div>
             <div className="mt-0.5">
               {changes.map((change) => (

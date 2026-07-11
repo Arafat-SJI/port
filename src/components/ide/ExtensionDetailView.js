@@ -493,18 +493,20 @@ export default function ExtensionDetailView({ extensionId }) {
 
   return (
     <div className="h-full overflow-y-auto custom-scrollbar">
-      <div className="px-8 pt-6 pb-8 max-w-4xl">
+      <div className="px-4 sm:px-6 md:px-8 pt-5 md:pt-6 pb-8 max-w-4xl">
         {/* Header */}
-        <div className="flex gap-5">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-5">
           <div
-            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl"
+            className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-xl"
             style={{ backgroundColor: `${extension.iconColor}22`, color: extension.iconColor }}
           >
             <span className="material-symbols-outlined !text-[38px]">{extension.icon}</span>
           </div>
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl text-on-surface font-semibold leading-tight">{extension.name}</h1>
+            <h1 className="text-xl sm:text-2xl text-on-surface font-semibold leading-tight">
+              {extension.name}
+            </h1>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
               <span className="text-[13px] text-primary hover:underline cursor-pointer">
                 {extension.publisher}
@@ -577,13 +579,13 @@ export default function ExtensionDetailView({ extensionId }) {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-6 mt-6 border-b border-border">
+        <div className="flex gap-4 sm:gap-6 mt-6 border-b border-border overflow-x-auto custom-scrollbar">
           {["DETAILS", "FEATURES", "CHANGELOG"].map((t) => (
             <button
               key={t}
               type="button"
               onClick={() => setTab(t)}
-              className={`pb-2 text-[11px] font-bold tracking-wide transition-colors ${
+              className={`pb-2 text-[11px] font-bold tracking-wide transition-colors shrink-0 ${
                 tab === t
                   ? "text-on-surface border-b-2 border-primary -mb-px"
                   : "text-on-surface-variant hover:text-on-surface"
@@ -595,7 +597,7 @@ export default function ExtensionDetailView({ extensionId }) {
         </div>
 
         {/* Body */}
-        <div className="flex gap-8 mt-6">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8 mt-6">
           <div className="flex-1 min-w-0">
             <DetailTabContent extension={extension} tab={tab} />
 
@@ -613,10 +615,10 @@ export default function ExtensionDetailView({ extensionId }) {
             {tab === "DETAILS" && extension.id === "chat-theme" && <ChatThemeGallery />}
           </div>
 
-          <aside className="w-[200px] shrink-0 space-y-5">
+          <aside className="w-full md:w-[200px] shrink-0 space-y-5">
             <div>
               <p className="text-[11px] font-bold text-on-surface mb-2">Marketplace</p>
-              <dl className="space-y-2 text-[11px]">
+              <dl className="grid grid-cols-2 gap-3 md:grid-cols-1 md:space-y-2 md:gap-0 text-[11px]">
                 <div>
                   <dt className="text-on-surface-variant">Identifier</dt>
                   <dd className="text-on-surface font-code-sm break-all">{extension.identifier}</dd>
