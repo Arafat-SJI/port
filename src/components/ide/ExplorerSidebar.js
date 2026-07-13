@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import FileIcon from "@/components/ui/FileIcon";
-import { NAV_ITEMS } from "@/data/portfolio";
 
 function SidebarSection({ title, expanded, onToggle, borderTop = false, children }) {
   return (
@@ -35,11 +34,12 @@ export default function ExplorerSidebar({
   portfolioExpanded,
   onPortfolioToggle,
   onNavClick,
+  navItems,
 }) {
   const [outlineExpanded, setOutlineExpanded] = useState(false);
   const [timelineExpanded, setTimelineExpanded] = useState(false);
 
-  const activeNav = NAV_ITEMS.find((item) => item.href === activeHref) ?? NAV_ITEMS[0];
+  const activeNav = navItems.find((item) => item.href === activeHref) ?? navItems[0];
 
   return (
     <aside className="flex h-full w-full min-h-0 flex-col bg-surface-container-lowest border-r border-border">
@@ -50,7 +50,7 @@ export default function ExplorerSidebar({
           onToggle={onPortfolioToggle}
         >
           <div className="max-h-[min(60vh,28rem)] overflow-y-auto custom-scrollbar">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}

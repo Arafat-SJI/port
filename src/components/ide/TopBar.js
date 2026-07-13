@@ -17,6 +17,7 @@ export default function TopBar({
   drawerMode = false,
   drawerOpen = false,
   onToggleDrawer,
+  tabs,
 }) {
   const sidebarTitle = ACTIVITY_LABELS[activeActivity] ?? ACTIVITY_LABELS.explorer;
   const { isActive, macTrafficLights } = useExtensions();
@@ -61,6 +62,7 @@ export default function TopBar({
         openExtensionTabs={openExtensionTabs}
         onTabSelect={onTabSelect}
         onExtensionTabClose={onExtensionTabClose}
+        tabs={tabs}
       />
       <div
         className="hidden min-[1020px]:flex shrink-0 items-stretch border-l border-border min-w-0"

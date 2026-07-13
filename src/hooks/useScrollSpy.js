@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { NAV_ITEMS } from "@/data/portfolio";
 
 /** Offset used when clicking a nav item / search result to position the section. */
 export const SECTION_SCROLL_MARGIN = 30;
@@ -10,10 +9,10 @@ export const SECTION_SCROLL_MARGIN = 30;
  */
 const SECTION_SPY_OFFSET_PX = 100;
 
-export function useScrollSpy(containerRef, setActiveHref, isProgrammaticScrollRef) {
+export function useScrollSpy(containerRef, setActiveHref, isProgrammaticScrollRef, navItems) {
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || !navItems?.length) return;
 
     let ticking = false;
 
@@ -25,9 +24,9 @@ export function useScrollSpy(containerRef, setActiveHref, isProgrammaticScrollRe
       // Activate when the section header reaches this line (still on-screen).
       const probeY = containerRect.top + SECTION_SPY_OFFSET_PX;
 
-      let active = NAV_ITEMS[0].href;
+      let active = navItems[0].href;
 
-      for (const item of NAV_ITEMS) {
+      for (const item of navItems) {
         const section = container.querySelector(item.href);
         if (!section) continue;
 
@@ -42,7 +41,7 @@ export function useScrollSpy(containerRef, setActiveHref, isProgrammaticScrollRe
       const distanceFromBottom =
         container.scrollHeight - (container.scrollTop + container.clientHeight);
       if (distanceFromBottom <= 2) {
-        active = NAV_ITEMS[NAV_ITEMS.length - 1].href;
+        active = navItems[navItems.length - 1].href;
       }
 
       setActiveHref((prev) => (prev === active ? prev : active));
@@ -63,5 +62,5 @@ export function useScrollSpy(containerRef, setActiveHref, isProgrammaticScrollRe
       container.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", updateActiveSection);
     };
-  }, [containerRef, setActiveHref, isProgrammaticScrollRef]);
+  }, [containerRef, setActiveHref, isProgrammaticScrollRef, navItems]);
 }

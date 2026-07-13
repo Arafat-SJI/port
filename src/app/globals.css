@@ -483,7 +483,8 @@ html[data-ui-theme="macos"][data-mac-variant="aqua-classic"] .active-tab {
 }
 
 /* ── Extension: Vibrancy Glass ── */
-html[data-glass-ui="true"] .bg-surface-container-lowest,
+/* Skip panels that already have an active skin (solid colorful look). */
+html[data-glass-ui="true"] .bg-surface-container-lowest:not([data-chat-skin]):not([data-terminal-skin]),
 html[data-glass-ui="true"] .bg-surface-container-low,
 html[data-glass-ui="true"] .bg-surface-container,
 html[data-glass-ui="true"] .bg-background {
@@ -492,7 +493,8 @@ html[data-glass-ui="true"] .bg-background {
 }
 
 /* ── Extension: Live Animation Theme (subtle see-through panels) ── */
-html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container-lowest {
+/* Skip skinned chat/terminal so Chat Skins / Terminal Skins colors are visible. */
+html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container-lowest:not([data-chat-skin]):not([data-terminal-skin]) {
   background-color: rgb(13 14 18 / 0.82);
 }
 html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container-low {
@@ -504,7 +506,7 @@ html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container {
 html[data-live-animation]:not([data-live-animation=""]) .bg-background {
   background-color: rgb(18 19 23 / 0.72);
 }
-html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container-lowest,
+html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container-lowest:not([data-chat-skin]):not([data-terminal-skin]),
 html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container-low,
 html[data-live-animation]:not([data-live-animation=""]) .bg-surface-container,
 html[data-live-animation]:not([data-live-animation=""]) .bg-background {
@@ -655,63 +657,75 @@ html[data-live-animation]:not([data-live-animation=""]) .bg-background {
 }
 
 /* ── Extension: Chat Skins ── */
+/* Specificity beats theme transparency utilities (.bg-surface-container-*). */
+.chat-panel[data-chat-skin] {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 .chat-panel[data-chat-skin="midnight"] {
-  background: #0f1420;
+  background-color: #0f1420;
   border-color: rgb(147 197 253 / 0.28);
 }
 .chat-panel[data-chat-skin="midnight"] .chat-accent {
   color: #93c5fd;
 }
 .chat-panel[data-chat-skin="midnight"] .chat-send {
-  background: #93c5fd;
+  background-color: #93c5fd;
   color: #0f1420;
 }
 .chat-panel[data-chat-skin="midnight"] .chat-composer {
-  background: rgb(30 41 59 / 0.7);
+  background-color: rgb(30 41 59 / 0.7);
   border-color: rgb(147 197 253 / 0.28);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .chat-panel[data-chat-skin="violet"] {
-  background: #15121c;
+  background-color: #15121c;
   border-color: rgb(196 181 253 / 0.28);
 }
 .chat-panel[data-chat-skin="violet"] .chat-accent {
   color: #c4b5fd;
 }
 .chat-panel[data-chat-skin="violet"] .chat-send {
-  background: #c4b5fd;
+  background-color: #c4b5fd;
   color: #15121c;
 }
 .chat-panel[data-chat-skin="violet"] .chat-composer {
-  background: rgb(46 36 64 / 0.7);
+  background-color: rgb(46 36 64 / 0.7);
   border-color: rgb(196 181 253 / 0.28);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .chat-panel[data-chat-skin="sand"] {
-  background: #17140f;
+  background-color: #17140f;
   border-color: rgb(214 184 145 / 0.28);
 }
 .chat-panel[data-chat-skin="sand"] .chat-accent {
   color: #d6b891;
 }
 .chat-panel[data-chat-skin="sand"] .chat-send {
-  background: #d6b891;
+  background-color: #d6b891;
   color: #17140f;
 }
 .chat-panel[data-chat-skin="sand"] .chat-composer {
-  background: rgb(42 36 28 / 0.7);
+  background-color: rgb(42 36 28 / 0.7);
   border-color: rgb(214 184 145 / 0.28);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .chat-panel[data-chat-skin="shimmer"] {
-  background: #10141c;
+  background-color: #10141c;
   border-color: rgb(165 180 252 / 0.3);
 }
 .chat-panel[data-chat-skin="shimmer"] .chat-accent {
   color: #a5b4fc;
 }
 .chat-panel[data-chat-skin="shimmer"] .chat-send {
-  background: #a5b4fc;
+  background-color: #a5b4fc;
   color: #10141c;
 }
 .chat-panel[data-chat-skin="shimmer"] .chat-live-layer {
@@ -726,14 +740,14 @@ html[data-live-animation]:not([data-live-animation=""]) .bg-background {
 }
 
 .chat-panel[data-chat-skin="ripple"] {
-  background: #0f1614;
+  background-color: #0f1614;
   border-color: rgb(110 231 183 / 0.3);
 }
 .chat-panel[data-chat-skin="ripple"] .chat-accent {
   color: #6ee7b7;
 }
 .chat-panel[data-chat-skin="ripple"] .chat-send {
-  background: #6ee7b7;
+  background-color: #6ee7b7;
   color: #0f1614;
 }
 .chat-panel[data-chat-skin="ripple"] .chat-live-layer {
@@ -742,14 +756,14 @@ html[data-live-animation]:not([data-live-animation=""]) .bg-background {
 }
 
 .chat-panel[data-chat-skin="spark"] {
-  background: #141018;
+  background-color: #141018;
   border-color: rgb(249 168 212 / 0.3);
 }
 .chat-panel[data-chat-skin="spark"] .chat-accent {
   color: #f9a8d4;
 }
 .chat-panel[data-chat-skin="spark"] .chat-send {
-  background: #f9a8d4;
+  background-color: #f9a8d4;
   color: #141018;
 }
 .chat-panel[data-chat-skin="spark"] .chat-live-layer {

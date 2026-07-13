@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import ActivityBar from "@/components/ide/ActivityBar";
 import ActivitySidebar from "@/components/ide/ActivitySidebar";
 import Breadcrumb from "@/components/ide/Breadcrumb";
@@ -20,6 +20,8 @@ import {
 import { SECTION_SCROLL_MARGIN, useScrollSpy } from "@/hooks/useScrollSpy";
 import { useTabStripScroll } from "@/hooks/useTabStripScroll";
 import { useTerminalMessages } from "@/hooks/useTerminalMessages";
+import { useSectionOrder } from "@/hooks/useSectionOrder";
+import { orderNavItems } from "@/lib/sectionOrder";
 import { smoothScrollTo } from "@/lib/smoothScroll";
 import SidebarResizeHandle, {
   useSidebarWidth,
@@ -123,12 +125,15 @@ export default function IDEWorkspace() {
     writeWorkspaceState({ openExtensionTabs, activeTab, activeActivity });
   }, [openExtensionTabs, activeTab, activeActivity, workspaceHydrated]);
 
-  const activeNav = NAV_ITEMS.find((item) => item.href === activeHref) ?? NAV_ITEMS[0];
+  const [order] = useSectionOrder();
+  const navItems = useMemo(() => orderNavItems(NAV_ITEMS, order), [order]);
+
+  const activeNav = navItems.find((item) => item.href === activeHref) ?? navItems[0];
   const activeExtensionId = isExtensionTab(activeTab) ? extensionIdFromTab(activeTab) : null;
   const showExtensionView = isExtensionTab(activeTab);
 
   useTabStripScroll(tabStripRef, activeTab);
-  useScrollSpy(mainRef, setActiveHref, isProgrammaticScrollRef);
+  useScrollSpy(mainRef, setActiveHref, isProgrammaticScrollRef, navItems);
 
   // Keep the top tab strip in sync with scroll-spy (sidebar already uses activeHref).
   useLayoutEffect(() => {
@@ -321,6 +326,7 @@ export default function IDEWorkspace() {
             drawerMode={drawerMode}
             drawerOpen={leftDrawerOpen}
             onToggleDrawer={() => setLeftDrawerOpen((open) => !open)}
+            tabs={navItems}
           />
 
           <div className="relative flex flex-1 min-h-0">
@@ -380,6 +386,7 @@ export default function IDEWorkspace() {
                   onSearchQueryChange={() => setSelectedSearchMatch(null)}
                   selectedExtensionId={sidebarSelectedExtension}
                   onExtensionSelect={handleExtensionSelect}
+                  navItems={navItems}
                 />
               </div>
               {!sidebarsFixed && !drawerMode && (
@@ -407,7 +414,10 @@ export default function IDEWorkspace() {
                   )
                 ) : (
                   <>
-                    <PortfolioContent searchHighlight={selectedSearchMatch} />
+                    <PortfolioContent
+                      searchHighlight={selectedSearchMatch}
+                      sectionOrder={order}
+                    />
                     <SectionSearchTarget
                       sectionHref="#contact"
                       searchHighlight={selectedSearchMatch}

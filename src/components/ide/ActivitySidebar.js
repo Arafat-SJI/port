@@ -15,6 +15,7 @@ export default function ActivitySidebar({
   onSearchQueryChange,
   selectedExtensionId,
   onExtensionSelect,
+  navItems,
 }) {
   switch (activeActivity) {
     case "search":
@@ -44,6 +45,7 @@ export default function ActivitySidebar({
           portfolioExpanded={portfolioExpanded}
           onPortfolioToggle={onPortfolioToggle}
           onNavClick={onNavClick}
+          navItems={navItems}
         />
       );
   }

@@ -1,6 +1,5 @@
 import FileIcon from "@/components/ui/FileIcon";
 import { getExtensionById } from "@/data/extensions";
-import { OPEN_TABS } from "@/data/portfolio";
 
 export default function EditorTabBar({
   tabStripRef,
@@ -8,13 +7,14 @@ export default function EditorTabBar({
   openExtensionTabs,
   onTabSelect,
   onExtensionTabClose,
+  tabs,
 }) {
   return (
     <div
       ref={tabStripRef}
       className="flex flex-1 min-w-0 items-stretch overflow-x-auto scroll-smooth tab-scrollbar"
     >
-      {OPEN_TABS.map((tab) => {
+      {tabs.map((tab) => {
         const isActive = activeTab === tab.href;
         return (
           <button
