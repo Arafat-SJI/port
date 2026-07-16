@@ -18,9 +18,6 @@ export default async function DashboardAboutPage() {
           <h1 className="mt-0.5 text-[20px] font-semibold tracking-tight text-on-surface sm:text-[22px]">
             About.tsx
           </h1>
-          <p className="mt-1 text-[13px] text-on-surface-variant">
-            Edit hero + summary shown on the public portfolio. Saved to Supabase — not localStorage.
-          </p>
         </div>
       </header>
 

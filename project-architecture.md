@@ -2,7 +2,7 @@
 
 > **Mandatory for every Cursor agent session:** Read this entire file before writing or changing any code. After finishing work from a user prompt, update this file so office PC and home PC sessions stay in sync.
 
-**Last updated:** 2026-07-16 (About profile image upload)
+**Last updated:** 2026-07-17 (Hide About dashboard helper blurb)
 
 ---
 
@@ -558,4 +558,11 @@ _(Append new future plans here when the user says “I have a plan…” / “no
 | 2026-07-16 | **Dashboard content width:** Workspace pages `max-w-3xl` → `max-w-5xl`; Settings `max-w-xl` → `max-w-3xl`. |
 | 2026-07-16 | **About profile image:** Hero shows uploaded portrait; dashboard upload to Supabase Storage `portfolio-about` (`about/portrait`); URL on `about.imageUrl`. Migration `004_portfolio_about_image_bucket.sql`. |
 | 2026-07-16 | **Fix — Server Action 1MB upload limit:** Set `experimental.serverActions.bodySizeLimit` to `6mb` in `next.config.mjs` so CV/image uploads work. Restart `next dev` required. |
+| 2026-07-17 | **About hero image ratio:** Landing `HeroSection` portrait aspect from `6/10` → `10/12`. Dashboard upload unchanged. |
+| 2026-07-17 | **About hero mobile align:** Headline + intro always `text-left` (removed mobile `text-center`); text column `w-full` so left align works under `items-center`. |
+| 2026-07-17 | **About hero mobile layout:** Always `flex-row` (text + image side by side). Smaller headline (`text-2xl`→`text-4xl`) and image (`w-24`→`w-40`, `aspect-[10/12]`) only — intro + CTAs unchanged. |
+| 2026-07-17 | **About hero mobile structure:** Headline + image side by side; intro + CTAs full-width block below on small screens. From `md`, image sits beside the whole text column again. |
+| 2026-07-17 | **About hero breakpoint:** Headline+image side-by-side only for `0–500px`; from `501px` image sits beside the full text column (`min-[501px]:` instead of `md:`). |
+| 2026-07-17 | **About hero image ≥501px:** Top-aligned (`items-start` / `self-start`); larger size (`w-44` → `md:w-52`). ≤500px stays `w-24` + vertically centered with headline. |
+| 2026-07-17 | **Dashboard About:** Removed helper blurb under About.tsx title (“Edit hero + summary… Saved to Supabase…”). |
 )

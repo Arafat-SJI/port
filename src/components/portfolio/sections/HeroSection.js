@@ -19,14 +19,38 @@ export default function HeroSection({ content, onNavigateSection }) {
   const hasImage = Boolean(imageUrl?.trim());
 
   return (
-    <section className="text-center md:text-left">
-      <div className="flex flex-col md:flex-row items-center gap-8">
-        <div className="flex-1 space-y-4 min-w-0">
-          <h1 className="text-4xl text-on-surface tracking-tight leading-tight">
-            {headlinePrefix}
-            <span className="text-primary">{headlineHighlight}</span>
-            {headlineSuffix}
-          </h1>
+    <section className="text-left">
+      <div
+        className={
+          hasImage
+            ? "grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 sm:gap-x-6 md:gap-x-8 gap-y-4 items-center min-[501px]:items-start"
+            : "space-y-4"
+        }
+      >
+        <h1 className="min-w-0 text-2xl sm:text-3xl md:text-4xl text-on-surface tracking-tight leading-tight">
+          {headlinePrefix}
+          <span className="text-primary">{headlineHighlight}</span>
+          {headlineSuffix}
+        </h1>
+
+        {hasImage ? (
+          <div className="shrink-0 row-start-1 col-start-2 min-[501px]:row-span-2 self-center min-[501px]:self-start">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl}
+              alt=""
+              className="w-24 min-[501px]:w-40 md:w-44 aspect-[10/12] md:rounded-2xl rounded-md object-cover bg-surface-container-low border border-primary/10 shadow-[0_0_14px_rgb(173_198_255/0.22)]"
+            />
+          </div>
+        ) : null}
+
+        <div
+          className={
+            hasImage
+              ? "col-span-2 min-[501px]:col-span-1 space-y-4 min-w-0"
+              : "space-y-4"
+          }
+        >
           <p className="text-base text-on-surface-variant max-w-xl leading-relaxed">
             {segments.map((seg, i) =>
               seg.type === "bold" ? (
@@ -38,7 +62,7 @@ export default function HeroSection({ content, onNavigateSection }) {
               )
             )}
           </p>
-          <div className="flex flex-wrap gap-3 pt-2 justify-center md:justify-start">
+          <div className="flex flex-wrap gap-3 pt-2 justify-start">
             <button
               type="button"
               onClick={() => onNavigateSection?.("#projects")}
@@ -67,17 +91,6 @@ export default function HeroSection({ content, onNavigateSection }) {
             )}
           </div>
         </div>
-
-        {hasImage ? (
-          <div className="shrink-0 order-first md:order-none">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imageUrl}
-              alt=""
-              className="w-36 sm:w-44 aspect-[6/10] rounded-2xl object-cover bg-surface-container-low border border-primary/30 shadow-[0_0_14px_rgb(173_198_255/0.22)]"
-            />
-          </div>
-        ) : null}
       </div>
     </section>
   );
