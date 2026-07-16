@@ -9,21 +9,24 @@ export default async function DashboardSectionPage({ params }) {
 
   if (RESERVED.has(section)) notFound();
 
+  // About has a dedicated editor at /dashboard-araf/about
+  if (section === "about") notFound();
+
   const item = getDashboardNavItem(section);
 
   if (!item) notFound();
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-8">
-      <header className="mb-8 flex items-start gap-3">
-        <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-lg bg-surface-container-low">
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+      <header className="mb-6 flex items-start gap-3 sm:mb-8">
+        <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-container-low">
           <FileIcon ext={item.ext} size={18} />
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="font-label-mono text-[11px] uppercase tracking-[0.16em] text-on-surface-variant">
             Section
           </p>
-          <h1 className="mt-0.5 text-[22px] font-semibold tracking-tight text-on-surface">
+          <h1 className="mt-0.5 text-[20px] font-semibold tracking-tight text-on-surface sm:text-[22px]">
             {item.label}
           </h1>
           <p className="mt-1 text-[13px] text-on-surface-variant">
@@ -33,7 +36,7 @@ export default async function DashboardSectionPage({ params }) {
         </div>
       </header>
 
-      <section className="rounded-xl bg-surface-container-lowest/80 px-5 py-10 text-center">
+      <section className="rounded-xl bg-surface-container-lowest/80 px-4 py-8 text-center sm:px-5 sm:py-10">
         <span className="material-symbols-outlined mb-3 text-[32px] text-primary/70">edit_note</span>
         <p className="text-[14px] font-medium text-on-surface">Placeholder editor</p>
         <p className="mx-auto mt-1 max-w-sm text-[12px] leading-relaxed text-on-surface-variant">

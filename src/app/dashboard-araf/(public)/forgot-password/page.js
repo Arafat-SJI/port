@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
           <p className="font-label-mono text-[11px] uppercase tracking-[0.18em] text-on-surface-variant">
             arafat.workspace
           </p>
-          <h1 className="mt-1 text-[22px] font-semibold tracking-tight text-on-surface">
+          <h1 className="mt-1 text-[20px] font-semibold tracking-tight text-on-surface sm:text-[22px]">
             Reset password
           </h1>
           <p className="mt-1 text-[13px] text-on-surface-variant">

@@ -1,16 +1,14 @@
-"use client";
+import HomeClient from "@/components/HomeClient";
+import { readAboutContentFromSupabase } from "@/lib/aboutContentServer";
+import { readSectionOrderFromSupabase } from "@/lib/sectionOrderServer";
 
-import IDEWorkspace from "@/components/ide/IDEWorkspace";
-import LiveAnimationBackground from "@/components/ui/LiveAnimationBackground";
-import ShaderBackground from "@/components/ui/ShaderBackground";
-import { ExtensionsProvider } from "@/hooks/useExtensions";
+/** Always read shared portfolio data from Supabase so first paint matches dashboard. */
+export const dynamic = "force-dynamic";
 
-export default function Home() {
-  return (
-    <ExtensionsProvider>
-      <ShaderBackground />
-      <LiveAnimationBackground />
-      <IDEWorkspace />
-    </ExtensionsProvider>
-  );
+export default async function Home() {
+  const [sectionOrder, aboutContent] = await Promise.all([
+    readSectionOrderFromSupabase(),
+    readAboutContentFromSupabase(),
+  ]);
+  return <HomeClient sectionOrder={sectionOrder} aboutContent={aboutContent} />;
 }

@@ -11,7 +11,7 @@ const verifyInitial = { error: null, verified: false };
 const changeInitial = { error: null, success: false, message: null };
 
 const fieldClass =
-  "h-10 rounded-lg border-0 bg-surface-container-low px-3 text-[13px] text-on-surface outline-none placeholder:text-on-surface-variant/45 focus:ring-1 focus:ring-primary/40 transition-shadow disabled:opacity-70";
+  "h-10 w-full rounded-lg border-0 bg-surface-container-low px-3 text-[13px] text-on-surface outline-none placeholder:text-on-surface-variant/45 focus:ring-1 focus:ring-primary/40 transition-shadow disabled:opacity-70";
 
 export default function DashboardSettingsPage() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -56,15 +56,15 @@ export default function DashboardSettingsPage() {
     !changing;
 
   return (
-    <main className="mx-auto w-full max-w-xl px-6 py-8">
-      <header className="mb-8">
+    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+      <header className="mb-6 sm:mb-8">
         <div className="flex items-center gap-2.5">
           <span className="material-symbols-outlined text-[22px] text-primary">settings</span>
           <div>
             <p className="font-label-mono text-[11px] uppercase tracking-[0.16em] text-on-surface-variant">
               System
             </p>
-            <h1 className="text-[22px] font-semibold tracking-tight text-on-surface">Settings</h1>
+            <h1 className="text-[20px] font-semibold tracking-tight text-on-surface sm:text-[22px]">Settings</h1>
           </div>
         </div>
         <p className="mt-2 text-[13px] text-on-surface-variant">
@@ -72,7 +72,7 @@ export default function DashboardSettingsPage() {
         </p>
       </header>
 
-      <section className="rounded-xl bg-surface-container-lowest/90 p-5">
+      <section className="rounded-xl bg-surface-container-lowest/90 p-4 sm:p-5">
         <div className="mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px] text-secondary">lock_reset</span>
           <h2 className="text-[15px] font-medium text-on-surface">Password reset</h2>

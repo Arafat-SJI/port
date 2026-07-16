@@ -24,10 +24,15 @@ function DropGap({ active }) {
   );
 }
 
-export default function DashboardSidebar({ email }) {
+export default function DashboardSidebar({
+  email,
+  initialSectionOrder,
+  mobileOpen = false,
+  onClose,
+}) {
   const pathname = usePathname();
   const settingsActive = pathname === "/dashboard-araf/settings";
-  const [order, setAndBroadcast] = useSectionOrder();
+  const [order, setAndBroadcast] = useSectionOrder(initialSectionOrder);
   const [dragSlug, setDragSlug] = useState(null);
   const [dropIndex, setDropIndex] = useState(null);
   const dragSlugRef = useRef(null);
@@ -66,7 +71,6 @@ export default function DashboardSidebar({ email }) {
 
       const rect = element.getBoundingClientRect();
       const after = clientY > rect.top + rect.height / 2;
-      // Visual slot in the current list (0 = before first, length = after last).
       const slot = after ? target + 1 : target;
       setDropIndex((prev) => (prev === slot ? prev : slot));
     },
@@ -129,8 +133,9 @@ export default function DashboardSidebar({ email }) {
       >
         <Link
           href={item.href}
-          className="absolute inset-0 z-[1]"
+          className="absolute inset-0 z-[1] cursor-pointer"
           aria-label={item.label}
+          onClick={() => onClose?.()}
         />
         <span className="relative z-[2] pointer-events-none flex min-w-0 flex-1 items-center gap-1.5">
           <FileIcon ext={item.ext} size={15} />
@@ -153,7 +158,7 @@ export default function DashboardSidebar({ email }) {
               }
             }}
             onDragEnd={clearDrag}
-            className="relative z-[3] ml-auto flex shrink-0 cursor-grab items-center text-on-surface-variant/70 active:cursor-grabbing"
+            className="relative z-[3] ml-auto hidden shrink-0 cursor-grab items-center text-on-surface-variant/70 active:cursor-grabbing sm:flex"
           >
             <span className="material-symbols-outlined !text-[14px] leading-none">menu</span>
           </button>
@@ -165,15 +170,27 @@ export default function DashboardSidebar({ email }) {
   const isGapActive = (slot) => dragSlug !== null && dropIndex === slot;
 
   return (
-    <aside className="flex h-full w-[248px] shrink-0 flex-col border-r border-border bg-surface-container-lowest">
+    <aside
+      className={`fixed inset-y-0 left-0 z-50 flex h-full w-[min(248px,85vw)] shrink-0 flex-col border-r border-border bg-surface-container-lowest transition-transform duration-200 ease-out md:relative md:inset-auto md:z-auto md:w-[248px] md:translate-x-0 md:shadow-none ${
+        mobileOpen ? "translate-x-0 shadow-xl" : "-translate-x-full md:translate-x-0"
+      }`}
+    >
       <div className="flex h-11 items-center gap-2 px-3">
         <span className="material-symbols-outlined text-[18px] text-primary">terminal</span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate font-label-mono text-[10px] uppercase tracking-[0.14em] text-on-surface-variant">
             arafat.workspace
           </p>
           <p className="truncate text-[11px] text-on-surface/80">dashboard-araf</p>
         </div>
+        <button
+          type="button"
+          onClick={() => onClose?.()}
+          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-on-surface-variant transition hover:bg-surface-container-low hover:text-on-surface md:hidden"
+          aria-label="Close menu"
+        >
+          <span className="material-symbols-outlined !text-[20px]">close</span>
+        </button>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-2">
@@ -207,7 +224,8 @@ export default function DashboardSidebar({ email }) {
           </p>
           <Link
             href="/dashboard-araf/settings"
-            className={`flex items-center gap-1.5 px-3 py-[6px] text-[12px] transition-colors ${
+            onClick={() => onClose?.()}
+            className={`flex cursor-pointer items-center gap-1.5 px-3 py-[6px] text-[12px] transition-colors ${
               settingsActive
                 ? "active-tab bg-primary/10 text-secondary"
                 : "text-on-surface-text opacity-75 hover:bg-surface-container-hover-low hover:text-on-surface-variant-hover hover:opacity-100"
@@ -226,7 +244,7 @@ export default function DashboardSidebar({ email }) {
         <form action={logoutAction}>
           <button
             type="submit"
-            className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-surface-container-low text-[11px] text-on-surface-variant transition hover:bg-surface-container hover:text-on-surface"
+            className="inline-flex h-8 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-surface-container-low text-[11px] text-on-surface-variant transition hover:bg-surface-container hover:text-on-surface"
           >
             <span className="material-symbols-outlined text-[14px]">logout</span>
             Sign out

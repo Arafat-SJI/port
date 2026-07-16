@@ -11,11 +11,14 @@ import {
   PUBLICATIONS,
   SKILLS,
 } from "@/data/portfolio";
+import { aboutSearchLines } from "@/lib/aboutContent";
 
-function linesForHref(href) {
+function linesForHref(href, aboutContent) {
   switch (href) {
     case "#about":
-      return [ABOUT.summary, ...ABOUT.interests.map((i) => `interest: ${i}`)];
+      return aboutContent
+        ? aboutSearchLines(aboutContent)
+        : [ABOUT.summary, ...ABOUT.interests.map((i) => `interest: ${i}`)];
     case "#experience":
       return EXPERIENCE.flatMap((e) => [e.role, e.company, e.description]);
     case "#skills":
@@ -41,11 +44,15 @@ function linesForHref(href) {
   }
 }
 
-export const SEARCH_INDEX = NAV_ITEMS.map((item) => ({
-  ...item,
-  path: `portfolio/src/sections/${item.label}`,
-  lines: linesForHref(item.href),
-}));
+export function buildSearchIndex(aboutContent) {
+  return NAV_ITEMS.map((item) => ({
+    ...item,
+    path: `portfolio/src/sections/${item.label}`,
+    lines: linesForHref(item.href, aboutContent),
+  }));
+}
+
+export const SEARCH_INDEX = buildSearchIndex();
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -70,21 +77,23 @@ export function buildSearchMatcher(query, options) {
   return buildMatcher(query.trim(), options);
 }
 
-export function searchPortfolio(query, options) {
+export function searchPortfolio(query, options, aboutContent) {
   const matcher = buildMatcher(query.trim(), options);
   if (!matcher) return [];
 
-  return SEARCH_INDEX.flatMap((file) => {
+  const index = aboutContent ? buildSearchIndex(aboutContent) : SEARCH_INDEX;
+
+  return index.flatMap((file) => {
     const matches = [];
 
     if (matcher.test(file.label)) {
       matches.push({ line: 1, text: file.label, column: 0 });
     }
 
-    file.lines.forEach((text, index) => {
+    file.lines.forEach((text, lineIndex) => {
       const match = matcher.exec(text);
       if (match) {
-        matches.push({ line: index + 2, text, column: match.index });
+        matches.push({ line: lineIndex + 2, text, column: match.index });
       }
     });
 

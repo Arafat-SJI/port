@@ -8,7 +8,7 @@ import PasswordField from "@/components/dashboard/PasswordField";
 const initialState = { error: null };
 
 const fieldClass =
-  "h-11 rounded-lg border border-border bg-surface-container-lowest/90 px-3.5 text-[13px] text-on-surface outline-none placeholder:text-on-surface-variant/45 focus:border-primary/55 focus:shadow-[0_0_0_3px_rgb(173_198_255/0.12)] transition-all";
+  "w-full h-11 rounded-lg border border-border bg-surface-container-lowest/90 px-3.5 text-[13px] text-on-surface outline-none placeholder:text-on-surface-variant/45 focus:border-primary/55 focus:shadow-[0_0_0_3px_rgb(173_198_255/0.12)] transition-all";
 
 export default function DashboardLoginPage() {
   const [state, formAction, pending] = useActionState(loginAction, initialState);
@@ -42,7 +42,7 @@ export default function DashboardLoginPage() {
             <p className="font-label-mono text-[11px] uppercase tracking-[0.18em] text-on-surface-variant">
               arafat.workspace
             </p>
-            <h1 className="text-[22px] font-semibold tracking-tight text-on-surface">
+            <h1 className="text-[20px] font-semibold tracking-tight text-on-surface sm:text-[22px]">
               Dashboard login
             </h1>
           </div>

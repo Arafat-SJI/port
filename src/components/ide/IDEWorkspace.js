@@ -40,7 +40,10 @@ function extensionIdFromTab(tab) {
   return tab.replace("extension:", "");
 }
 
-export default function IDEWorkspace() {
+export default function IDEWorkspace({
+  sectionOrder: initialSectionOrder,
+  aboutContent,
+} = {}) {
   const mainRef = useRef(null);
   const contactTrackRef = useRef(null);
   const tabStripRef = useRef(null);
@@ -125,7 +128,7 @@ export default function IDEWorkspace() {
     writeWorkspaceState({ openExtensionTabs, activeTab, activeActivity });
   }, [openExtensionTabs, activeTab, activeActivity, workspaceHydrated]);
 
-  const [order] = useSectionOrder();
+  const [order] = useSectionOrder(initialSectionOrder);
   const navItems = useMemo(() => orderNavItems(NAV_ITEMS, order), [order]);
 
   const activeNav = navItems.find((item) => item.href === activeHref) ?? navItems[0];
@@ -387,6 +390,7 @@ export default function IDEWorkspace() {
                   selectedExtensionId={sidebarSelectedExtension}
                   onExtensionSelect={handleExtensionSelect}
                   navItems={navItems}
+                  aboutContent={aboutContent}
                 />
               </div>
               {!sidebarsFixed && !drawerMode && (
@@ -417,6 +421,8 @@ export default function IDEWorkspace() {
                     <PortfolioContent
                       searchHighlight={selectedSearchMatch}
                       sectionOrder={order}
+                      aboutContent={aboutContent}
+                      onNavigateSection={navigateToSection}
                     />
                     <SectionSearchTarget
                       sectionHref="#contact"

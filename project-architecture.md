@@ -2,7 +2,7 @@
 
 > **Mandatory for every Cursor agent session:** Read this entire file before writing or changing any code. After finishing work from a user prompt, update this file so office PC and home PC sessions stay in sync.
 
-**Last updated:** 2026-07-14 (storage policy: dashboard → Supabase; IDE chrome → localStorage)
+**Last updated:** 2026-07-16 (About profile image upload)
 
 ---
 
@@ -100,7 +100,7 @@ d:\port\
 └── src/
     ├── app/
     │   ├── layout.js              # Root layout, fonts, metadata, ThemeBootScript
-    │   ├── page.js                # Single home page (client)
+    │   ├── page.js                # Server home — fetches section order, renders HomeClient
     │   ├── globals.css            # Tailwind + design tokens + all theme variants
     │   ├── favicon.ico
     │   ├── icon.png
@@ -138,12 +138,16 @@ d:\port\
 - `html` defaults: `data-ui-theme="default"`, `data-font-pack="inter"`, `suppressHydrationWarning`
 - Renders `ThemeBootScript` + children
 
-#### `src/app/page.js` (client)
+#### `src/app/page.js` (server)
+- Fetches `sectionOrder` + `aboutContent` from Supabase (`force-dynamic`).
+- Renders client `HomeClient` so Explorer / tabs / About match DB on first paint.
+
+#### `src/components/HomeClient.js` (client)
 ```
 ExtensionsProvider
   ├── ShaderBackground          (canvas/WebGL when extension theme needs it)
   ├── LiveAnimationBackground   (ambient canvas when live-animation active)
-  └── IDEWorkspace              (main IDE shell)
+  └── IDEWorkspace              (sectionOrder + aboutContent)
 ```
 
 ---
@@ -234,7 +238,7 @@ Activities from `ACTIVITY_ITEMS` in `portfolio.js`:
 
 | Hash / “file” | Label (explorer) | Component | Data export | Status |
 |---------------|------------------|-----------|-------------|--------|
-| `#about` | About.tsx | `HeroSection` + `AboutSection` | `ABOUT` (+ hero copy in component/data usage) | Demo content; layout not final for real data |
+| `#about` | About.tsx | `HeroSection` + `AboutSection` | Supabase `portfolio_settings` key `about` | **Dynamic** — edited at `/dashboard-araf/about` |
 | `#experience` | Experience.json | `ExperienceSection` | `EXPERIENCE` | Demo content |
 | `#skills` | Skills.ts | `SkillsSection` | `SKILLS` | Demo content |
 | `#projects` | Projects.tsx | `ProjectsSection` | `PROJECTS` | Demo content |
@@ -347,6 +351,7 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 | Hook | File | Role |
 |------|------|------|
 | `ExtensionsProvider` / `useExtensions` | `useExtensions.js` | Install/activate/state for all extensions |
+| `useSectionOrder` | `useSectionOrder.js` | Section order state; prefers SSR `initialOrder` from Supabase (skips client fetch to avoid flash); same-tab `CustomEvent` sync |
 | `useScrollSpy` | `useScrollSpy.js` | Sync active section from main scroll |
 | `useTabStripScroll` | `useTabStripScroll.js` | Keep active tab visible in tab strip |
 | `useTerminalMessages` | `useTerminalMessages.js` | Rotating terminal/status messages; reacts to change count |
@@ -357,6 +362,8 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 
 | Module | Role |
 |--------|------|
+| `aboutContent.js` | Normalize About payload; defaults; search lines |
+| `aboutContentServer.js` | Read/write About in Supabase `portfolio_settings` |
 | `extensionStorage.js` | Read/write extension + workspace localStorage; apply DOM attributes |
 | `sidebarPrefs.js` | Breakpoints, layouts, width persistence, prefs-changed event |
 | `sourceControl.js` | Preference change detection & discard |
@@ -407,6 +414,7 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 - **Settings** item in sidebar → password reset (current + new + confirm). Updates Supabase Auth only — **never** AI JSON.
 - Aesthetic IDE-themed login (window chrome, soft primary/secondary glows, portfolio tokens).
 - Dashboard explorer items (except `Contact.sh`) support **drag-reorder** via a 3-bar grip on the right; order is stored in Supabase `portfolio_settings` (`key = section_order`), syncs to landing **Explorer**, **top tabs**, and **portfolio content**. Contact stays fixed last. Same-tab `CustomEvent` only (no localStorage for order).
+- **About content (live):** `/dashboard-araf/about` editor (`AboutEditor`) writes hero + summary/interests to `portfolio_settings` (`key = about`). Public `/` SSR-loads it into `HeroSection` / `AboutSection`. Helpers: `src/lib/aboutContent.js`, `aboutContentServer.js`, `aboutActions.js`. Migration seed: `supabase/migrations/002_about_content.sql`. Fallback defaults only if row missing.
 - `src/lib/sectionOrder.js` / `sectionOrderServer.js`, `src/hooks/useSectionOrder.js`, `GET /api/section-order`, `saveSectionOrderAction`
 - Migration SQL: `supabase/migrations/001_portfolio_settings.sql` (must be run once in Supabase SQL Editor). Fallback defaults only: `src/data/sectionOrder.json`.
 
@@ -417,17 +425,21 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 - `src/lib/supabase/admin.js` — service-role client (server-only)
 - `src/proxy.js` — Next.js 16 proxy; guards dashboard; allows login + forgot-password without session
 - `src/data/dashboard.js` — `DASHBOARD_NAV` slugs/hrefs/labels/exts
-- `src/components/dashboard/PasswordField.js` — password input with visibility eye toggle
-- `src/components/dashboard/DashboardSidebar.js`
+- `src/components/dashboard/DashboardShell.js` — responsive workspace shell: mobile top bar + drawer overlay (&lt; `md`), desktop persistent sidebar
+- `src/components/dashboard/DashboardSidebar.js` — explorer + drag-reorder (grip hidden on very small screens); closes drawer on navigate
+- `src/components/dashboard/AboutEditor.js` — About form UI
 - `src/components/dashboard/PasswordField.js` — password input with show/hide eye toggle
 - `src/app/dashboard-araf/layout.js` — root shell + noindex
 - `src/app/dashboard-araf/(public)/login/page.js` — login + stealth `b` link
 - `src/app/dashboard-araf/(public)/forgot-password/page.js` — email reset request
 - `src/app/dashboard-araf/(workspace)/layout.js` — sidebar + main pane
 - `src/app/dashboard-araf/(workspace)/page.js` — content overview grid
-- `src/app/dashboard-araf/(workspace)/[section]/page.js` — section placeholders
+- `src/app/dashboard-araf/(workspace)/about/page.js` — **About CRUD editor** (hero + summary/interests)
+- `src/app/dashboard-araf/(workspace)/[section]/page.js` — placeholders for other sections (about excluded)
 - `src/app/dashboard-araf/(workspace)/settings/page.js` — password change accordion: verify current first, then expand new + confirm
 - `src/app/dashboard-araf/actions.js` — `loginAction`, `logoutAction`, `forgotPasswordAction`, `verifyCurrentPasswordAction`, `changePasswordAction` (no register)
+- `src/app/dashboard-araf/aboutActions.js` — `saveAboutContentAction`
+- `src/components/dashboard/AboutEditor.js` — About form UI
 
 **Auth user:** Initial owner account created in Supabase Auth (email confirmed). Password is **not** stored in the repo or this doc.
 
@@ -437,12 +449,12 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 
 ### 2.16 What is intentionally NOT built yet
 
-- No portfolio content CRUD forms yet (section pages are placeholders)
-- No dynamic content loading for portfolio sections
+- No CRUD yet for sections other than **About** (Experience…Contact still placeholders)
 - No auto-updating AI knowledge JSON from a dashboard
 - No real AI chat answers (chat is UI shell)
-- No public API routes for content
-- Middle sections still use demo static data / may get per-section design passes before dashboard wiring
+- No public API routes for content (About is SSR-read from Supabase)
+- Remaining middle sections still use demo static data
+- Hero CTAs: primary scrolls to Projects; secondary opens CV PDF in a new tab when uploaded (dashboard upload → Supabase Storage `portfolio-cv`)
 
 ---
 
@@ -496,16 +508,16 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 
 | # | Item | Status |
 |---|------|--------|
-| 1 | Per-section: replace demo data with real content + optional design pass | **Waiting** — start when user provides a section |
-| 2 | After each section confirmed: add dashboard CRUD fields for that section | Waiting |
+| 1 | Per-section: replace demo data with real content + optional design pass | **In progress** — About dynamic; other sections waiting |
+| 2 | After each section confirmed: add dashboard CRUD fields for that section | **Partial** — About done; others waiting |
 | 3 | Create `/dashboard-araf` app route + auth/flow | **Done** (2026-07-14) — login only, no register, no landing links |
 | 4 | Integrate Supabase Auth client + proxy guard | **Done** (2026-07-14) |
 | 4b | Section order in Supabase (`portfolio_settings`) | **Done** (2026-07-14) — run migration SQL once if table missing |
-| 4c | Per-section content tables + dashboard CRUD | Waiting |
-| 5 | Wire portfolio page to load dynamic content (IDE chrome unchanged) | Waiting |
+| 4c | Per-section content tables + dashboard CRUD | **Partial** — About in `portfolio_settings` key `about`; other sections waiting |
+| 5 | Wire portfolio page to load dynamic content (IDE chrome unchanged) | **Partial** — About + section order SSR; other sections still static |
 | 6 | Auto-generate/update project JSON from dashboard data for AI chat | Waiting — **exclude auth credentials; include password-question refusal text** |
 | 7 | Wire ChatPanel to real AI answers using that JSON | Waiting |
-| 8 | Ensure zero static “about me” content remains in site data modules | Waiting |
+| 8 | Ensure zero static “about me” content remains in site data modules | **Partial** — About live from DB; `ABOUT` in `portfolio.js` remains fallback defaults only |
 | 9 | Dashboard password-change UI (Supabase Auth only; never writes to AI JSON) | **Done** (2026-07-14) — Settings + forgot-password email flow |
 
 ### 3.3 Plans shared later
@@ -536,4 +548,14 @@ _(Append new future plans here when the user says “I have a plan…” / “no
 | 2026-07-14 | Smoother section drag UX: empty drop gap between items (no border); softer dragged-row feedback. |
 | 2026-07-14 | **Storage rule:** IDE/layout prefs stay in localStorage; dashboard-managed data (section order first) lives in Supabase. App reads/writes `portfolio_settings`; removed localStorage for section order. Migration: `supabase/migrations/001_portfolio_settings.sql`. |
 | 2026-07-14 | **Docs:** Clarified Part 1 rule 12 + new §2.0 — Extensions / Search / Source Control (and other IDE design prefs) stay localStorage; **everything dashboard-related** stays on Supabase. |
+| 2026-07-16 | **Bug fix — login email narrower than password:** Email input on `/dashboard-araf/login` lacked `w-full` (PasswordField already had it). Added `w-full` to shared `fieldClass`. |
+| 2026-07-16 | **Fix — section order flash on reload:** `/` is now a server page that reads order from Supabase and passes it into `HomeClient` → `IDEWorkspace` → `useSectionOrder(initialOrder)`. Dashboard workspace layout also seeds sidebar. Client fetch skipped when SSR seed present so Explorer/tabs/content don’t briefly show default order. |
+| 2026-07-16 | **About section dynamic:** Dashboard `/dashboard-araf/about` edits hero + summary/interests → Supabase `portfolio_settings.about`. Public `/` SSR-loads into `HeroSection`/`AboutSection`. Search index uses live About text. Seed migration `002_about_content.sql` (also seeded via service role). Other sections unchanged. |
+| 2026-07-16 | **About intro UX:** Replaced separate Name + Tagline fields with one **Intro** field. Bold via select-then-“Bold selection” (or `**text**` markup). Legacy name/tagline still migrate into intro on read. |
+| 2026-07-16 | **About intro editor:** Contenteditable shows real bold (no visible `**`). Storage still uses `**markup**` under the hood. |
+| 2026-07-16 | **About CTAs:** Primary button scrolls to `#projects`. Secondary opens uploaded CV PDF in a new tab. Dashboard uploads PDF to Supabase Storage bucket `portfolio-cv`; URL stored on `about.cvUrl`. Migration `003_portfolio_cv_bucket.sql`. |
+| 2026-07-16 | **Dashboard responsive:** `DashboardShell` mobile hamburger + slide-over sidebar (&lt; md); desktop keeps fixed explorer. Page paddings/typography scale down on small screens. |
+| 2026-07-16 | **Dashboard content width:** Workspace pages `max-w-3xl` → `max-w-5xl`; Settings `max-w-xl` → `max-w-3xl`. |
+| 2026-07-16 | **About profile image:** Hero shows uploaded portrait; dashboard upload to Supabase Storage `portfolio-about` (`about/portrait`); URL on `about.imageUrl`. Migration `004_portfolio_about_image_bucket.sql`. |
+| 2026-07-16 | **Fix — Server Action 1MB upload limit:** Set `experimental.serverActions.bodySizeLimit` to `6mb` in `next.config.mjs` so CV/image uploads work. Restart `next dev` required. |
 )

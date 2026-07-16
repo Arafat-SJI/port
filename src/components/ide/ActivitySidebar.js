@@ -16,6 +16,7 @@ export default function ActivitySidebar({
   selectedExtensionId,
   onExtensionSelect,
   navItems,
+  aboutContent,
 }) {
   switch (activeActivity) {
     case "search":
@@ -24,6 +25,7 @@ export default function ActivitySidebar({
           selectedSearchMatch={selectedSearchMatch}
           onSearchResultClick={onSearchResultClick}
           onSearchQueryChange={onSearchQueryChange}
+          aboutContent={aboutContent}
         />
       );
     case "source-control":
