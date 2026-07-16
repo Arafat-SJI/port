@@ -1,5 +1,16 @@
 import { ABOUT } from "@/data/portfolio";
 
+/** Public portfolio visibility for About sub-blocks (dashboard toggles). Default: all shown. */
+export const DEFAULT_ABOUT_VISIBILITY = {
+  image: true,
+  headline: true,
+  intro: true,
+  primaryCta: true,
+  secondaryCta: true,
+  summary: true,
+  interests: true,
+};
+
 /** Fallback when Supabase has no `about` row yet. */
 export const DEFAULT_ABOUT_CONTENT = {
   headlinePrefix: "Crafting digital ",
@@ -15,7 +26,29 @@ export const DEFAULT_ABOUT_CONTENT = {
   imageUrl: "",
   summary: ABOUT.summary,
   interests: [...ABOUT.interests],
+  visibility: { ...DEFAULT_ABOUT_VISIBILITY },
 };
+
+export function normalizeAboutVisibility(input) {
+  let raw = input;
+  if (typeof raw === "string") {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      raw = {};
+    }
+  }
+  const v = raw && typeof raw === "object" ? raw : {};
+  return {
+    image: v.image !== false,
+    headline: v.headline !== false,
+    intro: v.intro !== false,
+    primaryCta: v.primaryCta !== false,
+    secondaryCta: v.secondaryCta !== false,
+    summary: v.summary !== false,
+    interests: v.interests !== false,
+  };
+}
 
 export const ABOUT_SETTINGS_KEY = "about";
 export const CV_STORAGE_BUCKET = "portfolio-cv";
@@ -157,16 +190,24 @@ export function normalizeAboutContent(input) {
     imageUrl,
     summary: String(raw.summary ?? DEFAULT_ABOUT_CONTENT.summary),
     interests: interests.length ? interests : [...DEFAULT_ABOUT_CONTENT.interests],
+    visibility: normalizeAboutVisibility(raw.visibility),
   };
 }
 
-/** Lines used by portfolio search for #about. */
+/** Lines used by portfolio search for #about (skips hidden blocks). */
 export function aboutSearchLines(content) {
   const about = normalizeAboutContent(content);
-  return [
-    `${about.headlinePrefix}${about.headlineHighlight}${about.headlineSuffix}`,
-    stripIntroMarkup(about.intro),
-    about.summary,
-    ...about.interests.map((i) => `interest: ${i}`),
-  ];
+  const { visibility: vis } = about;
+  const lines = [];
+  if (vis.headline) {
+    lines.push(
+      `${about.headlinePrefix}${about.headlineHighlight}${about.headlineSuffix}`
+    );
+  }
+  if (vis.intro) lines.push(stripIntroMarkup(about.intro));
+  if (vis.summary) lines.push(about.summary);
+  if (vis.interests) {
+    lines.push(...about.interests.map((i) => `interest: ${i}`));
+  }
+  return lines;
 }

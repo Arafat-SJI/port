@@ -2,7 +2,7 @@
 
 > **Mandatory for every Cursor agent session:** Read this entire file before writing or changing any code. After finishing work from a user prompt, update this file so office PC and home PC sessions stay in sync.
 
-**Last updated:** 2026-07-17 (Hide About dashboard helper blurb)
+**Last updated:** 2026-07-17 (Experience editor: work mode, date pickers, visibility)
 
 ---
 
@@ -125,7 +125,7 @@ d:\port\
 | `/dashboard-araf` | Protected admin home (auth required) |
 | `/dashboard-araf/login` | Email/password login only — **no registration UI** |
 
-**API:** `GET /api/section-order` (public read of Supabase `portfolio_settings.section_order`). Auth uses Server Actions + Supabase Auth cookies via `src/proxy.js`.
+**API:** `GET /api/section-order` (public read of Supabase `portfolio_settings.section_order`). `GET /api/ai-knowledge` (public read of cached AI knowledge). Auth uses Server Actions + Supabase Auth cookies via `src/proxy.js`.
 
 ---
 
@@ -238,8 +238,8 @@ Activities from `ACTIVITY_ITEMS` in `portfolio.js`:
 
 | Hash / “file” | Label (explorer) | Component | Data export | Status |
 |---------------|------------------|-----------|-------------|--------|
-| `#about` | About.tsx | `HeroSection` + `AboutSection` | Supabase `portfolio_settings` key `about` | **Dynamic** — edited at `/dashboard-araf/about` |
-| `#experience` | Experience.json | `ExperienceSection` | `EXPERIENCE` | Demo content |
+| `#about` | About.tsx | `HeroSection` + `AboutSection` | Supabase `portfolio_settings` key `about` (+ `visibility` toggles) | **Dynamic** — edited at `/dashboard-araf/about` |
+| `#experience` | Experience.json | `ExperienceSection` | Supabase `portfolio_settings` key `experience` | **Dynamic** — edited at `/dashboard-araf/experience` |
 | `#skills` | Skills.ts | `SkillsSection` | `SKILLS` | Demo content |
 | `#projects` | Projects.tsx | `ProjectsSection` | `PROJECTS` | Demo content |
 | `#education` | Education.json | `EducationSection` | `EDUCATION` | Demo content |
@@ -362,8 +362,10 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 
 | Module | Role |
 |--------|------|
-| `aboutContent.js` | Normalize About payload; defaults; search lines |
-| `aboutContentServer.js` | Read/write About in Supabase `portfolio_settings` |
+| `experienceContent.js` | Normalize Experience payload; defaults; search/AI helpers |
+| `experienceContentServer.js` | Read/write Experience in Supabase `portfolio_settings`; triggers AI knowledge sync |
+| `aiKnowledge.js` | Build AI chat knowledge payload + security refusal constants (no auth fields) |
+| `aiKnowledgeServer.js` | Sync/read `portfolio_settings.ai_knowledge`; optional local JSON mirror |
 | `extensionStorage.js` | Read/write extension + workspace localStorage; apply DOM attributes |
 | `sidebarPrefs.js` | Breakpoints, layouts, width persistence, prefs-changed event |
 | `sourceControl.js` | Preference change detection & discard |
@@ -411,10 +413,11 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 
 **UI / structure:**
 - Left **explorer-style sidebar** (`DashboardSidebar`) listing the same “files” as portfolio nav (`About.tsx` … `Contact.sh`) via `src/data/dashboard.js` + `FileIcon`.
-- **Settings** item in sidebar → password reset (current + new + confirm). Updates Supabase Auth only — **never** AI JSON.
+- **Settings** item in sidebar → opens a second left **Settings** sidebar (smooth width slide on desktop). Items: **Change email**, **Change password**, **AI Context Knowledgebase** (read-only JSON from Supabase `ai_knowledge`). Auth/email/password never touch AI JSON. `/dashboard-araf/settings` redirects to email.
 - Aesthetic IDE-themed login (window chrome, soft primary/secondary glows, portfolio tokens).
 - Dashboard explorer items (except `Contact.sh`) support **drag-reorder** via a 3-bar grip on the right; order is stored in Supabase `portfolio_settings` (`key = section_order`), syncs to landing **Explorer**, **top tabs**, and **portfolio content**. Contact stays fixed last. Same-tab `CustomEvent` only (no localStorage for order).
-- **About content (live):** `/dashboard-araf/about` editor (`AboutEditor`) writes hero + summary/interests to `portfolio_settings` (`key = about`). Public `/` SSR-loads it into `HeroSection` / `AboutSection`. Helpers: `src/lib/aboutContent.js`, `aboutContentServer.js`, `aboutActions.js`. Migration seed: `supabase/migrations/002_about_content.sql`. Fallback defaults only if row missing.
+- **About content (live):** `/dashboard-araf/about` editor (`AboutEditor`) writes hero + summary/interests to `portfolio_settings` (`key = about`). Per-block **show/hide** toggles (`visibility`: image, headline, intro, primaryCta, secondaryCta, summary, interests) control public landing display; hidden content is kept in Supabase. Public `/` SSR-loads it into `HeroSection` / `AboutSection`. Helpers: `src/lib/aboutContent.js`, `aboutContentServer.js`, `aboutActions.js`. Migration seed: `supabase/migrations/002_about_content.sql`. Fallback defaults only if row missing.
+- **Experience content (live):** `/dashboard-araf/experience` editor (`ExperienceEditor`) writes jobs (company, optional company URL, role, On-site/Remote dropdown, employment type as plain text, start/end date pickers displaying `June 25, 2024`, location, bullets, per-entry show/hide) to `portfolio_settings` (`key = experience`). Company name links open `companyUrl` when set. Hidden entries stay in Supabase but are omitted from the public portfolio, search, and AI knowledge. Public `/` SSR-loads into `ExperienceSection`. Helpers: `experienceContent.js`, `experienceContentServer.js`, `experienceActions.js`. Migration seed: `supabase/migrations/006_experience_content.sql`.
 - `src/lib/sectionOrder.js` / `sectionOrderServer.js`, `src/hooks/useSectionOrder.js`, `GET /api/section-order`, `saveSectionOrderAction`
 - Migration SQL: `supabase/migrations/001_portfolio_settings.sql` (must be run once in Supabase SQL Editor). Fallback defaults only: `src/data/sectionOrder.json`.
 
@@ -435,9 +438,17 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 - `src/app/dashboard-araf/(workspace)/layout.js` — sidebar + main pane
 - `src/app/dashboard-araf/(workspace)/page.js` — content overview grid
 - `src/app/dashboard-araf/(workspace)/about/page.js` — **About CRUD editor** (hero + summary/interests)
-- `src/app/dashboard-araf/(workspace)/[section]/page.js` — placeholders for other sections (about excluded)
-- `src/app/dashboard-araf/(workspace)/settings/page.js` — password change accordion: verify current first, then expand new + confirm
-- `src/app/dashboard-araf/actions.js` — `loginAction`, `logoutAction`, `forgotPasswordAction`, `verifyCurrentPasswordAction`, `changePasswordAction` (no register)
+- `src/app/dashboard-araf/(workspace)/experience/page.js` — **Experience CRUD editor**
+- `src/app/dashboard-araf/(workspace)/[section]/page.js` — placeholders for other sections (about + experience excluded)
+- `src/app/dashboard-araf/experienceActions.js` — `saveExperienceContentAction`
+- `src/components/dashboard/ExperienceEditor.js` — Experience form UI
+- `src/components/dashboard/SettingsSidebar.js` — nested settings nav (email / password) with back control
+- `src/components/dashboard/ChangeEmailForm.js` / `ChangePasswordForm.js` — separate settings forms
+- `src/app/dashboard-araf/(workspace)/settings/page.js` — redirects to `/settings/email`
+- `src/app/dashboard-araf/(workspace)/settings/email/page.js` — change email page
+- `src/app/dashboard-araf/(workspace)/settings/password/page.js` — change password page
+- `src/app/dashboard-araf/(workspace)/settings/ai-knowledge/page.js` — read-only live JSON from Supabase `ai_knowledge`
+- `src/app/dashboard-araf/actions.js` — `loginAction`, `logoutAction`, `forgotPasswordAction`, `verifyCurrentPasswordAction`, `changePasswordAction`, `changeEmailAction` (no register)
 - `src/app/dashboard-araf/aboutActions.js` — `saveAboutContentAction`
 - `src/components/dashboard/AboutEditor.js` — About form UI
 
@@ -445,14 +456,33 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 
 **Supabase settings to configure:**
 - Authentication → Providers → Email → disable “Enable sign ups”
-- Authentication → URL Configuration → add redirect allow-list entry for `{SITE_URL}/dashboard-araf/settings?recovery=1`
+- Authentication → URL Configuration → add redirect allow-list entry for `{SITE_URL}/dashboard-araf/settings/password?recovery=1`
 
-### 2.16 What is intentionally NOT built yet
+### 2.16 AI knowledge JSON (dashboard → Supabase sync)
 
-- No CRUD yet for sections other than **About** (Experience…Contact still placeholders)
-- No auto-updating AI knowledge JSON from a dashboard
-- No real AI chat answers (chat is UI shell)
-- No public API routes for content (About is SSR-read from Supabase)
+**Source of truth (production):** Supabase `portfolio_settings` key `ai_knowledge` (JSONB).
+
+Local mirror removed — production reads the Supabase `portfolio_settings.ai_knowledge` row directly.
+
+**Rules (Part 1 §11):**
+- Public portfolio content only (About, section order today; more sections as CRUD ships).
+- **Never** includes dashboard email, password, password-change fields, or auth secrets.
+- Always includes `security.password_and_credentials_policy` refusal text: `I am not going to provide you this kind of data`.
+- Settings / auth actions must **never** write to this knowledge blob.
+
+**Auto-sync:** After every successful write of About (`writeAboutContentToSupabase`) or section order (`writeSectionOrderToSupabase`), `syncAiKnowledgeFromDashboard()` rebuilds the payload and **upserts** `ai_knowledge` in Supabase. Sync errors are logged and do not fail the dashboard save.
+
+**Read endpoints (for future ChatPanel / tooling):**
+- Next.js: `GET /api/ai-knowledge` (no-store)
+- Supabase Edge Function: `supabase/functions/ai-knowledge` — deploy with `supabase functions deploy ai-knowledge` → `https://<project-ref>.supabase.co/functions/v1/ai-knowledge`
+- Migration seed: `supabase/migrations/005_ai_knowledge.sql` (run once in SQL Editor if needed)
+
+**Not wired yet:** ChatPanel still does not call a model (item 7 waiting).
+
+### 2.17 What is intentionally NOT built yet
+
+- No CRUD yet for sections other than **About** and **Experience** (Skills…Contact still placeholders)
+- No real AI chat answers (chat is UI shell; knowledge sync to Supabase exists but ChatPanel not wired)
 - Remaining middle sections still use demo static data
 - Hero CTAs: primary scrolls to Projects; secondary opens CV PDF in a new tab when uploaded (dashboard upload → Supabase Storage `portfolio-cv`)
 
@@ -481,25 +511,14 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 
 5. **Backend:** Supabase — **Auth wired** for dashboard login. `portfolio_settings` table for section order (dashboard write / public read). Per-section content tables / RLS still future.
 
-6. **AI Chat knowledge pipeline (planned):**
-   - Any textable **public portfolio** content uploaded/updated from the dashboard must **automatically update a JSON file** in the project.
-   - That JSON is the knowledge source so the AI chat can answer questions about the user by reading it.
-   - JSON must stay in sync with dashboard create/update for website-facing content.
-   - JSON must include **all** website-facing personal/portfolio data (nothing about the user that appears on the public site remains static long-term).
-   - **CRITICAL — credentials excluded from JSON:**
-     - **Never** put dashboard email, password, password hashes, or password-change data into the AI JSON — even though the dashboard will have a password-change option.
-     - Auto-sync from dashboard → JSON must skip all auth/account-security fields.
-     - JSON **must** contain a dedicated refusal block for anything related to password / login credentials / dashboard secrets, instructing the AI to answer with: **"I am not going to provide you this kind of data"**
-     - Example shape (illustrative — implement when JSON pipeline is built):
-       ```json
-       {
-         "security": {
-           "password_and_credentials_policy": "If the user asks about password, login credentials, dashboard email/password, or any secret account data, reply exactly or equivalently: I am not going to provide you this kind of data"
-         }
-       }
-       ```
+6. **AI Chat knowledge pipeline:**
+   - **Supabase sync LIVE** — dashboard public content upserts `portfolio_settings` key `ai_knowledge` (About + section order today). Readable via `GET /api/ai-knowledge` and Edge Function `ai-knowledge`.
+  - (Local JSON mirror removed) Production reads Supabase directly.
+   - Wire ChatPanel to real AI answers using that knowledge — **still waiting**.
+   - Expand as each section gets CRUD.
+   - **CRITICAL — credentials excluded** (enforced in builder): never dashboard email/password; always include refusal: **"I am not going to provide you this kind of data"**
 
-7. **Dashboard account settings:** Password-change is in **Settings** (logged-in). Forgot-password email flow via stealth login link. Updates Supabase Auth only — **never** the AI knowledge JSON.
+7. **Dashboard account settings:** Password-change + email-change in **Settings** (logged-in). Forgot-password email flow via stealth login link. Updates Supabase Auth only — **never** the AI knowledge JSON. Forgot-password owner check uses Auth user list (works after email change).
 
 8. **Execution order (explicit):**
    - Work **one middle section at a time**: real data → optional design confirm → then dashboard fields for that section.
@@ -508,17 +527,18 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 
 | # | Item | Status |
 |---|------|--------|
-| 1 | Per-section: replace demo data with real content + optional design pass | **In progress** — About dynamic; other sections waiting |
-| 2 | After each section confirmed: add dashboard CRUD fields for that section | **Partial** — About done; others waiting |
+| 1 | Per-section: replace demo data with real content + optional design pass | **In progress** — About + Experience dynamic; other sections waiting |
+| 2 | After each section confirmed: add dashboard CRUD fields for that section | **Partial** — About + Experience done; others waiting |
 | 3 | Create `/dashboard-araf` app route + auth/flow | **Done** (2026-07-14) — login only, no register, no landing links |
 | 4 | Integrate Supabase Auth client + proxy guard | **Done** (2026-07-14) |
 | 4b | Section order in Supabase (`portfolio_settings`) | **Done** (2026-07-14) — run migration SQL once if table missing |
-| 4c | Per-section content tables + dashboard CRUD | **Partial** — About in `portfolio_settings` key `about`; other sections waiting |
-| 5 | Wire portfolio page to load dynamic content (IDE chrome unchanged) | **Partial** — About + section order SSR; other sections still static |
-| 6 | Auto-generate/update project JSON from dashboard data for AI chat | Waiting — **exclude auth credentials; include password-question refusal text** |
+| 4c | Per-section content tables + dashboard CRUD | **Partial** — About + Experience in `portfolio_settings`; other sections waiting |
+| 5 | Wire portfolio page to load dynamic content (IDE chrome unchanged) | **Partial** — About + Experience + section order SSR; other sections still static |
+| 6 | Auto-generate/update project JSON from dashboard data for AI chat | **Partial** — syncs About + Experience to Supabase `ai_knowledge`; expands as more sections get CRUD. Auth excluded; refusal text included |
 | 7 | Wire ChatPanel to real AI answers using that JSON | Waiting |
-| 8 | Ensure zero static “about me” content remains in site data modules | **Partial** — About live from DB; `ABOUT` in `portfolio.js` remains fallback defaults only |
+| 8 | Ensure zero static “about me” content remains in site data modules | **Partial** — About + Experience live from DB; static modules remain fallbacks for other sections |
 | 9 | Dashboard password-change UI (Supabase Auth only; never writes to AI JSON) | **Done** (2026-07-14) — Settings + forgot-password email flow |
+| 9b | Dashboard email-change UI (verify password → new email; Auth only; never AI JSON) | **Done** (2026-07-17) |
 
 ### 3.3 Plans shared later
 
@@ -565,4 +585,15 @@ _(Append new future plans here when the user says “I have a plan…” / “no
 | 2026-07-17 | **About hero breakpoint:** Headline+image side-by-side only for `0–500px`; from `501px` image sits beside the full text column (`min-[501px]:` instead of `md:`). |
 | 2026-07-17 | **About hero image ≥501px:** Top-aligned (`items-start` / `self-start`); larger size (`w-44` → `md:w-52`). ≤500px stays `w-24` + vertically centered with headline. |
 | 2026-07-17 | **Dashboard About:** Removed helper blurb under About.tsx title (“Edit hero + summary… Saved to Supabase…”). |
+| 2026-07-17 | **AI knowledge JSON:** Added `aiKnowledge.js` / `aiKnowledgeServer.js` and Supabase cache (`portfolio_settings.ai_knowledge`). Local `src/data/ai-knowledge.json` mirror removed to avoid repo writes. ChatPanel still not wired. |
+| 2026-07-17 | **AI knowledge → Supabase:** Sync upserts `portfolio_settings.ai_knowledge` (production source of truth). Added `GET /api/ai-knowledge`, Edge Function `supabase/functions/ai-knowledge`, migration `005_ai_knowledge.sql`. Local JSON mirror removed. |
+| 2026-07-17 | **About visibility toggles:** Dashboard About editor show/hide per block (image, headline, intro, primary/secondary CTA, summary, interests). Stored on `about.visibility` in Supabase; landing + search respect flags. AI knowledge excludes `visibility` to reduce token size. Content kept when hidden. |
+| 2026-07-17 | **About visibility UI:** Small ash/gray switch toggles (not primary blue); Shown/Hidden label. |
+| 2026-07-17 | **About editor inputs:** Field backgrounds `surface-container-low` → `surface-container-high` (slightly lighter). |
+| 2026-07-17 | **Fix — dashboard main bg seam:** Glow overlay was `absolute inset-0` on the scrollport only, so past the viewport height showed a hard color cut. Wrapped content so the gradient spans full scroll height. |
+| 2026-07-17 | **Settings change email:** Accordion like password — verify current password, then new email. `changeEmailAction` updates Supabase Auth only (never AI JSON). Forgot-password owner check now uses Auth user list so it survives email changes. |
+| 2026-07-17 | **Settings nested sidebar:** Clicking Settings opens a second left sidebar (smooth slide). Separate pages: `/settings/email`, `/settings/password`. Index redirects to email. |
+| 2026-07-17 | **Settings AI Context Knowledgebase:** Read-only page at `/settings/ai-knowledge` fetches `portfolio_settings.ai_knowledge` and displays formatted JSON (not editable). |
+| 2026-07-17 | **Experience dynamic:** Dashboard `/dashboard-araf/experience` CRUD (company, optional company URL, role, employment type, dates, location, bullets) → Supabase `portfolio_settings.experience`. Landing SSR + company name link. AI knowledge sync includes experience. Migration `006_experience_content.sql`. |
+| 2026-07-17 | **Experience editor UX:** On-site/Remote select; start/end date pickers with `June 25, 2024` display; employment type plain input (no datalist arrow); per-entry Shown/Hidden toggle (`visible`). |
 )

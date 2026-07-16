@@ -13,6 +13,38 @@ export const DASHBOARD_NAV = [
   { slug: "contact", href: "/dashboard-araf/contact", label: "Contact.sh", ext: "sh" },
 ];
 
+/** Nested settings sidebar items (under /dashboard-araf/settings). */
+export const SETTINGS_NAV = [
+  {
+    slug: "email",
+    href: "/dashboard-araf/settings/email",
+    label: "Change email",
+    icon: "mail",
+    group: "Account",
+  },
+  {
+    slug: "password",
+    href: "/dashboard-araf/settings/password",
+    label: "Change password",
+    icon: "lock_reset",
+    group: "Account",
+  },
+  {
+    slug: "ai-knowledge",
+    href: "/dashboard-araf/settings/ai-knowledge",
+    label: "AI Context Knowledgebase",
+    icon: "database",
+    group: "AI",
+  },
+];
+
 export function getDashboardNavItem(slug) {
   return DASHBOARD_NAV.find((item) => item.slug === slug) ?? null;
+}
+
+export function isSettingsPath(pathname) {
+  return (
+    pathname === "/dashboard-araf/settings" ||
+    pathname?.startsWith("/dashboard-araf/settings/")
+  );
 }

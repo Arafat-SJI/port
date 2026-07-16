@@ -1,7 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function loginAction(prevState, formData) {
   const email = String(formData.get("email") ?? "").trim();
@@ -27,7 +29,20 @@ export async function logoutAction() {
   redirect("/dashboard-araf/login");
 }
 
-const DASHBOARD_OWNER_EMAIL = "arafhussain11@gmail.com";
+/** True if this email belongs to a dashboard auth user (owner). */
+async function isDashboardOwnerEmail(email) {
+  const normalized = String(email ?? "").trim().toLowerCase();
+  if (!normalized) return false;
+
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 50 });
+    if (error || !data?.users?.length) return false;
+    return data.users.some((u) => String(u.email ?? "").toLowerCase() === normalized);
+  } catch {
+    return false;
+  }
+}
 
 export async function forgotPasswordAction(prevState, formData) {
   const email = String(formData.get("email") ?? "").trim();
@@ -36,7 +51,8 @@ export async function forgotPasswordAction(prevState, formData) {
     return { error: "Email is required.", success: false };
   }
 
-  if (email.toLowerCase() !== DASHBOARD_OWNER_EMAIL) {
+  const isOwner = await isDashboardOwnerEmail(email);
+  if (!isOwner) {
     return {
       error: "Get out of here, this is not your portfolio.",
       success: false,
@@ -47,7 +63,7 @@ export async function forgotPasswordAction(prevState, formData) {
   const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/dashboard-araf/settings?recovery=1`,
+    redirectTo: `${origin}/dashboard-araf/settings/password?recovery=1`,
   });
 
   if (error) {
@@ -132,4 +148,66 @@ export async function changePasswordAction(prevState, formData) {
 
   // Auth only — never write credentials to AI knowledge JSON.
   return { error: null, success: true, message: "Password updated successfully." };
+}
+
+export async function changeEmailAction(prevState, formData) {
+  const currentPassword = String(formData.get("currentPassword") ?? "");
+  const newEmail = String(formData.get("newEmail") ?? "").trim().toLowerCase();
+
+  if (!currentPassword || !newEmail) {
+    return { error: "Current password and new email are required.", success: false, email: null };
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+    return { error: "Enter a valid email address.", success: false, email: null };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user?.email) {
+    return { error: "You must be signed in.", success: false, email: null };
+  }
+
+  if (newEmail === user.email.toLowerCase()) {
+    return {
+      error: "New email must be different from your current email.",
+      success: false,
+      email: null,
+    };
+  }
+
+  const { error: reauthError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
+
+  if (reauthError) {
+    return { error: "Current password is incorrect.", success: false, email: null };
+  }
+
+  const { data, error } = await supabase.auth.updateUser({ email: newEmail });
+
+  if (error) {
+    return { error: error.message || "Could not update email.", success: false, email: null };
+  }
+
+  // Auth only — never write dashboard email to AI knowledge JSON.
+  revalidatePath("/dashboard-araf", "layout");
+  revalidatePath("/dashboard-araf/settings");
+
+  const pendingConfirm =
+    Boolean(data?.user?.new_email) ||
+    data?.user?.email?.toLowerCase() !== newEmail;
+
+  return {
+    error: null,
+    success: true,
+    email: data?.user?.email ?? user.email,
+    message: pendingConfirm
+      ? "Check your new inbox to confirm the email change."
+      : "Email updated successfully.",
+  };
 }

@@ -1,39 +1,39 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
-  ABOUT_SETTINGS_KEY,
-  DEFAULT_ABOUT_CONTENT,
-  normalizeAboutContent,
-} from "@/lib/aboutContent";
+  DEFAULT_EXPERIENCE_CONTENT,
+  EXPERIENCE_SETTINGS_KEY,
+  normalizeExperienceContent,
+} from "@/lib/experienceContent";
 
-export async function readAboutContentFromSupabase() {
+export async function readExperienceContentFromSupabase() {
   try {
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("portfolio_settings")
       .select("value")
-      .eq("key", ABOUT_SETTINGS_KEY)
+      .eq("key", EXPERIENCE_SETTINGS_KEY)
       .maybeSingle();
 
     if (error || !data?.value) {
-      return normalizeAboutContent(DEFAULT_ABOUT_CONTENT);
+      return normalizeExperienceContent(DEFAULT_EXPERIENCE_CONTENT);
     }
 
-    return normalizeAboutContent(data.value);
+    return normalizeExperienceContent(data.value);
   } catch {
-    return normalizeAboutContent(DEFAULT_ABOUT_CONTENT);
+    return normalizeExperienceContent(DEFAULT_EXPERIENCE_CONTENT);
   }
 }
 
 /**
- * Persist About content. Pass an authenticated Supabase client when available;
+ * Persist Experience content. Pass an authenticated Supabase client when available;
  * falls back to service-role upsert.
  */
-export async function writeAboutContentToSupabase(content, client) {
-  const normalized = normalizeAboutContent(content);
+export async function writeExperienceContentToSupabase(content, client) {
+  const normalized = normalizeExperienceContent(content);
   const supabase = client ?? createAdminClient();
   const { error } = await supabase.from("portfolio_settings").upsert(
     {
-      key: ABOUT_SETTINGS_KEY,
+      key: EXPERIENCE_SETTINGS_KEY,
       value: normalized,
       updated_at: new Date().toISOString(),
     },
@@ -41,10 +41,9 @@ export async function writeAboutContentToSupabase(content, client) {
   );
 
   if (error) {
-    throw new Error(error.message || "Could not save About content");
+    throw new Error(error.message || "Could not save Experience content");
   }
 
-  // Keep AI chat knowledge JSON in sync (public portfolio data only).
   const { syncAiKnowledgeFromDashboard } = await import("@/lib/aiKnowledgeServer");
   await syncAiKnowledgeFromDashboard();
 

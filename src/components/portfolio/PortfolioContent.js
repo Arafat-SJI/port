@@ -12,9 +12,10 @@ import PublicationSection from "./sections/PublicationSection";
 import SkillsSection from "./sections/SkillsSection";
 import { NAV_ITEMS } from "@/data/portfolio";
 import { DEFAULT_ABOUT_CONTENT } from "@/lib/aboutContent";
+import { DEFAULT_EXPERIENCE_CONTENT } from "@/lib/experienceContent";
 import { orderNavItems } from "@/lib/sectionOrder";
 
-function createSectionRenderers(aboutContent, onNavigateSection) {
+function createSectionRenderers(aboutContent, experienceContent, onNavigateSection) {
   return {
     about: (searchHighlight) => (
       <SectionSearchTarget sectionHref="#about" searchHighlight={searchHighlight}>
@@ -26,7 +27,7 @@ function createSectionRenderers(aboutContent, onNavigateSection) {
     ),
     experience: (searchHighlight) => (
       <SectionSearchTarget sectionHref="#experience" searchHighlight={searchHighlight}>
-        <ExperienceSection />
+        <ExperienceSection content={experienceContent} />
       </SectionSearchTarget>
     ),
     skills: (searchHighlight) => (
@@ -76,12 +77,17 @@ export default function PortfolioContent({
   searchHighlight,
   sectionOrder,
   aboutContent = DEFAULT_ABOUT_CONTENT,
+  experienceContent = DEFAULT_EXPERIENCE_CONTENT,
   onNavigateSection,
 }) {
   const ordered = orderNavItems(NAV_ITEMS, sectionOrder).filter(
     (item) => item.href !== "#contact"
   );
-  const renderers = createSectionRenderers(aboutContent, onNavigateSection);
+  const renderers = createSectionRenderers(
+    aboutContent,
+    experienceContent,
+    onNavigateSection
+  );
 
   return (
     <div className="max-w-[900px] mx-auto px-6 py-8 space-y-[106px]">

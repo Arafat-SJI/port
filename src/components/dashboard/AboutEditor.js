@@ -9,17 +9,69 @@ import {
   uploadCvAction,
 } from "@/app/dashboard-araf/aboutActions";
 import {
+  DEFAULT_ABOUT_VISIBILITY,
   introHtmlToMarkup,
   introMarkupToHtml,
+  normalizeAboutVisibility,
   stripIntroMarkup,
 } from "@/lib/aboutContent";
 
 const initialState = { error: null, success: false, message: null, content: null };
 
 const fieldClass =
-  "w-full rounded-lg border-0 bg-surface-container-low px-3 py-2.5 text-[13px] text-on-surface outline-none placeholder:text-on-surface-variant/45 focus:ring-1 focus:ring-primary/40 transition-shadow";
+  "w-full rounded-lg border-0 bg-surface-container-high px-3 py-2.5 text-[13px] text-on-surface outline-none placeholder:text-on-surface-variant/45 focus:ring-1 focus:ring-primary/40 transition-shadow";
 
 const labelClass = "block text-[12px] text-on-surface-variant mb-1.5";
+
+function VisibilityToggle({ id, label, checked, onChange }) {
+  return (
+    <label
+      htmlFor={id}
+      className="inline-flex cursor-pointer items-center gap-1.5 select-none"
+      title={checked ? "Visible on portfolio" : "Hidden on portfolio"}
+    >
+      <span className="text-[10px] text-on-surface-variant/80">
+        {checked ? "Shown" : "Hidden"}
+      </span>
+      <button
+        id={id}
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={`${label}: ${checked ? "shown" : "hidden"} on portfolio`}
+        onClick={() => onChange(!checked)}
+        className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${
+          checked ? "bg-on-surface-variant/55" : "bg-surface-container-high"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 h-3 w-3 rounded-full bg-on-surface shadow-sm transition-transform ${
+            checked ? "translate-x-3" : "translate-x-0"
+          }`}
+        />
+      </button>
+    </label>
+  );
+}
+
+function SectionHeader({ icon, title, visibilityKey, visibility, onToggle }) {
+  return (
+    <div className="mb-1 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="material-symbols-outlined text-[18px] text-primary shrink-0">
+          {icon}
+        </span>
+        <h2 className="text-[15px] font-medium text-on-surface truncate">{title}</h2>
+      </div>
+      <VisibilityToggle
+        id={`vis-${visibilityKey}`}
+        label={title}
+        checked={visibility[visibilityKey]}
+        onChange={(next) => onToggle(visibilityKey, next)}
+      />
+    </div>
+  );
+}
 
 export default function AboutEditor({ initialContent }) {
   const introRef = useRef(null);
@@ -35,7 +87,12 @@ export default function AboutEditor({ initialContent }) {
   const [removing, startRemove] = useTransition();
   const [removingImage, startRemoveImage] = useTransition();
   const [removeError, setRemoveError] = useState(null);
-  const [content, setContent] = useState(initialContent);
+  const [content, setContent] = useState(() => ({
+    ...initialContent,
+    visibility: normalizeAboutVisibility(
+      initialContent?.visibility ?? DEFAULT_ABOUT_VISIBILITY
+    ),
+  }));
   const [interestsText, setInterestsText] = useState(
     (initialContent?.interests ?? []).join("\n")
   );
@@ -48,7 +105,10 @@ export default function AboutEditor({ initialContent }) {
 
   useEffect(() => {
     if (state?.success && state.content) {
-      setContent(state.content);
+      setContent({
+        ...state.content,
+        visibility: normalizeAboutVisibility(state.content.visibility),
+      });
       setInterestsText((state.content.interests ?? []).join("\n"));
       if (introRef.current) {
         introRef.current.innerHTML = introMarkupToHtml(state.content.intro ?? "");
@@ -58,20 +118,36 @@ export default function AboutEditor({ initialContent }) {
 
   useEffect(() => {
     if (uploadState?.success && uploadState.content) {
-      setContent(uploadState.content);
+      setContent({
+        ...uploadState.content,
+        visibility: normalizeAboutVisibility(uploadState.content.visibility),
+      });
       if (fileRef.current) fileRef.current.value = "";
     }
   }, [uploadState]);
 
   useEffect(() => {
     if (imageUploadState?.success && imageUploadState.content) {
-      setContent(imageUploadState.content);
+      setContent({
+        ...imageUploadState.content,
+        visibility: normalizeAboutVisibility(imageUploadState.content.visibility),
+      });
       if (imageFileRef.current) imageFileRef.current.value = "";
     }
   }, [imageUploadState]);
 
   const update = (key) => (e) => {
     setContent((prev) => ({ ...prev, [key]: e.target.value }));
+  };
+
+  const setVisibility = (key, value) => {
+    setContent((prev) => ({
+      ...prev,
+      visibility: {
+        ...normalizeAboutVisibility(prev.visibility),
+        [key]: value,
+      },
+    }));
   };
 
   const syncIntroFromEditor = () => {
@@ -96,7 +172,12 @@ export default function AboutEditor({ initialContent }) {
         setRemoveError(result.error);
         return;
       }
-      if (result?.content) setContent(result.content);
+      if (result?.content) {
+        setContent({
+          ...result.content,
+          visibility: normalizeAboutVisibility(result.content.visibility),
+        });
+      }
     });
   };
 
@@ -108,10 +189,16 @@ export default function AboutEditor({ initialContent }) {
         setRemoveError(result.error);
         return;
       }
-      if (result?.content) setContent(result.content);
+      if (result?.content) {
+        setContent({
+          ...result.content,
+          visibility: normalizeAboutVisibility(result.content.visibility),
+        });
+      }
     });
   };
 
+  const visibility = normalizeAboutVisibility(content.visibility);
   const introEmpty = !stripIntroMarkup(content.intro ?? "").trim();
   const hasCv = Boolean(content.cvUrl?.trim());
   const hasImage = Boolean(content.imageUrl?.trim());
@@ -131,18 +218,26 @@ export default function AboutEditor({ initialContent }) {
         <input type="hidden" name="intro" value={content.intro ?? ""} />
         <input type="hidden" name="cvUrl" value={content.cvUrl ?? ""} />
         <input type="hidden" name="imageUrl" value={content.imageUrl ?? ""} />
+        <input type="hidden" name="visibility" value={JSON.stringify(visibility)} />
 
         <section className="rounded-xl bg-surface-container-lowest/90 p-4 space-y-4 sm:p-5">
           <div className="flex items-center gap-2 mb-1">
             <span className="material-symbols-outlined text-[18px] text-primary">title</span>
             <h2 className="text-[15px] font-medium text-on-surface">Hero</h2>
           </div>
+          <p className="text-[12px] text-on-surface-variant -mt-2">
+            Use each toggle to show or hide that block on the public portfolio. Content is kept when
+            hidden.
+          </p>
 
           <div className="space-y-3 rounded-lg bg-surface-container-low/80 p-4">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-primary">image</span>
-              <h3 className="text-[13px] font-medium text-on-surface">Profile image</h3>
-            </div>
+            <SectionHeader
+              icon="image"
+              title="Profile image"
+              visibilityKey="image"
+              visibility={visibility}
+              onToggle={setVisibility}
+            />
             <p className="text-[12px] text-on-surface-variant leading-relaxed">
               Shown in the About hero on the portfolio. JPG, PNG, WebP, or GIF — max 3MB.
             </p>
@@ -207,98 +302,123 @@ export default function AboutEditor({ initialContent }) {
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div>
-              <label htmlFor="headlinePrefix" className={labelClass}>
-                Headline prefix
-              </label>
-              <input
-                id="headlinePrefix"
-                name="headlinePrefix"
-                value={content.headlinePrefix}
-                onChange={update("headlinePrefix")}
-                className={fieldClass}
-              />
+          <div className="space-y-3 rounded-lg bg-surface-container-low/80 p-4">
+            <SectionHeader
+              icon="title"
+              title="Headline"
+              visibilityKey="headline"
+              visibility={visibility}
+              onToggle={setVisibility}
+            />
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div>
+                <label htmlFor="headlinePrefix" className={labelClass}>
+                  Headline prefix
+                </label>
+                <input
+                  id="headlinePrefix"
+                  name="headlinePrefix"
+                  value={content.headlinePrefix}
+                  onChange={update("headlinePrefix")}
+                  className={fieldClass}
+                />
+              </div>
+              <div>
+                <label htmlFor="headlineHighlight" className={labelClass}>
+                  Highlight word
+                </label>
+                <input
+                  id="headlineHighlight"
+                  name="headlineHighlight"
+                  value={content.headlineHighlight}
+                  onChange={update("headlineHighlight")}
+                  className={fieldClass}
+                />
+              </div>
+              <div>
+                <label htmlFor="headlineSuffix" className={labelClass}>
+                  Headline suffix
+                </label>
+                <input
+                  id="headlineSuffix"
+                  name="headlineSuffix"
+                  value={content.headlineSuffix}
+                  onChange={update("headlineSuffix")}
+                  className={fieldClass}
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="headlineHighlight" className={labelClass}>
-                Highlight word
-              </label>
-              <input
-                id="headlineHighlight"
-                name="headlineHighlight"
-                value={content.headlineHighlight}
-                onChange={update("headlineHighlight")}
-                className={fieldClass}
-              />
-            </div>
-            <div>
-              <label htmlFor="headlineSuffix" className={labelClass}>
-                Headline suffix
-              </label>
-              <input
-                id="headlineSuffix"
-                name="headlineSuffix"
-                value={content.headlineSuffix}
-                onChange={update("headlineSuffix")}
-                className={fieldClass}
-              />
-            </div>
-          </div>
 
-          <p className="rounded-lg bg-surface-container-low/80 px-3 py-2 text-[13px] text-on-surface-variant">
-            Preview:{" "}
-            <span className="text-on-surface">
-              {content.headlinePrefix}
-              <span className="text-primary">{content.headlineHighlight}</span>
-              {content.headlineSuffix}
-            </span>
-          </p>
-
-          <div>
-            <div className="mb-1.5 flex items-center justify-between gap-2">
-              <label htmlFor="intro-editor" className="text-[12px] text-on-surface-variant">
-                Intro
-              </label>
-              <button
-                type="button"
-                onClick={boldSelection}
-                className="inline-flex h-7 items-center gap-1 rounded-md bg-surface-container-low px-2 text-[11px] font-medium text-on-surface-variant transition hover:bg-surface-container hover:text-on-surface"
-                title="Select text, then click to bold"
-              >
-                <span className="material-symbols-outlined !text-[14px]">format_bold</span>
-                Bold
-              </button>
-            </div>
-            <div className="relative">
-              {introEmpty ? (
-                <span className="pointer-events-none absolute left-3 top-2.5 text-[13px] text-on-surface-variant/45">
-                  I&apos;m Arafat, a Software Engineer focused on…
-                </span>
-              ) : null}
-              <div
-                ref={introRef}
-                id="intro-editor"
-                role="textbox"
-                aria-multiline="true"
-                aria-label="Intro"
-                contentEditable
-                suppressContentEditableWarning
-                onInput={syncIntroFromEditor}
-                onBlur={syncIntroFromEditor}
-                className={`${fieldClass} min-h-[72px] leading-relaxed [&_strong]:font-semibold [&_strong]:text-on-surface [&_b]:font-semibold [&_b]:text-on-surface`}
-              />
-            </div>
-            <p className="mt-1.5 text-[11px] text-on-surface-variant/80">
-              Select your name (or any words), then click <strong>Bold</strong>. Bold shows directly
-              in the field — no special characters.
+            <p className="rounded-lg bg-surface-container px-3 py-2 text-[13px] text-on-surface-variant">
+              Preview:{" "}
+              <span className="text-on-surface">
+                {content.headlinePrefix}
+                <span className="text-primary">{content.headlineHighlight}</span>
+                {content.headlineSuffix}
+              </span>
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-3 rounded-lg bg-surface-container-low/80 p-4">
+            <SectionHeader
+              icon="notes"
+              title="Intro"
+              visibilityKey="intro"
+              visibility={visibility}
+              onToggle={setVisibility}
+            />
+            <div>
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <label htmlFor="intro-editor" className="text-[12px] text-on-surface-variant">
+                  Intro text
+                </label>
+                <button
+                  type="button"
+                  onClick={boldSelection}
+                  className="inline-flex h-7 items-center gap-1 rounded-md bg-surface-container px-2 text-[11px] font-medium text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface"
+                  title="Select text, then click to bold"
+                >
+                  <span className="material-symbols-outlined !text-[14px]">format_bold</span>
+                  Bold
+                </button>
+              </div>
+              <div className="relative">
+                {introEmpty ? (
+                  <span className="pointer-events-none absolute left-3 top-2.5 text-[13px] text-on-surface-variant/45">
+                    I&apos;m Arafat, a Software Engineer focused on…
+                  </span>
+                ) : null}
+                <div
+                  ref={introRef}
+                  id="intro-editor"
+                  role="textbox"
+                  aria-multiline="true"
+                  aria-label="Intro"
+                  contentEditable
+                  suppressContentEditableWarning
+                  onInput={syncIntroFromEditor}
+                  onBlur={syncIntroFromEditor}
+                  className={`${fieldClass} min-h-[72px] leading-relaxed [&_strong]:font-semibold [&_strong]:text-on-surface [&_b]:font-semibold [&_b]:text-on-surface`}
+                />
+              </div>
+              <p className="mt-1.5 text-[11px] text-on-surface-variant/80">
+                Select your name (or any words), then click <strong>Bold</strong>. Bold shows
+                directly in the field — no special characters.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-lg bg-surface-container-low/80 p-4">
+            <SectionHeader
+              icon="smart_button"
+              title="Primary button"
+              visibilityKey="primaryCta"
+              visibility={visibility}
+              onToggle={setVisibility}
+            />
             <div>
               <label htmlFor="primaryCta" className={labelClass}>
-                Primary button
+                Label
               </label>
               <input
                 id="primaryCta"
@@ -311,9 +431,19 @@ export default function AboutEditor({ initialContent }) {
                 Scrolls to the Projects section on the portfolio.
               </p>
             </div>
+          </div>
+
+          <div className="space-y-3 rounded-lg bg-surface-container-low/80 p-4">
+            <SectionHeader
+              icon="download"
+              title="Secondary button"
+              visibilityKey="secondaryCta"
+              visibility={visibility}
+              onToggle={setVisibility}
+            />
             <div>
               <label htmlFor="secondaryCta" className={labelClass}>
-                Secondary button
+                Label
               </label>
               <input
                 id="secondaryCta"
@@ -326,68 +456,68 @@ export default function AboutEditor({ initialContent }) {
                 Opens the uploaded CV PDF in a new tab.
               </p>
             </div>
-          </div>
 
-          <div className="space-y-3 rounded-lg bg-surface-container-low/80 p-4">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-tertiary">
-                picture_as_pdf
-              </span>
-              <h3 className="text-[13px] font-medium text-on-surface">CV PDF</h3>
-            </div>
-            <p className="text-[12px] text-on-surface-variant leading-relaxed">
-              Upload a PDF for the secondary button. Visitors open it in a new tab. Max 5MB.
-            </p>
+            <div className="space-y-3 rounded-lg bg-surface-container/80 p-4">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-tertiary">
+                  picture_as_pdf
+                </span>
+                <h3 className="text-[13px] font-medium text-on-surface">CV PDF</h3>
+              </div>
+              <p className="text-[12px] text-on-surface-variant leading-relaxed">
+                Upload a PDF for the secondary button. Visitors open it in a new tab. Max 5MB.
+              </p>
 
-            {hasCv ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <a
-                  href={content.cvUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-surface-container px-3 text-[12px] text-primary hover:bg-surface-container-high"
-                >
-                  <span className="material-symbols-outlined !text-[16px]">open_in_new</span>
-                  View current CV
-                </a>
+              {hasCv ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <a
+                    href={content.cvUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-surface-container-high px-3 text-[12px] text-primary hover:brightness-110"
+                  >
+                    <span className="material-symbols-outlined !text-[16px]">open_in_new</span>
+                    View current CV
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCv}
+                    disabled={removing}
+                    className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-error-container/20 px-3 text-[12px] text-error transition hover:bg-error-container/35 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <span className="material-symbols-outlined !text-[16px]">delete</span>
+                    {removing ? "Removing…" : "Remove CV"}
+                  </button>
+                </div>
+              ) : (
+                <p className="text-[12px] text-on-surface-variant/70">No CV uploaded yet.</p>
+              )}
+
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="min-w-[200px] flex-1">
+                  <label htmlFor="cv" className={`${labelClass} cursor-pointer`}>
+                    {hasCv ? "Replace PDF" : "Upload PDF"}
+                  </label>
+                  <input
+                    ref={fileRef}
+                    id="cv"
+                    name="cv"
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    form="cv-upload-form"
+                    className="w-full cursor-pointer text-[12px] text-on-surface-variant file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-surface-container file:px-3 file:py-2 file:text-[12px] file:text-on-surface"
+                  />
+                </div>
                 <button
-                  type="button"
-                  onClick={handleRemoveCv}
-                  disabled={removing}
-                  className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-error-container/20 px-3 text-[12px] text-error transition hover:bg-error-container/35 disabled:cursor-not-allowed disabled:opacity-60"
+                  type="submit"
+                  form="cv-upload-form"
+                  disabled={uploading}
+                  className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-secondary/20 px-4 text-[13px] font-semibold text-secondary transition hover:bg-secondary/30 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <span className="material-symbols-outlined !text-[16px]">delete</span>
-                  {removing ? "Removing…" : "Remove CV"}
+                  <span className="material-symbols-outlined text-[16px]">upload_file</span>
+                  {uploading ? "Uploading…" : "Upload"}
                 </button>
               </div>
-            ) : (
-              <p className="text-[12px] text-on-surface-variant/70">No CV uploaded yet.</p>
-            )}
-
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="min-w-[200px] flex-1">
-                <label htmlFor="cv" className={`${labelClass} cursor-pointer`}>
-                  {hasCv ? "Replace PDF" : "Upload PDF"}
-                </label>
-                <input
-                  ref={fileRef}
-                  id="cv"
-                  name="cv"
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  form="cv-upload-form"
-                  className="w-full cursor-pointer text-[12px] text-on-surface-variant file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-surface-container file:px-3 file:py-2 file:text-[12px] file:text-on-surface"
-                />
-              </div>
-              <button
-                type="submit"
-                form="cv-upload-form"
-                disabled={uploading}
-                className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-secondary/20 px-4 text-[13px] font-semibold text-secondary transition hover:bg-secondary/30 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <span className="material-symbols-outlined text-[16px]">upload_file</span>
-                {uploading ? "Uploading…" : "Upload"}
-              </button>
             </div>
           </div>
         </section>
@@ -398,34 +528,52 @@ export default function AboutEditor({ initialContent }) {
             <h2 className="text-[15px] font-medium text-on-surface">Summary & interests</h2>
           </div>
 
-          <div>
-            <label htmlFor="summary" className={labelClass}>
-              Summary
-            </label>
-            <textarea
-              id="summary"
-              name="summary"
-              required
-              rows={5}
-              value={content.summary}
-              onChange={update("summary")}
-              className={`${fieldClass} resize-y min-h-[120px]`}
+          <div className="space-y-3 rounded-lg bg-surface-container-low/80 p-4">
+            <SectionHeader
+              icon="subject"
+              title="Summary"
+              visibilityKey="summary"
+              visibility={visibility}
+              onToggle={setVisibility}
             />
+            <div>
+              <label htmlFor="summary" className={labelClass}>
+                Summary text
+              </label>
+              <textarea
+                id="summary"
+                name="summary"
+                required
+                rows={5}
+                value={content.summary}
+                onChange={update("summary")}
+                className={`${fieldClass} resize-y min-h-[120px]`}
+              />
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="interests" className={labelClass}>
-              Interests (one per line)
-            </label>
-            <textarea
-              id="interests"
-              name="interests"
-              rows={4}
-              value={interestsText}
-              onChange={(e) => setInterestsText(e.target.value)}
-              className={`${fieldClass} resize-y font-label-mono text-[12px]`}
-              placeholder={"Generative AI\nDistributed Systems"}
+          <div className="space-y-3 rounded-lg bg-surface-container-low/80 p-4">
+            <SectionHeader
+              icon="interests"
+              title="Interests"
+              visibilityKey="interests"
+              visibility={visibility}
+              onToggle={setVisibility}
             />
+            <div>
+              <label htmlFor="interests" className={labelClass}>
+                Interests (one per line)
+              </label>
+              <textarea
+                id="interests"
+                name="interests"
+                rows={4}
+                value={interestsText}
+                onChange={(e) => setInterestsText(e.target.value)}
+                className={`${fieldClass} resize-y font-label-mono text-[12px]`}
+                placeholder={"Generative AI\nDistributed Systems"}
+              />
+            </div>
           </div>
         </section>
 
@@ -457,7 +605,6 @@ export default function AboutEditor({ initialContent }) {
         </button>
       </form>
 
-      {/* Associated via form= so upload UIs can sit inside the save form visually */}
       <form id="cv-upload-form" action={uploadAction} className="hidden" aria-hidden />
       <form
         id="about-image-upload-form"

@@ -9,8 +9,8 @@ export default async function DashboardSectionPage({ params }) {
 
   if (RESERVED.has(section)) notFound();
 
-  // About has a dedicated editor at /dashboard-araf/about
-  if (section === "about") notFound();
+  // Dedicated editors
+  if (section === "about" || section === "experience") notFound();
 
   const item = getDashboardNavItem(section);
 

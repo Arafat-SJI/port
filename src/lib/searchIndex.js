@@ -12,15 +12,18 @@ import {
   SKILLS,
 } from "@/data/portfolio";
 import { aboutSearchLines } from "@/lib/aboutContent";
+import { experienceSearchLines } from "@/lib/experienceContent";
 
-function linesForHref(href, aboutContent) {
+function linesForHref(href, aboutContent, experienceContent) {
   switch (href) {
     case "#about":
       return aboutContent
         ? aboutSearchLines(aboutContent)
         : [ABOUT.summary, ...ABOUT.interests.map((i) => `interest: ${i}`)];
     case "#experience":
-      return EXPERIENCE.flatMap((e) => [e.role, e.company, e.description]);
+      return experienceContent
+        ? experienceSearchLines(experienceContent)
+        : EXPERIENCE.flatMap((e) => [e.role, e.company, e.description]);
     case "#skills":
       return SKILLS.flatMap((g) => [g.title, ...g.items]);
     case "#projects":
@@ -44,11 +47,11 @@ function linesForHref(href, aboutContent) {
   }
 }
 
-export function buildSearchIndex(aboutContent) {
+export function buildSearchIndex(aboutContent, experienceContent) {
   return NAV_ITEMS.map((item) => ({
     ...item,
     path: `portfolio/src/sections/${item.label}`,
-    lines: linesForHref(item.href, aboutContent),
+    lines: linesForHref(item.href, aboutContent, experienceContent),
   }));
 }
 
@@ -77,11 +80,14 @@ export function buildSearchMatcher(query, options) {
   return buildMatcher(query.trim(), options);
 }
 
-export function searchPortfolio(query, options, aboutContent) {
+export function searchPortfolio(query, options, aboutContent, experienceContent) {
   const matcher = buildMatcher(query.trim(), options);
   if (!matcher) return [];
 
-  const index = aboutContent ? buildSearchIndex(aboutContent) : SEARCH_INDEX;
+  const index =
+    aboutContent || experienceContent
+      ? buildSearchIndex(aboutContent, experienceContent)
+      : SEARCH_INDEX;
 
   return index.flatMap((file) => {
     const matches = [];

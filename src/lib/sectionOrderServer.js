@@ -50,6 +50,10 @@ export async function writeSectionOrderToSupabase(order, client) {
     throw new Error(error.message || "Could not save section order");
   }
 
+  // Keep AI chat knowledge JSON in sync (public portfolio data only).
+  const { syncAiKnowledgeFromDashboard } = await import("@/lib/aiKnowledgeServer");
+  await syncAiKnowledgeFromDashboard();
+
   return normalized;
 }
 

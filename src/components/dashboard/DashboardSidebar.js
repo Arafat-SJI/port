@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import FileIcon from "@/components/ui/FileIcon";
-import { DASHBOARD_NAV } from "@/data/dashboard";
+import { DASHBOARD_NAV, isSettingsPath } from "@/data/dashboard";
 import { logoutAction } from "@/app/dashboard-araf/actions";
 import { saveSectionOrderAction } from "@/app/dashboard-araf/sectionOrderActions";
 import {
@@ -27,11 +27,10 @@ function DropGap({ active }) {
 export default function DashboardSidebar({
   email,
   initialSectionOrder,
-  mobileOpen = false,
   onClose,
 }) {
   const pathname = usePathname();
-  const settingsActive = pathname === "/dashboard-araf/settings";
+  const settingsActive = isSettingsPath(pathname);
   const [order, setAndBroadcast] = useSectionOrder(initialSectionOrder);
   const [dragSlug, setDragSlug] = useState(null);
   const [dropIndex, setDropIndex] = useState(null);
@@ -170,11 +169,7 @@ export default function DashboardSidebar({
   const isGapActive = (slot) => dragSlug !== null && dropIndex === slot;
 
   return (
-    <aside
-      className={`fixed inset-y-0 left-0 z-50 flex h-full w-[min(248px,85vw)] shrink-0 flex-col border-r border-border bg-surface-container-lowest transition-transform duration-200 ease-out md:relative md:inset-auto md:z-auto md:w-[248px] md:translate-x-0 md:shadow-none ${
-        mobileOpen ? "translate-x-0 shadow-xl" : "-translate-x-full md:translate-x-0"
-      }`}
-    >
+    <aside className="flex h-full w-[min(248px,85vw)] shrink-0 flex-col border-r border-border bg-surface-container-lowest md:w-[248px]">
       <div className="flex h-11 items-center gap-2 px-3">
         <span className="material-symbols-outlined text-[18px] text-primary">terminal</span>
         <div className="min-w-0 flex-1">
@@ -223,7 +218,7 @@ export default function DashboardSidebar({
             System
           </p>
           <Link
-            href="/dashboard-araf/settings"
+            href="/dashboard-araf/settings/email"
             onClick={() => onClose?.()}
             className={`flex cursor-pointer items-center gap-1.5 px-3 py-[6px] text-[12px] transition-colors ${
               settingsActive

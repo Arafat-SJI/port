@@ -52,6 +52,7 @@ export default function SearchSidebar({
   onSearchResultClick,
   onSearchQueryChange,
   aboutContent,
+  experienceContent,
 }) {
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
@@ -63,8 +64,14 @@ export default function SearchSidebar({
   const [expandedFiles, setExpandedFiles] = useState({});
 
   const results = useMemo(
-    () => searchPortfolio(query, { matchCase, wholeWord, useRegex }, aboutContent),
-    [query, matchCase, wholeWord, useRegex, aboutContent]
+    () =>
+      searchPortfolio(
+        query,
+        { matchCase, wholeWord, useRegex },
+        aboutContent,
+        experienceContent
+      ),
+    [query, matchCase, wholeWord, useRegex, aboutContent, experienceContent]
   );
 
   useEffect(() => {

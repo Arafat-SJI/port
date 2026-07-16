@@ -43,6 +43,7 @@ function extensionIdFromTab(tab) {
 export default function IDEWorkspace({
   sectionOrder: initialSectionOrder,
   aboutContent,
+  experienceContent,
 } = {}) {
   const mainRef = useRef(null);
   const contactTrackRef = useRef(null);
@@ -391,6 +392,7 @@ export default function IDEWorkspace({
                   onExtensionSelect={handleExtensionSelect}
                   navItems={navItems}
                   aboutContent={aboutContent}
+                  experienceContent={experienceContent}
                 />
               </div>
               {!sidebarsFixed && !drawerMode && (
@@ -422,6 +424,7 @@ export default function IDEWorkspace({
                       searchHighlight={selectedSearchMatch}
                       sectionOrder={order}
                       aboutContent={aboutContent}
+                      experienceContent={experienceContent}
                       onNavigateSection={navigateToSection}
                     />
                     <SectionSearchTarget

@@ -41,6 +41,7 @@ export async function saveAboutContentAction(prevState, formData) {
     imageUrl: formData.get("imageUrl"),
     summary: formData.get("summary"),
     interests: interestsRaw,
+    visibility: formData.get("visibility"),
   };
 
   const normalized = normalizeAboutContent(payload);
