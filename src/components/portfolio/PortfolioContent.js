@@ -13,9 +13,15 @@ import SkillsSection from "./sections/SkillsSection";
 import { NAV_ITEMS } from "@/data/portfolio";
 import { DEFAULT_ABOUT_CONTENT } from "@/lib/aboutContent";
 import { DEFAULT_EXPERIENCE_CONTENT } from "@/lib/experienceContent";
+import { DEFAULT_SKILLS_CONTENT } from "@/lib/skillsContent";
 import { orderNavItems } from "@/lib/sectionOrder";
 
-function createSectionRenderers(aboutContent, experienceContent, onNavigateSection) {
+function createSectionRenderers(
+  aboutContent,
+  experienceContent,
+  skillsContent,
+  onNavigateSection
+) {
   return {
     about: (searchHighlight) => (
       <SectionSearchTarget sectionHref="#about" searchHighlight={searchHighlight}>
@@ -32,7 +38,7 @@ function createSectionRenderers(aboutContent, experienceContent, onNavigateSecti
     ),
     skills: (searchHighlight) => (
       <SectionSearchTarget sectionHref="#skills" searchHighlight={searchHighlight}>
-        <SkillsSection />
+        <SkillsSection content={skillsContent} />
       </SectionSearchTarget>
     ),
     projects: (searchHighlight) => (
@@ -78,6 +84,7 @@ export default function PortfolioContent({
   sectionOrder,
   aboutContent = DEFAULT_ABOUT_CONTENT,
   experienceContent = DEFAULT_EXPERIENCE_CONTENT,
+  skillsContent = DEFAULT_SKILLS_CONTENT,
   onNavigateSection,
 }) {
   const ordered = orderNavItems(NAV_ITEMS, sectionOrder).filter(
@@ -86,6 +93,7 @@ export default function PortfolioContent({
   const renderers = createSectionRenderers(
     aboutContent,
     experienceContent,
+    skillsContent,
     onNavigateSection
   );
 

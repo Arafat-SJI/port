@@ -18,6 +18,7 @@ export default function ActivitySidebar({
   navItems,
   aboutContent,
   experienceContent,
+  skillsContent,
 }) {
   switch (activeActivity) {
     case "search":
@@ -28,6 +29,7 @@ export default function ActivitySidebar({
           onSearchQueryChange={onSearchQueryChange}
           aboutContent={aboutContent}
           experienceContent={experienceContent}
+          skillsContent={skillsContent}
         />
       );
     case "source-control":

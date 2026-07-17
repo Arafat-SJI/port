@@ -53,6 +53,7 @@ export default function SearchSidebar({
   onSearchQueryChange,
   aboutContent,
   experienceContent,
+  skillsContent,
 }) {
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
@@ -69,9 +70,10 @@ export default function SearchSidebar({
         query,
         { matchCase, wholeWord, useRegex },
         aboutContent,
-        experienceContent
+        experienceContent,
+        skillsContent
       ),
-    [query, matchCase, wholeWord, useRegex, aboutContent, experienceContent]
+    [query, matchCase, wholeWord, useRegex, aboutContent, experienceContent, skillsContent]
   );
 
   useEffect(() => {

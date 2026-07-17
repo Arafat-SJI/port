@@ -2,7 +2,7 @@
 
 > **Mandatory for every Cursor agent session:** Read this entire file before writing or changing any code. After finishing work from a user prompt, update this file so office PC and home PC sessions stay in sync.
 
-**Last updated:** 2026-07-17 (Experience editor: work mode, date pickers, visibility)
+**Last updated:** 2026-07-18 (Skills section dynamic + dashboard CRUD)
 
 ---
 
@@ -240,7 +240,7 @@ Activities from `ACTIVITY_ITEMS` in `portfolio.js`:
 |---------------|------------------|-----------|-------------|--------|
 | `#about` | About.tsx | `HeroSection` + `AboutSection` | Supabase `portfolio_settings` key `about` (+ `visibility` toggles) | **Dynamic** — edited at `/dashboard-araf/about` |
 | `#experience` | Experience.json | `ExperienceSection` | Supabase `portfolio_settings` key `experience` | **Dynamic** — edited at `/dashboard-araf/experience` |
-| `#skills` | Skills.ts | `SkillsSection` | `SKILLS` | Demo content |
+| `#skills` | Skills.ts | `SkillsSection` | Supabase `portfolio_settings` key `skills` | **Dynamic** — edited at `/dashboard-araf/skills` |
 | `#projects` | Projects.tsx | `ProjectsSection` | `PROJECTS` | Demo content |
 | `#education` | Education.json | `EducationSection` | `EDUCATION` | Demo content |
 | `#awards` | Awards.md | `AwardsSection` | `AWARDS` | Demo content |
@@ -364,6 +364,8 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 |--------|------|
 | `experienceContent.js` | Normalize Experience payload; defaults; search/AI helpers |
 | `experienceContentServer.js` | Read/write Experience in Supabase `portfolio_settings`; triggers AI knowledge sync |
+| `skillsContent.js` | Normalize Skills payload; defaults; search/AI helpers |
+| `skillsContentServer.js` | Read/write Skills in Supabase `portfolio_settings`; triggers AI knowledge sync |
 | `aiKnowledge.js` | Build AI chat knowledge payload + security refusal constants (no auth fields) |
 | `aiKnowledgeServer.js` | Sync/read `portfolio_settings.ai_knowledge`; optional local JSON mirror |
 | `extensionStorage.js` | Read/write extension + workspace localStorage; apply DOM attributes |
@@ -417,7 +419,8 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 - Aesthetic IDE-themed login (window chrome, soft primary/secondary glows, portfolio tokens).
 - Dashboard explorer items (except `Contact.sh`) support **drag-reorder** via a 3-bar grip on the right; order is stored in Supabase `portfolio_settings` (`key = section_order`), syncs to landing **Explorer**, **top tabs**, and **portfolio content**. Contact stays fixed last. Same-tab `CustomEvent` only (no localStorage for order).
 - **About content (live):** `/dashboard-araf/about` editor (`AboutEditor`) writes hero + summary/interests to `portfolio_settings` (`key = about`). Per-block **show/hide** toggles (`visibility`: image, headline, intro, primaryCta, secondaryCta, summary, interests) control public landing display; hidden content is kept in Supabase. Public `/` SSR-loads it into `HeroSection` / `AboutSection`. Helpers: `src/lib/aboutContent.js`, `aboutContentServer.js`, `aboutActions.js`. Migration seed: `supabase/migrations/002_about_content.sql`. Fallback defaults only if row missing.
-- **Experience content (live):** `/dashboard-araf/experience` editor (`ExperienceEditor`) writes jobs (company, optional company URL, role, On-site/Remote dropdown, employment type as plain text, start/end date pickers displaying `June 25, 2024`, location, bullets, per-entry show/hide) to `portfolio_settings` (`key = experience`). Company name links open `companyUrl` when set. Hidden entries stay in Supabase but are omitted from the public portfolio, search, and AI knowledge. Public `/` SSR-loads into `ExperienceSection`. Helpers: `experienceContent.js`, `experienceContentServer.js`, `experienceActions.js`. Migration seed: `supabase/migrations/006_experience_content.sql`.
+- **Experience content (live):** `/dashboard-araf/experience` editor (`ExperienceEditor`) writes jobs (company, optional company URL, role, On-site/Remote dropdown, employment type as plain text, start/end date pickers displaying `June 25, 2024`, location, bullets, per-entry show/hide) to `portfolio_settings` (`key = experience`). Company name links open `companyUrl` when set. Hidden entries stay in Supabase but are omitted from the public portfolio, search, and AI knowledge. Remove actions use shared `ConfirmModal` (“Are you sure?”). Public `/` SSR-loads into `ExperienceSection`. Helpers: `experienceContent.js`, `experienceContentServer.js`, `experienceActions.js`. Migration seed: `supabase/migrations/006_experience_content.sql`.
+- **Skills content (live):** `/dashboard-araf/skills` editor (`SkillsEditor`) writes skill groups (title, items one-per-line, reorder, per-group show/hide) to `portfolio_settings` (`key = skills`). Hidden groups stay in Supabase but are omitted from the public portfolio, search, and AI knowledge. Public `/` SSR-loads into `SkillsSection`. Helpers: `skillsContent.js`, `skillsContentServer.js`, `skillsActions.js`. Migration seed: `supabase/migrations/007_skills_content.sql`.
 - `src/lib/sectionOrder.js` / `sectionOrderServer.js`, `src/hooks/useSectionOrder.js`, `GET /api/section-order`, `saveSectionOrderAction`
 - Migration SQL: `supabase/migrations/001_portfolio_settings.sql` (must be run once in Supabase SQL Editor). Fallback defaults only: `src/data/sectionOrder.json`.
 
@@ -439,9 +442,13 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 - `src/app/dashboard-araf/(workspace)/page.js` — content overview grid
 - `src/app/dashboard-araf/(workspace)/about/page.js` — **About CRUD editor** (hero + summary/interests)
 - `src/app/dashboard-araf/(workspace)/experience/page.js` — **Experience CRUD editor**
-- `src/app/dashboard-araf/(workspace)/[section]/page.js` — placeholders for other sections (about + experience excluded)
+- `src/app/dashboard-araf/(workspace)/skills/page.js` — **Skills CRUD editor**
+- `src/app/dashboard-araf/(workspace)/[section]/page.js` — placeholders for other sections (about + experience + skills excluded)
 - `src/app/dashboard-araf/experienceActions.js` — `saveExperienceContentAction`
+- `src/app/dashboard-araf/skillsActions.js` — `saveSkillsContentAction`
 - `src/components/dashboard/ExperienceEditor.js` — Experience form UI
+- `src/components/dashboard/SkillsEditor.js` — Skills form UI
+- `src/components/dashboard/Modal.js` — shared `Modal` shell + `ConfirmModal` + `StatusModal` (blurred backdrop)
 - `src/components/dashboard/SettingsSidebar.js` — nested settings nav (email / password) with back control
 - `src/components/dashboard/ChangeEmailForm.js` / `ChangePasswordForm.js` — separate settings forms
 - `src/app/dashboard-araf/(workspace)/settings/page.js` — redirects to `/settings/email`
@@ -481,7 +488,7 @@ Local mirror removed — production reads the Supabase `portfolio_settings.ai_kn
 
 ### 2.17 What is intentionally NOT built yet
 
-- No CRUD yet for sections other than **About** and **Experience** (Skills…Contact still placeholders)
+- No CRUD yet for sections other than **About**, **Experience**, and **Skills** (Projects…Contact still placeholders)
 - No real AI chat answers (chat is UI shell; knowledge sync to Supabase exists but ChatPanel not wired)
 - Remaining middle sections still use demo static data
 - Hero CTAs: primary scrolls to Projects; secondary opens CV PDF in a new tab when uploaded (dashboard upload → Supabase Storage `portfolio-cv`)
@@ -527,16 +534,16 @@ Local mirror removed — production reads the Supabase `portfolio_settings.ai_kn
 
 | # | Item | Status |
 |---|------|--------|
-| 1 | Per-section: replace demo data with real content + optional design pass | **In progress** — About + Experience dynamic; other sections waiting |
-| 2 | After each section confirmed: add dashboard CRUD fields for that section | **Partial** — About + Experience done; others waiting |
+| 1 | Per-section: replace demo data with real content + optional design pass | **In progress** — About + Experience + Skills dynamic; other sections waiting |
+| 2 | After each section confirmed: add dashboard CRUD fields for that section | **Partial** — About + Experience + Skills done; others waiting |
 | 3 | Create `/dashboard-araf` app route + auth/flow | **Done** (2026-07-14) — login only, no register, no landing links |
 | 4 | Integrate Supabase Auth client + proxy guard | **Done** (2026-07-14) |
 | 4b | Section order in Supabase (`portfolio_settings`) | **Done** (2026-07-14) — run migration SQL once if table missing |
-| 4c | Per-section content tables + dashboard CRUD | **Partial** — About + Experience in `portfolio_settings`; other sections waiting |
-| 5 | Wire portfolio page to load dynamic content (IDE chrome unchanged) | **Partial** — About + Experience + section order SSR; other sections still static |
-| 6 | Auto-generate/update project JSON from dashboard data for AI chat | **Partial** — syncs About + Experience to Supabase `ai_knowledge`; expands as more sections get CRUD. Auth excluded; refusal text included |
+| 4c | Per-section content tables + dashboard CRUD | **Partial** — About + Experience + Skills in `portfolio_settings`; other sections waiting |
+| 5 | Wire portfolio page to load dynamic content (IDE chrome unchanged) | **Partial** — About + Experience + Skills + section order SSR; other sections still static |
+| 6 | Auto-generate/update project JSON from dashboard data for AI chat | **Partial** — syncs About + Experience + Skills to Supabase `ai_knowledge`; expands as more sections get CRUD. Auth excluded; refusal text included |
 | 7 | Wire ChatPanel to real AI answers using that JSON | Waiting |
-| 8 | Ensure zero static “about me” content remains in site data modules | **Partial** — About + Experience live from DB; static modules remain fallbacks for other sections |
+| 8 | Ensure zero static “about me” content remains in site data modules | **Partial** — About + Experience + Skills live from DB; static modules remain fallbacks for other sections |
 | 9 | Dashboard password-change UI (Supabase Auth only; never writes to AI JSON) | **Done** (2026-07-14) — Settings + forgot-password email flow |
 | 9b | Dashboard email-change UI (verify password → new email; Auth only; never AI JSON) | **Done** (2026-07-17) |
 
@@ -596,4 +603,7 @@ _(Append new future plans here when the user says “I have a plan…” / “no
 | 2026-07-17 | **Settings AI Context Knowledgebase:** Read-only page at `/settings/ai-knowledge` fetches `portfolio_settings.ai_knowledge` and displays formatted JSON (not editable). |
 | 2026-07-17 | **Experience dynamic:** Dashboard `/dashboard-araf/experience` CRUD (company, optional company URL, role, employment type, dates, location, bullets) → Supabase `portfolio_settings.experience`. Landing SSR + company name link. AI knowledge sync includes experience. Migration `006_experience_content.sql`. |
 | 2026-07-17 | **Experience editor UX:** On-site/Remote select; start/end date pickers with `June 25, 2024` display; employment type plain input (no datalist arrow); per-entry Shown/Hidden toggle (`visible`). |
-)
+| 2026-07-18 | **Dashboard remove confirm:** Shared `ConfirmModal` — Experience entry Remove, About image Remove, and Remove CV all ask “Are you sure?” before deleting. |
+| 2026-07-18 | **Dashboard modals unified:** `src/components/dashboard/Modal.js` — base `Modal` + `ConfirmModal` + `StatusModal` (same panel UI). Backdrop dim overlay (`bg-black/70`, no blur) + modal panel shadow/border so it reads against matching surface colors. Portaled to `document.body` at `z-[100]`. About + Experience success/error use `StatusModal`. |
+| 2026-07-18 | **Skills dynamic:** Dashboard `/dashboard-araf/skills` CRUD (skill groups: title, items, reorder, show/hide) → Supabase `portfolio_settings.skills`. Landing SSR. Search + AI knowledge sync. Migration `007_skills_content.sql`. |
+

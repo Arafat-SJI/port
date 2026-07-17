@@ -44,6 +44,7 @@ export default function IDEWorkspace({
   sectionOrder: initialSectionOrder,
   aboutContent,
   experienceContent,
+  skillsContent,
 } = {}) {
   const mainRef = useRef(null);
   const contactTrackRef = useRef(null);
@@ -393,6 +394,7 @@ export default function IDEWorkspace({
                   navItems={navItems}
                   aboutContent={aboutContent}
                   experienceContent={experienceContent}
+                  skillsContent={skillsContent}
                 />
               </div>
               {!sidebarsFixed && !drawerMode && (
@@ -425,6 +427,7 @@ export default function IDEWorkspace({
                       sectionOrder={order}
                       aboutContent={aboutContent}
                       experienceContent={experienceContent}
+                      skillsContent={skillsContent}
                       onNavigateSection={navigateToSection}
                     />
                     <SectionSearchTarget

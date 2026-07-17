@@ -5,7 +5,12 @@ import LiveAnimationBackground from "@/components/ui/LiveAnimationBackground";
 import ShaderBackground from "@/components/ui/ShaderBackground";
 import { ExtensionsProvider } from "@/hooks/useExtensions";
 
-export default function HomeClient({ sectionOrder, aboutContent, experienceContent }) {
+export default function HomeClient({
+  sectionOrder,
+  aboutContent,
+  experienceContent,
+  skillsContent,
+}) {
   return (
     <ExtensionsProvider>
       <ShaderBackground />
@@ -14,6 +19,7 @@ export default function HomeClient({ sectionOrder, aboutContent, experienceConte
         sectionOrder={sectionOrder}
         aboutContent={aboutContent}
         experienceContent={experienceContent}
+        skillsContent={skillsContent}
       />
     </ExtensionsProvider>
   );

@@ -8,6 +8,7 @@ import {
   uploadAboutImageAction,
   uploadCvAction,
 } from "@/app/dashboard-araf/aboutActions";
+import { ConfirmModal, StatusModal } from "@/components/dashboard/Modal";
 import {
   DEFAULT_ABOUT_VISIBILITY,
   introHtmlToMarkup,
@@ -87,6 +88,8 @@ export default function AboutEditor({ initialContent }) {
   const [removing, startRemove] = useTransition();
   const [removingImage, startRemoveImage] = useTransition();
   const [removeError, setRemoveError] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [flash, setFlash] = useState(null);
   const [content, setContent] = useState(() => ({
     ...initialContent,
     visibility: normalizeAboutVisibility(
@@ -136,6 +139,34 @@ export default function AboutEditor({ initialContent }) {
     }
   }, [imageUploadState]);
 
+  useEffect(() => {
+    const error =
+      state?.error || uploadState?.error || imageUploadState?.error || removeError;
+    if (error) {
+      setFlash({ type: "error", text: error });
+      return;
+    }
+    if (state?.success && state.message) {
+      setFlash({ type: "success", text: state.message });
+      return;
+    }
+    if (uploadState?.success && uploadState.message) {
+      setFlash({ type: "success", text: uploadState.message });
+      return;
+    }
+    if (imageUploadState?.success && imageUploadState.message) {
+      setFlash({ type: "success", text: imageUploadState.message });
+    }
+  }, [state, uploadState, imageUploadState, removeError]);
+
+  useEffect(() => {
+    if (!flash) return undefined;
+    const timer = window.setTimeout(() => setFlash(null), 2000);
+    return () => window.clearTimeout(timer);
+  }, [flash]);
+
+  const closeFlash = () => setFlash(null);
+
   const update = (key) => (e) => {
     setContent((prev) => ({ ...prev, [key]: e.target.value }));
   };
@@ -168,6 +199,7 @@ export default function AboutEditor({ initialContent }) {
     setRemoveError(null);
     startRemove(async () => {
       const result = await removeCvAction();
+      setConfirmAction(null);
       if (result?.error) {
         setRemoveError(result.error);
         return;
@@ -177,6 +209,7 @@ export default function AboutEditor({ initialContent }) {
           ...result.content,
           visibility: normalizeAboutVisibility(result.content.visibility),
         });
+        setFlash({ type: "success", text: result.message || "CV removed." });
       }
     });
   };
@@ -185,6 +218,7 @@ export default function AboutEditor({ initialContent }) {
     setRemoveError(null);
     startRemoveImage(async () => {
       const result = await removeAboutImageAction();
+      setConfirmAction(null);
       if (result?.error) {
         setRemoveError(result.error);
         return;
@@ -194,23 +228,23 @@ export default function AboutEditor({ initialContent }) {
           ...result.content,
           visibility: normalizeAboutVisibility(result.content.visibility),
         });
+        setFlash({ type: "success", text: result.message || "Image removed." });
       }
     });
+  };
+
+  const requestRemoveImage = () => setConfirmAction("image");
+  const requestRemoveCv = () => setConfirmAction("cv");
+
+  const confirmPendingRemove = () => {
+    if (confirmAction === "image") handleRemoveImage();
+    else if (confirmAction === "cv") handleRemoveCv();
   };
 
   const visibility = normalizeAboutVisibility(content.visibility);
   const introEmpty = !stripIntroMarkup(content.intro ?? "").trim();
   const hasCv = Boolean(content.cvUrl?.trim());
   const hasImage = Boolean(content.imageUrl?.trim());
-  const statusError =
-    state?.error || uploadState?.error || imageUploadState?.error || removeError;
-  const statusSuccess = state?.success
-    ? state.message
-    : uploadState?.success
-      ? uploadState.message
-      : imageUploadState?.success
-        ? imageUploadState.message
-        : null;
 
   return (
     <div className="space-y-6">
@@ -262,7 +296,7 @@ export default function AboutEditor({ initialContent }) {
                   </a>
                   <button
                     type="button"
-                    onClick={handleRemoveImage}
+                    onClick={requestRemoveImage}
                     disabled={removingImage}
                     className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-error-container/20 px-3 text-[12px] text-error transition hover:bg-error-container/35 disabled:cursor-not-allowed disabled:opacity-60"
                   >
@@ -481,7 +515,7 @@ export default function AboutEditor({ initialContent }) {
                   </a>
                   <button
                     type="button"
-                    onClick={handleRemoveCv}
+                    onClick={requestRemoveCv}
                     disabled={removing}
                     className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-error-container/20 px-3 text-[12px] text-error transition hover:bg-error-container/35 disabled:cursor-not-allowed disabled:opacity-60"
                   >
@@ -577,24 +611,6 @@ export default function AboutEditor({ initialContent }) {
           </div>
         </section>
 
-        {statusError ? (
-          <p
-            className="rounded-lg bg-error-container/25 px-3 py-2 text-[12px] text-error"
-            role="alert"
-          >
-            {statusError}
-          </p>
-        ) : null}
-
-        {statusSuccess ? (
-          <p
-            className="rounded-lg bg-secondary/10 px-3 py-2 text-[12px] text-secondary"
-            role="status"
-          >
-            {statusSuccess}
-          </p>
-        ) : null}
-
         <button
           type="submit"
           disabled={pending || introEmpty}
@@ -611,6 +627,33 @@ export default function AboutEditor({ initialContent }) {
         action={imageUploadAction}
         className="hidden"
         aria-hidden
+      />
+
+      <StatusModal
+        open={Boolean(flash)}
+        type={flash?.type === "error" ? "error" : "success"}
+        message={flash?.text}
+        onClose={closeFlash}
+        autoCloseMs={2000}
+      />
+
+      <ConfirmModal
+        open={confirmAction === "image" || confirmAction === "cv"}
+        title="Are you sure?"
+        message={
+          confirmAction === "image"
+            ? "Remove the About profile image? This cannot be undone."
+            : confirmAction === "cv"
+              ? "Remove the uploaded CV? This cannot be undone."
+              : null
+        }
+        confirmLabel="Remove"
+        confirming={removing || removingImage}
+        onCancel={() => {
+          if (removing || removingImage) return;
+          setConfirmAction(null);
+        }}
+        onConfirm={confirmPendingRemove}
       />
     </div>
   );

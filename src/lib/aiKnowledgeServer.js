@@ -7,6 +7,8 @@ import {
 } from "@/lib/aiKnowledge";
 import { experienceForAiKnowledge } from "@/lib/experienceContent";
 import { readExperienceContentFromSupabase } from "@/lib/experienceContentServer";
+import { skillsForAiKnowledge } from "@/lib/skillsContent";
+import { readSkillsContentFromSupabase } from "@/lib/skillsContentServer";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { readSectionOrderFromSupabase } from "@/lib/sectionOrderServer";
 
@@ -17,9 +19,10 @@ import { readSectionOrderFromSupabase } from "@/lib/sectionOrderServer";
  */
 export async function syncAiKnowledgeFromDashboard() {
   try {
-    const [about, experience, sectionOrder] = await Promise.all([
+    const [about, experience, skills, sectionOrder] = await Promise.all([
       readAboutContentFromSupabase(),
       readExperienceContentFromSupabase(),
+      readSkillsContentFromSupabase(),
       readSectionOrderFromSupabase(),
     ]);
 
@@ -29,6 +32,7 @@ export async function syncAiKnowledgeFromDashboard() {
         introPlain: stripIntroMarkup(about.intro),
       },
       experience: experienceForAiKnowledge(experience),
+      skills: skillsForAiKnowledge(skills),
       sectionOrder,
     });
 
@@ -74,6 +78,7 @@ export async function readAiKnowledgeFromSupabase() {
         sectionOrder: [],
         about: null,
         experience: [],
+        skills: [],
       };
     }
 
@@ -90,6 +95,7 @@ export async function readAiKnowledgeFromSupabase() {
         ...(value.security && typeof value.security === "object" ? value.security : {}),
       },
       experience: Array.isArray(value.experience) ? value.experience : [],
+      skills: Array.isArray(value.skills) ? value.skills : [],
     };
   } catch {
     return {
@@ -98,6 +104,7 @@ export async function readAiKnowledgeFromSupabase() {
       sectionOrder: [],
       about: null,
       experience: [],
+      skills: [],
     };
   }
 }

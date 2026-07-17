@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { saveExperienceContentAction } from "@/app/dashboard-araf/experienceActions";
+import { ConfirmModal, StatusModal } from "@/components/dashboard/Modal";
 import {
   createEmptyExperienceItem,
   formatExperienceDateDisplay,
@@ -129,6 +130,7 @@ export default function ExperienceEditor({ initialContent }) {
     normalizeExperienceContent(initialContent)
   );
   const [flash, setFlash] = useState(null);
+  const [pendingRemove, setPendingRemove] = useState(null);
 
   useEffect(() => {
     if (state?.success && state.content) {
@@ -162,10 +164,19 @@ export default function ExperienceEditor({ initialContent }) {
     }));
   };
 
-  const removeItem = (id) => {
+  const requestRemoveItem = (item, index) => {
+    setPendingRemove({
+      id: item.id,
+      label: item.company || item.role || `Experience ${index + 1}`,
+    });
+  };
+
+  const confirmRemoveItem = () => {
+    if (!pendingRemove) return;
     setContent((prev) => ({
-      items: prev.items.filter((item) => item.id !== id),
+      items: prev.items.filter((item) => item.id !== pendingRemove.id),
     }));
+    setPendingRemove(null);
   };
 
   const addItem = () => {
@@ -235,7 +246,7 @@ export default function ExperienceEditor({ initialContent }) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => requestRemoveItem(item, index)}
                   className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-md bg-error-container/20 px-2 text-[11px] text-error transition hover:bg-error-container/35"
                 >
                   <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -412,63 +423,26 @@ export default function ExperienceEditor({ initialContent }) {
         </button>
       </form>
 
-      {flash ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={closeFlash}
-          role="presentation"
-        >
-          <div
-            role={flash.type === "error" ? "alert" : "status"}
-            className="w-full max-w-sm overflow-hidden rounded-xl bg-surface-container-lowest px-5 pt-5 pb-4 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start gap-3">
-              <span
-                className={`material-symbols-outlined mt-0.5 text-[22px] ${
-                  flash.type === "error" ? "text-error" : "text-secondary"
-                }`}
-              >
-                {flash.type === "error" ? "error" : "check_circle"}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-medium text-on-surface">
-                  {flash.type === "error" ? "Something went wrong" : "Success"}
-                </p>
-                <p className="mt-1 text-[13px] text-on-surface-variant">{flash.text}</p>
-              </div>
-              <button
-                type="button"
-                onClick={closeFlash}
-                className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-on-surface-variant transition hover:bg-surface-container-high"
-                aria-label="Close"
-              >
-                <span className="material-symbols-outlined text-[18px]">close</span>
-              </button>
-            </div>
-            <div
-              className="mt-4 h-0.5 w-full overflow-hidden rounded-full bg-surface-container-high"
-              aria-hidden
-            >
-              <div
-                key={flash.text}
-                className={`h-full w-full origin-left rounded-full ${
-                  flash.type === "error" ? "bg-error/70" : "bg-secondary/70"
-                }`}
-                style={{
-                  animation: "experience-flash-loader 2s linear forwards",
-                }}
-              />
-            </div>
-            <style>{`
-              @keyframes experience-flash-loader {
-                from { transform: scaleX(1); }
-                to { transform: scaleX(0); }
-              }
-            `}</style>
-          </div>
-        </div>
-      ) : null}
+      <StatusModal
+        open={Boolean(flash)}
+        type={flash?.type === "error" ? "error" : "success"}
+        message={flash?.text}
+        onClose={closeFlash}
+        autoCloseMs={2000}
+      />
+
+      <ConfirmModal
+        open={Boolean(pendingRemove)}
+        title="Are you sure?"
+        message={
+          pendingRemove
+            ? `Remove “${pendingRemove.label}”? This will be deleted after you save.`
+            : null
+        }
+        confirmLabel="Remove"
+        onCancel={() => setPendingRemove(null)}
+        onConfirm={confirmRemoveItem}
+      />
     </div>
   );
 }

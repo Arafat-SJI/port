@@ -13,8 +13,9 @@ import {
 } from "@/data/portfolio";
 import { aboutSearchLines } from "@/lib/aboutContent";
 import { experienceSearchLines } from "@/lib/experienceContent";
+import { skillsSearchLines } from "@/lib/skillsContent";
 
-function linesForHref(href, aboutContent, experienceContent) {
+function linesForHref(href, aboutContent, experienceContent, skillsContent) {
   switch (href) {
     case "#about":
       return aboutContent
@@ -25,7 +26,9 @@ function linesForHref(href, aboutContent, experienceContent) {
         ? experienceSearchLines(experienceContent)
         : EXPERIENCE.flatMap((e) => [e.role, e.company, e.description]);
     case "#skills":
-      return SKILLS.flatMap((g) => [g.title, ...g.items]);
+      return skillsContent
+        ? skillsSearchLines(skillsContent)
+        : SKILLS.flatMap((g) => [g.title, ...g.items]);
     case "#projects":
       return PROJECTS.flatMap((p) => [p.title, p.description, ...p.tags]);
     case "#education":
@@ -47,11 +50,11 @@ function linesForHref(href, aboutContent, experienceContent) {
   }
 }
 
-export function buildSearchIndex(aboutContent, experienceContent) {
+export function buildSearchIndex(aboutContent, experienceContent, skillsContent) {
   return NAV_ITEMS.map((item) => ({
     ...item,
     path: `portfolio/src/sections/${item.label}`,
-    lines: linesForHref(item.href, aboutContent, experienceContent),
+    lines: linesForHref(item.href, aboutContent, experienceContent, skillsContent),
   }));
 }
 
@@ -80,13 +83,19 @@ export function buildSearchMatcher(query, options) {
   return buildMatcher(query.trim(), options);
 }
 
-export function searchPortfolio(query, options, aboutContent, experienceContent) {
+export function searchPortfolio(
+  query,
+  options,
+  aboutContent,
+  experienceContent,
+  skillsContent
+) {
   const matcher = buildMatcher(query.trim(), options);
   if (!matcher) return [];
 
   const index =
-    aboutContent || experienceContent
-      ? buildSearchIndex(aboutContent, experienceContent)
+    aboutContent || experienceContent || skillsContent
+      ? buildSearchIndex(aboutContent, experienceContent, skillsContent)
       : SEARCH_INDEX;
 
   return index.flatMap((file) => {
