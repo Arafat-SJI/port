@@ -10,6 +10,7 @@ export default function HomeClient({
   aboutContent,
   experienceContent,
   skillsContent,
+  projectsContent,
 }) {
   return (
     <ExtensionsProvider>
@@ -20,6 +21,7 @@ export default function HomeClient({
         aboutContent={aboutContent}
         experienceContent={experienceContent}
         skillsContent={skillsContent}
+        projectsContent={projectsContent}
       />
     </ExtensionsProvider>
   );

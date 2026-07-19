@@ -45,6 +45,7 @@ export default function IDEWorkspace({
   aboutContent,
   experienceContent,
   skillsContent,
+  projectsContent,
 } = {}) {
   const mainRef = useRef(null);
   const contactTrackRef = useRef(null);
@@ -395,6 +396,7 @@ export default function IDEWorkspace({
                   aboutContent={aboutContent}
                   experienceContent={experienceContent}
                   skillsContent={skillsContent}
+                  projectsContent={projectsContent}
                 />
               </div>
               {!sidebarsFixed && !drawerMode && (
@@ -428,6 +430,7 @@ export default function IDEWorkspace({
                       aboutContent={aboutContent}
                       experienceContent={experienceContent}
                       skillsContent={skillsContent}
+                      projectsContent={projectsContent}
                       onNavigateSection={navigateToSection}
                     />
                     <SectionSearchTarget

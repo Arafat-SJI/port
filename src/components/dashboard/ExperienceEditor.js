@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { saveExperienceContentAction } from "@/app/dashboard-araf/experienceActions";
 import { ConfirmModal, StatusModal } from "@/components/dashboard/Modal";
+import ItemActionsMenu from "@/components/dashboard/ItemActionsMenu";
 import {
   createEmptyExperienceItem,
   formatExperienceDateDisplay,
@@ -24,37 +25,6 @@ const selectChevron =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")";
 
 const labelClass = "block text-[12px] text-on-surface-variant mb-1.5";
-
-function VisibilityToggle({ id, label, checked, onChange }) {
-  return (
-    <label
-      htmlFor={id}
-      className="inline-flex cursor-pointer items-center gap-1.5 select-none"
-      title={checked ? "Visible on portfolio" : "Hidden on portfolio"}
-    >
-      <span className="text-[10px] text-on-surface-variant/80">
-        {checked ? "Shown" : "Hidden"}
-      </span>
-      <button
-        id={id}
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-label={`${label}: ${checked ? "shown" : "hidden"} on portfolio`}
-        onClick={() => onChange(!checked)}
-        className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${
-          checked ? "bg-on-surface-variant/55" : "bg-surface-container-high"
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 left-0.5 h-3 w-3 rounded-full bg-on-surface shadow-sm transition-transform ${
-            checked ? "translate-x-3" : "translate-x-0"
-          }`}
-        />
-      </button>
-    </label>
-  );
-}
 
 function DatePickerField({
   id,
@@ -129,12 +99,17 @@ export default function ExperienceEditor({ initialContent }) {
   const [content, setContent] = useState(() =>
     normalizeExperienceContent(initialContent)
   );
+  const [savedSnapshot, setSavedSnapshot] = useState(() =>
+    JSON.stringify(normalizeExperienceContent(initialContent))
+  );
   const [flash, setFlash] = useState(null);
   const [pendingRemove, setPendingRemove] = useState(null);
 
   useEffect(() => {
     if (state?.success && state.content) {
-      setContent(normalizeExperienceContent(state.content));
+      const next = normalizeExperienceContent(state.content);
+      setContent(next);
+      setSavedSnapshot(JSON.stringify(next));
     }
   }, [state]);
 
@@ -173,10 +148,16 @@ export default function ExperienceEditor({ initialContent }) {
 
   const confirmRemoveItem = () => {
     if (!pendingRemove) return;
+    const label = pendingRemove.label;
     setContent((prev) => ({
       items: prev.items.filter((item) => item.id !== pendingRemove.id),
     }));
     setPendingRemove(null);
+    setFlash({
+      type: "success",
+      title: "Deleted",
+      text: `“${label}” removed. Save to apply on the portfolio.`,
+    });
   };
 
   const addItem = () => {
@@ -197,6 +178,8 @@ export default function ExperienceEditor({ initialContent }) {
       return { items };
     });
   };
+
+  const isDirty = JSON.stringify(content) !== savedSnapshot;
 
   return (
     <div className="space-y-6">
@@ -219,40 +202,16 @@ export default function ExperienceEditor({ initialContent }) {
                   {item.company || item.role || `Experience ${index + 1}`}
                 </h2>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <VisibilityToggle
-                  id={`vis-${item.id}`}
-                  label={item.company || item.role || `Experience ${index + 1}`}
-                  checked={item.visible !== false}
-                  onChange={(next) => updateItem(item.id, { visible: next })}
-                />
-                <button
-                  type="button"
-                  onClick={() => moveItem(item.id, -1)}
-                  disabled={index === 0}
-                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-on-surface-variant transition hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label="Move up"
-                >
-                  <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => moveItem(item.id, 1)}
-                  disabled={index === content.items.length - 1}
-                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-on-surface-variant transition hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label="Move down"
-                >
-                  <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => requestRemoveItem(item, index)}
-                  className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-md bg-error-container/20 px-2 text-[11px] text-error transition hover:bg-error-container/35"
-                >
-                  <span className="material-symbols-outlined text-[16px]">delete</span>
-                  Remove
-                </button>
-              </div>
+              <ItemActionsMenu
+                label={item.company || item.role || `Experience ${index + 1}`}
+                visible={item.visible !== false}
+                onToggleVisible={(next) => updateItem(item.id, { visible: next })}
+                onDelete={() => requestRemoveItem(item, index)}
+                onMoveUp={() => moveItem(item.id, -1)}
+                onMoveDown={() => moveItem(item.id, 1)}
+                canMoveUp={index > 0}
+                canMoveDown={index < content.items.length - 1}
+              />
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
@@ -404,28 +363,31 @@ export default function ExperienceEditor({ initialContent }) {
           </section>
         ))}
 
-        <button
-          type="button"
-          onClick={addItem}
-          className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-container-lowest/60 px-4 text-[13px] font-medium text-on-surface-variant transition hover:border-primary/40 hover:text-on-surface sm:w-auto"
-        >
-          <span className="material-symbols-outlined text-[18px]">add</span>
-          Add experience
-        </button>
+        <div className="flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={addItem}
+            className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-primary/35 bg-primary/10 px-4 text-[13px] font-semibold text-primary transition hover:border-primary/55 hover:bg-primary/15"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            Add experience
+          </button>
 
-        <button
-          type="submit"
-          disabled={pending || !content.items.length}
-          className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 text-[13px] font-semibold text-on-primary transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-        >
-          <span className="material-symbols-outlined text-[16px]">save</span>
-          {pending ? "Saving…" : "Save Experience"}
-        </button>
+          <button
+            type="submit"
+            disabled={pending || !content.items.length || !isDirty}
+            className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-transparent bg-primary px-4 text-[13px] font-semibold text-on-primary transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span className="material-symbols-outlined text-[18px]">save</span>
+            {pending ? "Saving…" : "Save Experience"}
+          </button>
+        </div>
       </form>
 
       <StatusModal
         open={Boolean(flash)}
         type={flash?.type === "error" ? "error" : "success"}
+        title={flash?.title}
         message={flash?.text}
         onClose={closeFlash}
         autoCloseMs={2000}
@@ -439,7 +401,7 @@ export default function ExperienceEditor({ initialContent }) {
             ? `Remove “${pendingRemove.label}”? This will be deleted after you save.`
             : null
         }
-        confirmLabel="Remove"
+        confirmLabel="Delete"
         onCancel={() => setPendingRemove(null)}
         onConfirm={confirmRemoveItem}
       />

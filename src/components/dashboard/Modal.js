@@ -60,7 +60,7 @@ export function ConfirmModal({
   open,
   title = "Are you sure?",
   message,
-  confirmLabel = "Remove",
+  confirmLabel = "Delete",
   cancelLabel = "Cancel",
   confirming = false,
   onConfirm,
@@ -113,10 +113,9 @@ export function ConfirmModal({
           type="button"
           onClick={onConfirm}
           disabled={confirming}
-          className="inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-error-container/35 px-3 text-[13px] font-medium text-error transition hover:bg-error-container/50 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-9 cursor-pointer items-center justify-center rounded-lg bg-error-container/35 px-3 text-[13px] font-medium text-error transition hover:bg-error-container/50 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <span className="material-symbols-outlined text-[16px]">delete</span>
-          {confirming ? "Removing…" : confirmLabel}
+          {confirming ? "Deleting…" : confirmLabel}
         </button>
       </div>
     </Modal>

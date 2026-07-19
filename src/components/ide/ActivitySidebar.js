@@ -19,6 +19,7 @@ export default function ActivitySidebar({
   aboutContent,
   experienceContent,
   skillsContent,
+  projectsContent,
 }) {
   switch (activeActivity) {
     case "search":
@@ -30,6 +31,7 @@ export default function ActivitySidebar({
           aboutContent={aboutContent}
           experienceContent={experienceContent}
           skillsContent={skillsContent}
+          projectsContent={projectsContent}
         />
       );
     case "source-control":

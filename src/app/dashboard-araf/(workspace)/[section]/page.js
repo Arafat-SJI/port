@@ -10,7 +10,14 @@ export default async function DashboardSectionPage({ params }) {
   if (RESERVED.has(section)) notFound();
 
   // Dedicated editors
-  if (section === "about" || section === "experience" || section === "skills") notFound();
+  if (
+    section === "about" ||
+    section === "experience" ||
+    section === "skills" ||
+    section === "projects"
+  ) {
+    notFound();
+  }
 
   const item = getDashboardNavItem(section);
 

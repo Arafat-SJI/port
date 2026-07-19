@@ -19,6 +19,22 @@ import {
 
 const initialState = { error: null, success: false, message: null, content: null };
 
+function aboutSaveSnapshot(content, interestsText) {
+  return JSON.stringify({
+    headlinePrefix: content?.headlinePrefix ?? "",
+    headlineHighlight: content?.headlineHighlight ?? "",
+    headlineSuffix: content?.headlineSuffix ?? "",
+    intro: content?.intro ?? "",
+    primaryCta: content?.primaryCta ?? "",
+    secondaryCta: content?.secondaryCta ?? "",
+    summary: content?.summary ?? "",
+    interests: interestsText ?? "",
+    visibility: normalizeAboutVisibility(content?.visibility),
+    cvUrl: content?.cvUrl ?? "",
+    imageUrl: content?.imageUrl ?? "",
+  });
+}
+
 const fieldClass =
   "w-full rounded-lg border-0 bg-surface-container-high px-3 py-2.5 text-[13px] text-on-surface outline-none placeholder:text-on-surface-variant/45 focus:ring-1 focus:ring-primary/40 transition-shadow";
 
@@ -99,6 +115,17 @@ export default function AboutEditor({ initialContent }) {
   const [interestsText, setInterestsText] = useState(
     (initialContent?.interests ?? []).join("\n")
   );
+  const [savedSnapshot, setSavedSnapshot] = useState(() =>
+    aboutSaveSnapshot(
+      {
+        ...initialContent,
+        visibility: normalizeAboutVisibility(
+          initialContent?.visibility ?? DEFAULT_ABOUT_VISIBILITY
+        ),
+      },
+      (initialContent?.interests ?? []).join("\n")
+    )
+  );
 
   useLayoutEffect(() => {
     if (!introRef.current || seededIntroRef.current) return;
@@ -108,11 +135,14 @@ export default function AboutEditor({ initialContent }) {
 
   useEffect(() => {
     if (state?.success && state.content) {
-      setContent({
+      const next = {
         ...state.content,
         visibility: normalizeAboutVisibility(state.content.visibility),
-      });
-      setInterestsText((state.content.interests ?? []).join("\n"));
+      };
+      const nextInterests = (state.content.interests ?? []).join("\n");
+      setContent(next);
+      setInterestsText(nextInterests);
+      setSavedSnapshot(aboutSaveSnapshot(next, nextInterests));
       if (introRef.current) {
         introRef.current.innerHTML = introMarkupToHtml(state.content.intro ?? "");
       }
@@ -121,9 +151,15 @@ export default function AboutEditor({ initialContent }) {
 
   useEffect(() => {
     if (uploadState?.success && uploadState.content) {
-      setContent({
+      const next = {
         ...uploadState.content,
         visibility: normalizeAboutVisibility(uploadState.content.visibility),
+      };
+      setContent(next);
+      setSavedSnapshot((prev) => {
+        // Keep interests text; only media URLs changed via upload
+        const interests = JSON.parse(prev).interests ?? "";
+        return aboutSaveSnapshot(next, interests);
       });
       if (fileRef.current) fileRef.current.value = "";
     }
@@ -131,9 +167,14 @@ export default function AboutEditor({ initialContent }) {
 
   useEffect(() => {
     if (imageUploadState?.success && imageUploadState.content) {
-      setContent({
+      const next = {
         ...imageUploadState.content,
         visibility: normalizeAboutVisibility(imageUploadState.content.visibility),
+      };
+      setContent(next);
+      setSavedSnapshot((prev) => {
+        const interests = JSON.parse(prev).interests ?? "";
+        return aboutSaveSnapshot(next, interests);
       });
       if (imageFileRef.current) imageFileRef.current.value = "";
     }
@@ -209,7 +250,21 @@ export default function AboutEditor({ initialContent }) {
           ...result.content,
           visibility: normalizeAboutVisibility(result.content.visibility),
         });
-        setFlash({ type: "success", text: result.message || "CV removed." });
+        setSavedSnapshot((prev) => {
+          const interests = JSON.parse(prev).interests ?? "";
+          return aboutSaveSnapshot(
+            {
+              ...result.content,
+              visibility: normalizeAboutVisibility(result.content.visibility),
+            },
+            interests
+          );
+        });
+        setFlash({
+          type: "success",
+          title: "Deleted",
+          text: result.message || "CV removed.",
+        });
       }
     });
   };
@@ -228,7 +283,21 @@ export default function AboutEditor({ initialContent }) {
           ...result.content,
           visibility: normalizeAboutVisibility(result.content.visibility),
         });
-        setFlash({ type: "success", text: result.message || "Image removed." });
+        setSavedSnapshot((prev) => {
+          const interests = JSON.parse(prev).interests ?? "";
+          return aboutSaveSnapshot(
+            {
+              ...result.content,
+              visibility: normalizeAboutVisibility(result.content.visibility),
+            },
+            interests
+          );
+        });
+        setFlash({
+          type: "success",
+          title: "Deleted",
+          text: result.message || "Image removed.",
+        });
       }
     });
   };
@@ -245,6 +314,7 @@ export default function AboutEditor({ initialContent }) {
   const introEmpty = !stripIntroMarkup(content.intro ?? "").trim();
   const hasCv = Boolean(content.cvUrl?.trim());
   const hasImage = Boolean(content.imageUrl?.trim());
+  const isDirty = aboutSaveSnapshot(content, interestsText) !== savedSnapshot;
 
   return (
     <div className="space-y-6">
@@ -298,10 +368,13 @@ export default function AboutEditor({ initialContent }) {
                     type="button"
                     onClick={requestRemoveImage}
                     disabled={removingImage}
-                    className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-error-container/20 px-3 text-[12px] text-error transition hover:bg-error-container/35 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-error transition hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60"
+                    aria-label={removingImage ? "Removing…" : "Remove"}
+                    title={removingImage ? "Removing…" : "Remove"}
                   >
-                    <span className="material-symbols-outlined !text-[16px]">delete</span>
-                    {removingImage ? "Removing…" : "Remove"}
+                    <span className="material-symbols-outlined !text-[16px]">
+                      {removingImage ? "progress_activity" : "delete"}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -517,10 +590,13 @@ export default function AboutEditor({ initialContent }) {
                     type="button"
                     onClick={requestRemoveCv}
                     disabled={removing}
-                    className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-error-container/20 px-3 text-[12px] text-error transition hover:bg-error-container/35 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-error transition hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60"
+                    aria-label={removing ? "Removing…" : "Remove CV"}
+                    title={removing ? "Removing…" : "Remove CV"}
                   >
-                    <span className="material-symbols-outlined !text-[16px]">delete</span>
-                    {removing ? "Removing…" : "Remove CV"}
+                    <span className="material-symbols-outlined !text-[16px]">
+                      {removing ? "progress_activity" : "delete"}
+                    </span>
                   </button>
                 </div>
               ) : (
@@ -611,14 +687,16 @@ export default function AboutEditor({ initialContent }) {
           </div>
         </section>
 
-        <button
-          type="submit"
-          disabled={pending || introEmpty}
-          className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 text-[13px] font-semibold text-on-primary transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-        >
-          <span className="material-symbols-outlined text-[16px]">save</span>
-          {pending ? "Saving…" : "Save About"}
-        </button>
+        <div className="flex items-center justify-end">
+          <button
+            type="submit"
+            disabled={pending || introEmpty || !isDirty}
+            className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-transparent bg-primary px-4 text-[13px] font-semibold text-on-primary transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span className="material-symbols-outlined text-[18px]">save</span>
+            {pending ? "Saving…" : "Save About"}
+          </button>
+        </div>
       </form>
 
       <form id="cv-upload-form" action={uploadAction} className="hidden" aria-hidden />
@@ -632,6 +710,7 @@ export default function AboutEditor({ initialContent }) {
       <StatusModal
         open={Boolean(flash)}
         type={flash?.type === "error" ? "error" : "success"}
+        title={flash?.title}
         message={flash?.text}
         onClose={closeFlash}
         autoCloseMs={2000}
@@ -647,7 +726,7 @@ export default function AboutEditor({ initialContent }) {
               ? "Remove the uploaded CV? This cannot be undone."
               : null
         }
-        confirmLabel="Remove"
+        confirmLabel="Delete"
         confirming={removing || removingImage}
         onCancel={() => {
           if (removing || removingImage) return;

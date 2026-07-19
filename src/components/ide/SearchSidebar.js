@@ -54,6 +54,7 @@ export default function SearchSidebar({
   aboutContent,
   experienceContent,
   skillsContent,
+  projectsContent,
 }) {
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
@@ -71,9 +72,19 @@ export default function SearchSidebar({
         { matchCase, wholeWord, useRegex },
         aboutContent,
         experienceContent,
-        skillsContent
+        skillsContent,
+        projectsContent
       ),
-    [query, matchCase, wholeWord, useRegex, aboutContent, experienceContent, skillsContent]
+    [
+      query,
+      matchCase,
+      wholeWord,
+      useRegex,
+      aboutContent,
+      experienceContent,
+      skillsContent,
+      projectsContent,
+    ]
   );
 
   useEffect(() => {

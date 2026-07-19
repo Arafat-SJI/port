@@ -19,7 +19,13 @@ export const AI_SECURITY_BLOCK = {
  * Build knowledge from dashboard public content only.
  * Omits visibility flags and any hidden About fields to keep tokens lean.
  */
-export function buildAiKnowledgePayload({ about, experience, skills, sectionOrder }) {
+export function buildAiKnowledgePayload({
+  about,
+  experience,
+  skills,
+  projects,
+  sectionOrder,
+}) {
   const a = about && typeof about === "object" ? about : {};
   const vis = a.visibility && typeof a.visibility === "object" ? a.visibility : {};
 
@@ -59,5 +65,6 @@ export function buildAiKnowledgePayload({ about, experience, skills, sectionOrde
     about: aboutOut,
     experience: Array.isArray(experience) ? experience : [],
     skills: Array.isArray(skills) ? skills : [],
+    projects: Array.isArray(projects) ? projects : [],
   };
 }

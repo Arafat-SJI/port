@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import { saveSkillsContentAction } from "@/app/dashboard-araf/skillsActions";
 import { ConfirmModal, StatusModal } from "@/components/dashboard/Modal";
+import ItemActionsMenu from "@/components/dashboard/ItemActionsMenu";
 import {
   createEmptySkillsGroup,
   normalizeSkillsContent,
@@ -15,37 +16,6 @@ const fieldClass =
 
 const labelClass = "block text-[12px] text-on-surface-variant mb-1.5";
 
-function VisibilityToggle({ id, label, checked, onChange }) {
-  return (
-    <label
-      htmlFor={id}
-      className="inline-flex cursor-pointer items-center gap-1.5 select-none"
-      title={checked ? "Visible on portfolio" : "Hidden on portfolio"}
-    >
-      <span className="text-[10px] text-on-surface-variant/80">
-        {checked ? "Shown" : "Hidden"}
-      </span>
-      <button
-        id={id}
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-label={`${label}: ${checked ? "shown" : "hidden"} on portfolio`}
-        onClick={() => onChange(!checked)}
-        className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${
-          checked ? "bg-on-surface-variant/55" : "bg-surface-container-high"
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 left-0.5 h-3 w-3 rounded-full bg-on-surface shadow-sm transition-transform ${
-            checked ? "translate-x-3" : "translate-x-0"
-          }`}
-        />
-      </button>
-    </label>
-  );
-}
-
 export default function SkillsEditor({ initialContent }) {
   const [state, formAction, pending] = useActionState(
     saveSkillsContentAction,
@@ -54,12 +24,17 @@ export default function SkillsEditor({ initialContent }) {
   const [content, setContent] = useState(() =>
     normalizeSkillsContent(initialContent)
   );
+  const [savedSnapshot, setSavedSnapshot] = useState(() =>
+    JSON.stringify(normalizeSkillsContent(initialContent))
+  );
   const [flash, setFlash] = useState(null);
   const [pendingRemove, setPendingRemove] = useState(null);
 
   useEffect(() => {
     if (state?.success && state.content) {
-      setContent(normalizeSkillsContent(state.content));
+      const next = normalizeSkillsContent(state.content);
+      setContent(next);
+      setSavedSnapshot(JSON.stringify(next));
     }
   }, [state]);
 
@@ -98,10 +73,16 @@ export default function SkillsEditor({ initialContent }) {
 
   const confirmRemoveGroup = () => {
     if (!pendingRemove) return;
+    const label = pendingRemove.label;
     setContent((prev) => ({
       groups: prev.groups.filter((group) => group.id !== pendingRemove.id),
     }));
     setPendingRemove(null);
+    setFlash({
+      type: "success",
+      title: "Deleted",
+      text: `“${label}” removed. Save to apply on the portfolio.`,
+    });
   };
 
   const addGroup = () => {
@@ -122,6 +103,8 @@ export default function SkillsEditor({ initialContent }) {
       return { groups };
     });
   };
+
+  const isDirty = JSON.stringify(content) !== savedSnapshot;
 
   return (
     <div className="space-y-6">
@@ -145,40 +128,16 @@ export default function SkillsEditor({ initialContent }) {
                   {group.title || `Group ${index + 1}`}
                 </h2>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <VisibilityToggle
-                  id={`vis-${group.id}`}
-                  label={group.title || `Group ${index + 1}`}
-                  checked={group.visible !== false}
-                  onChange={(next) => updateGroup(group.id, { visible: next })}
-                />
-                <button
-                  type="button"
-                  onClick={() => moveGroup(group.id, -1)}
-                  disabled={index === 0}
-                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-on-surface-variant transition hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label="Move up"
-                >
-                  <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => moveGroup(group.id, 1)}
-                  disabled={index === content.groups.length - 1}
-                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-on-surface-variant transition hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label="Move down"
-                >
-                  <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => requestRemoveGroup(group, index)}
-                  className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-md bg-error-container/20 px-2 text-[11px] text-error transition hover:bg-error-container/35"
-                >
-                  <span className="material-symbols-outlined text-[16px]">delete</span>
-                  Remove
-                </button>
-              </div>
+              <ItemActionsMenu
+                label={group.title || `Group ${index + 1}`}
+                visible={group.visible !== false}
+                onToggleVisible={(next) => updateGroup(group.id, { visible: next })}
+                onDelete={() => requestRemoveGroup(group, index)}
+                onMoveUp={() => moveGroup(group.id, -1)}
+                onMoveDown={() => moveGroup(group.id, 1)}
+                canMoveUp={index > 0}
+                canMoveDown={index < content.groups.length - 1}
+              />
             </div>
 
             <div>
@@ -216,28 +175,31 @@ export default function SkillsEditor({ initialContent }) {
         ))}
         </div>
 
-        <button
-          type="button"
-          onClick={addGroup}
-          className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-container-lowest/60 px-4 text-[13px] font-medium text-on-surface-variant transition hover:border-primary/40 hover:text-on-surface sm:w-auto"
-        >
-          <span className="material-symbols-outlined text-[18px]">add</span>
-          Add skill group
-        </button>
+        <div className="flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={addGroup}
+            className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-primary/35 bg-primary/10 px-4 text-[13px] font-semibold text-primary transition hover:border-primary/55 hover:bg-primary/15"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            Add skill group
+          </button>
 
-        <button
-          type="submit"
-          disabled={pending || !content.groups.length}
-          className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 text-[13px] font-semibold text-on-primary transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-        >
-          <span className="material-symbols-outlined text-[16px]">save</span>
-          {pending ? "Saving…" : "Save Skills"}
-        </button>
+          <button
+            type="submit"
+            disabled={pending || !content.groups.length || !isDirty}
+            className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-transparent bg-primary px-4 text-[13px] font-semibold text-on-primary transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span className="material-symbols-outlined text-[18px]">save</span>
+            {pending ? "Saving…" : "Save Skills"}
+          </button>
+        </div>
       </form>
 
       <StatusModal
         open={Boolean(flash)}
         type={flash?.type === "error" ? "error" : "success"}
+        title={flash?.title}
         message={flash?.text}
         onClose={closeFlash}
         autoCloseMs={2000}
@@ -251,7 +213,7 @@ export default function SkillsEditor({ initialContent }) {
             ? `Remove “${pendingRemove.label}”? This will be deleted after you save.`
             : null
         }
-        confirmLabel="Remove"
+        confirmLabel="Delete"
         onCancel={() => setPendingRemove(null)}
         onConfirm={confirmRemoveGroup}
       />
