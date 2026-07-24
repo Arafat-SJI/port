@@ -13,21 +13,21 @@ export default function MentorshipSection({ content }) {
   return (
     <section className="space-y-5 scroll-mt-[30px]" id="mentorship">
       <SectionHeader>{title}</SectionHeader>
-      <div className="grid grid-cols-3 gap-3 mb-1">
-        <div className="bg-surface-container-low border border-border rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-primary">{stats.mentees}</p>
-          <p className="text-[10px] text-on-surface-variant uppercase mt-1">Mentees</p>
-        </div>
-        <div className="bg-surface-container-low border border-border rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-primary">{stats.programs}</p>
-          <p className="text-[10px] text-on-surface-variant uppercase mt-1">Programs</p>
-        </div>
-        <div className="bg-surface-container-low border border-border rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-primary">{stats.active}</p>
-          <p className="text-[10px] text-on-surface-variant uppercase mt-1">Active</p>
-        </div>
-      </div>
       <div className="space-y-3">
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-surface-container-low border border-border rounded-xl p-4 text-center">
+            <p className="text-2xl font-bold text-primary">{stats.mentees}</p>
+            <p className="text-[10px] text-on-surface-variant uppercase mt-1">Mentees</p>
+          </div>
+          <div className="bg-surface-container-low border border-border rounded-xl p-4 text-center">
+            <p className="text-2xl font-bold text-primary">{stats.programs}</p>
+            <p className="text-[10px] text-on-surface-variant uppercase mt-1">Programs</p>
+          </div>
+          <div className="bg-surface-container-low border border-border rounded-xl p-4 text-center">
+            <p className="text-2xl font-bold text-primary">{stats.active}</p>
+            <p className="text-[10px] text-on-surface-variant uppercase mt-1">Active</p>
+          </div>
+        </div>
         {items.map((item) => (
           <div
             key={item.id}

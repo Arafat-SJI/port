@@ -17,6 +17,7 @@ export default function HomeClient({
   galleryContent,
   clubingContent,
   mentorshipContent,
+  contactContent,
 }) {
   return (
     <ExtensionsProvider>
@@ -34,6 +35,7 @@ export default function HomeClient({
         galleryContent={galleryContent}
         clubingContent={clubingContent}
         mentorshipContent={mentorshipContent}
+        contactContent={contactContent}
       />
     </ExtensionsProvider>
   );

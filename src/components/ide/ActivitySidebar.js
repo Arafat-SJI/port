@@ -26,6 +26,7 @@ export default function ActivitySidebar({
   galleryContent,
   clubingContent,
   mentorshipContent,
+  contactContent,
 }) {
   switch (activeActivity) {
     case "search":
@@ -44,6 +45,7 @@ export default function ActivitySidebar({
           galleryContent={galleryContent}
           clubingContent={clubingContent}
           mentorshipContent={mentorshipContent}
+          contactContent={contactContent}
         />
       );
     case "source-control":

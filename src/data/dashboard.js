@@ -30,6 +30,13 @@ export const SETTINGS_NAV = [
     group: "Account",
   },
   {
+    slug: "gemini-api",
+    href: "/dashboard-araf/settings/gemini-api",
+    label: "Gemini API key",
+    icon: "key",
+    group: "AI",
+  },
+  {
     slug: "ai-knowledge",
     href: "/dashboard-araf/settings/ai-knowledge",
     label: "AI Context Knowledgebase",
@@ -47,4 +54,26 @@ export function isSettingsPath(pathname) {
     pathname === "/dashboard-araf/settings" ||
     pathname?.startsWith("/dashboard-araf/settings/")
   );
+}
+
+export function isMessagesPath(pathname) {
+  return (
+    pathname === "/dashboard-araf/messages" ||
+    pathname?.startsWith("/dashboard-araf/messages/")
+  );
+}
+
+export function isAiChatsPath(pathname) {
+  return (
+    pathname === "/dashboard-araf/ai-chats" ||
+    pathname?.startsWith("/dashboard-araf/ai-chats/")
+  );
+}
+
+export function messageThreadHref(emailKey) {
+  return `/dashboard-araf/messages/${encodeURIComponent(String(emailKey ?? "").trim())}`;
+}
+
+export function aiChatThreadHref(ipKey) {
+  return `/dashboard-araf/ai-chats/${encodeURIComponent(String(ipKey ?? "").trim())}`;
 }

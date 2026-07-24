@@ -64,7 +64,11 @@ export default function SettingsSidebar({ onNavigate }) {
                       : "text-on-surface-text opacity-75 hover:bg-surface-container-hover-low hover:text-on-surface-variant-hover hover:opacity-100"
                   }`}
                 >
-                  <span className="material-symbols-outlined !text-[15px] text-primary/80">
+                  <span
+                    className={`material-symbols-outlined !text-[15px] text-primary/80 ${
+                      item.icon === "key" ? "rotate-90" : ""
+                    }`}
+                  >
                     {item.icon}
                   </span>
                   <span className="truncate">{item.label}</span>

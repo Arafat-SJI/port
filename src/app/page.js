@@ -2,6 +2,7 @@ import HomeClient from "@/components/HomeClient";
 import { readAboutContentFromSupabase } from "@/lib/aboutContentServer";
 import { readAwardsContentFromSupabase } from "@/lib/awardsContentServer";
 import { readClubingContentFromSupabase } from "@/lib/clubingContentServer";
+import { readContactContentFromSupabase } from "@/lib/contactContentServer";
 import { readEducationContentFromSupabase } from "@/lib/educationContentServer";
 import { readExperienceContentFromSupabase } from "@/lib/experienceContentServer";
 import { readGalleryContentFromSupabase } from "@/lib/galleryContentServer";
@@ -27,6 +28,7 @@ export default async function Home() {
     galleryContent,
     clubingContent,
     mentorshipContent,
+    contactContent,
   ] = await Promise.all([
     readSectionOrderFromSupabase(),
     readAboutContentFromSupabase(),
@@ -39,6 +41,7 @@ export default async function Home() {
     readGalleryContentFromSupabase(),
     readClubingContentFromSupabase(),
     readMentorshipContentFromSupabase(),
+    readContactContentFromSupabase(),
   ]);
   return (
     <HomeClient
@@ -53,6 +56,7 @@ export default async function Home() {
       galleryContent={galleryContent}
       clubingContent={clubingContent}
       mentorshipContent={mentorshipContent}
+      contactContent={contactContent}
     />
   );
 }

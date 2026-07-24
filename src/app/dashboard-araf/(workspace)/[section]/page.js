@@ -2,14 +2,20 @@ import { notFound } from "next/navigation";
 import FileIcon from "@/components/ui/FileIcon";
 import { getDashboardNavItem } from "@/data/dashboard";
 
-const RESERVED = new Set(["settings", "login", "forgot-password"]);
+const RESERVED = new Set([
+  "settings",
+  "login",
+  "forgot-password",
+  "messages",
+  "ai-chats",
+]);
 
 export default async function DashboardSectionPage({ params }) {
   const { section } = await params;
 
   if (RESERVED.has(section)) notFound();
 
-  // Dedicated editors — Contact remains placeholder
+  // Dedicated editors live under their own routes
   if (
     section === "about" ||
     section === "experience" ||
@@ -20,7 +26,8 @@ export default async function DashboardSectionPage({ params }) {
     section === "publication" ||
     section === "gallery" ||
     section === "clubing" ||
-    section === "mentorship"
+    section === "mentorship" ||
+    section === "contact"
   ) {
     notFound();
   }

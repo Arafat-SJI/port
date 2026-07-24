@@ -2,14 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import AiChatsSidebar from "@/components/dashboard/AiChatsSidebar";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import MessagesSidebar from "@/components/dashboard/MessagesSidebar";
 import SettingsSidebar from "@/components/dashboard/SettingsSidebar";
-import { isSettingsPath } from "@/data/dashboard";
+import { isAiChatsPath, isMessagesPath, isSettingsPath } from "@/data/dashboard";
 
-export default function DashboardShell({ email, sectionOrder, children }) {
+export default function DashboardShell({
+  email,
+  sectionOrder,
+  messageThreads = [],
+  messagesLoadError = false,
+  aiChatThreads = [],
+  aiChatsLoadError = false,
+  children,
+}) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const settingsOpen = isSettingsPath(pathname);
+  const messagesOpen = isMessagesPath(pathname);
+  const aiChatsOpen = isAiChatsPath(pathname);
+  const nestedOpen = settingsOpen || messagesOpen || aiChatsOpen;
 
   useEffect(() => {
     setMobileOpen(false);
@@ -35,6 +48,37 @@ export default function DashboardShell({ email, sectionOrder, children }) {
 
   const closeMobile = () => setMobileOpen(false);
 
+  const mobileSecondary = settingsOpen ? (
+    <SettingsSidebar onNavigate={closeMobile} />
+  ) : messagesOpen ? (
+    <MessagesSidebar
+      threads={messageThreads}
+      loadError={messagesLoadError}
+      onNavigate={closeMobile}
+    />
+  ) : aiChatsOpen ? (
+    <AiChatsSidebar
+      threads={aiChatThreads}
+      loadError={aiChatsLoadError}
+      onNavigate={closeMobile}
+    />
+  ) : null;
+
+  const headerLabel = settingsOpen
+    ? "settings"
+    : messagesOpen
+      ? "messages"
+      : aiChatsOpen
+        ? "ai-chats"
+        : "dashboard-araf";
+  const headerIcon = settingsOpen
+    ? "settings"
+    : messagesOpen
+      ? "mail"
+      : aiChatsOpen
+        ? "smart_toy"
+        : "terminal";
+
   return (
     <div className="flex h-full min-h-0 flex-col md:flex-row">
       <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-surface-container-lowest px-3 md:hidden">
@@ -51,12 +95,10 @@ export default function DashboardShell({ email, sectionOrder, children }) {
           <p className="truncate font-label-mono text-[10px] uppercase tracking-[0.14em] text-on-surface-variant">
             arafat.workspace
           </p>
-          <p className="truncate text-[11px] text-on-surface/80">
-            {settingsOpen ? "settings" : "dashboard-araf"}
-          </p>
+          <p className="truncate text-[11px] text-on-surface/80">{headerLabel}</p>
         </div>
         <span className="material-symbols-outlined shrink-0 text-[18px] text-primary">
-          {settingsOpen ? "settings" : "terminal"}
+          {headerIcon}
         </span>
       </header>
 
@@ -69,15 +111,13 @@ export default function DashboardShell({ email, sectionOrder, children }) {
         />
       ) : null}
 
-      {/* Mobile drawer: content nav OR settings nav */}
+      {/* Mobile drawer: content nav OR settings/messages/ai-chats secondary nav */}
       <div
         className={`fixed inset-y-0 left-0 z-50 h-full transition-transform duration-200 ease-out md:hidden ${
           mobileOpen ? "translate-x-0 shadow-xl" : "-translate-x-full"
         }`}
       >
-        {settingsOpen ? (
-          <SettingsSidebar onNavigate={closeMobile} />
-        ) : (
+        {mobileSecondary ?? (
           <DashboardSidebar
             email={email}
             initialSectionOrder={sectionOrder}
@@ -86,7 +126,7 @@ export default function DashboardShell({ email, sectionOrder, children }) {
         )}
       </div>
 
-      {/* Desktop: main sidebar + smoothly sliding settings sidebar */}
+      {/* Desktop: main sidebar + smoothly sliding secondary sidebar */}
       <div className="hidden h-full shrink-0 md:flex">
         <DashboardSidebar
           email={email}
@@ -95,16 +135,30 @@ export default function DashboardShell({ email, sectionOrder, children }) {
         />
         <div
           className={`h-full overflow-hidden transition-[width] duration-300 ease-out ${
-            settingsOpen ? "w-[220px]" : "w-0"
+            nestedOpen ? "w-[220px]" : "w-0"
           }`}
-          aria-hidden={!settingsOpen}
+          aria-hidden={!nestedOpen}
         >
           <div
             className={`h-full transition-transform duration-300 ease-out ${
-              settingsOpen ? "translate-x-0" : "-translate-x-4"
+              nestedOpen ? "translate-x-0" : "-translate-x-4"
             }`}
           >
-            <SettingsSidebar onNavigate={closeMobile} />
+            {settingsOpen ? <SettingsSidebar onNavigate={closeMobile} /> : null}
+            {messagesOpen ? (
+              <MessagesSidebar
+                threads={messageThreads}
+                loadError={messagesLoadError}
+                onNavigate={closeMobile}
+              />
+            ) : null}
+            {aiChatsOpen ? (
+              <AiChatsSidebar
+                threads={aiChatThreads}
+                loadError={aiChatsLoadError}
+                onNavigate={closeMobile}
+              />
+            ) : null}
           </div>
         </div>
       </div>

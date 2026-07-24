@@ -27,6 +27,7 @@ export default async function SettingsAiKnowledgePage() {
         <p className="mt-2 text-[13px] text-on-surface-variant">
           Read-only view of the live Supabase knowledge used for AI chat context. It updates
           automatically when you save public portfolio content in the dashboard. Not editable here.
+          The Message inbox (visitor form submissions) is never included.
         </p>
         <p className="mt-1.5 font-label-mono text-[11px] text-on-surface-variant/80">
           Last synced: {updatedAt}

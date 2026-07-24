@@ -15,6 +15,7 @@ import {
 import { aboutSearchLines } from "@/lib/aboutContent";
 import { awardsSearchLines } from "@/lib/awardsContent";
 import { clubingSearchLines } from "@/lib/clubingContent";
+import { contactSearchLines } from "@/lib/contactContent";
 import { educationSearchLines } from "@/lib/educationContent";
 import { experienceSearchLines } from "@/lib/experienceContent";
 import { gallerySearchLines } from "@/lib/galleryContent";
@@ -35,6 +36,7 @@ function linesForHref(href, content = {}) {
     galleryContent,
     clubingContent,
     mentorshipContent,
+    contactContent,
   } = content;
 
   switch (href) {
@@ -79,7 +81,9 @@ function linesForHref(href, content = {}) {
         ? mentorshipSearchLines(mentorshipContent)
         : MENTORSHIP.flatMap((m) => [m.program, m.role, m.description, ...m.topics]);
     case "#contact":
-      return [CONTACT.intro, CONTACT.email, CONTACT.social];
+      return contactContent
+        ? contactSearchLines(contactContent)
+        : [CONTACT.intro, CONTACT.email, CONTACT.social];
     default:
       return [];
   }

@@ -2,7 +2,7 @@
 
 > **Mandatory for every Cursor agent session:** Read this entire file before writing or changing any code. After finishing work from a user prompt, update this file so office PC and home PC sessions stay in sync.
 
-**Last updated:** 2026-07-24 (Gallery + Clubing + Mentorship dynamic CRUD)
+**Last updated:** 2026-07-24 (Explorer Outline/Timeline SCM)
 
 ---
 
@@ -42,7 +42,7 @@ These rules are non-negotiable. Follow them on every prompt.
 
 | Bucket | What belongs here | Examples |
 |--------|-------------------|----------|
-| **localStorage** | Existing IDE chrome & design prefs (already built; keep) | Extensions install/activate + theme/font/skin options; Search query/session; Source Control “discard prefs”; sidebar widths; workspace/activity tabs; glass / live animation |
+| **localStorage** | Existing IDE chrome & design prefs (already built; keep) | Extensions install/activate + theme/font/skin options; Search query/session; Source Control “discard prefs”; sidebar widths; workspace/activity tabs; glass / live animation; **AI chat thread** |
 | **Supabase** | Everything dashboard-related / public shared content | Auth; `portfolio_settings.section_order`; future About/Experience/… content; anything editable under `/dashboard-araf` that drives the landing page |
 
 **Agent reminder:** Do not “upgrade” Extensions, Search, or Source Control to Supabase unless the user explicitly asks. Do not store dashboard section order or portfolio content in localStorage.
@@ -55,7 +55,7 @@ Personal portfolio for **Arafat**, branded **`arafat.workspace`**. The entire si
 - Left activity bar switches Explorer / Search / Extensions / Source Control / Chat.
 - Top bar has window chrome, breadcrumb, and editor-style tabs.
 - Main editor area scrolls through portfolio content (and extension detail views).
-- Right panel is an AI chat sidebar (UI shell; answers not wired to a real model yet).
+- Right panel is an AI chat sidebar (Gemini + live `ai_knowledge`; thread in localStorage).
 - Bottom status bar acts like an IDE footer.
 - Contact is a reveal / terminal experience at the end of the scroll track.
 
@@ -193,7 +193,7 @@ Activities from `ACTIVITY_ITEMS` in `portfolio.js`:
 #### Left sidebar panels (`ActivitySidebar.js` switches)
 | Activity | Component | What it does |
 |----------|-----------|--------------|
-| explorer | `ExplorerSidebar.js` | Tree of `NAV_ITEMS` (“files”); expand/collapse portfolio folder |
+| explorer | `ExplorerSidebar.js` | Tree of `NAV_ITEMS` (“files”); expand/collapse portfolio folder; OUTLINE + TIMELINE |
 | search | `SearchSidebar.js` | Query over search index; match case / whole word / regex options; session persistence |
 | extensions | `ExtensionsSidebar.js` | Lists extensions; opens detail as `extension:<id>` tab |
 | source-control | `SourceControlSidebar.js` | Lists preference diffs vs defaults; discard one / discard all |
@@ -215,8 +215,9 @@ Activities from `ACTIVITY_ITEMS` in `portfolio.js`:
 
 #### Right sidebar — Chat (`ChatPanel.js`)
 - Suggested questions from `CHAT_SUGGESTED_QUESTIONS`
-- Textarea input UI
-- **Presentational only** — no real AI backend / model wiring yet
+- Live Gemini answers via `POST /api/chat`, grounded on Supabase `ai_knowledge` (system prompt in `geminiChat.js`)
+- Thread persists in **localStorage** (`chatSession.js` → `portfolio-chat-session-v1`) — not the database
+- Appears in Source Control as `chat/thread`; discard/clear removes the thread
 - Themeable via Chat Skins extension (`data-chat-theme` etc.)
 
 #### Status bar / footer (`StatusBar.js`)
@@ -225,10 +226,11 @@ Activities from `ACTIVITY_ITEMS` in `portfolio.js`:
 
 #### Contact experience (not a normal middle section)
 - `ContactReveal.js` + `ContactScrollTrack` — custom scroll reveal dock
-- `ContactTerminal.js` — “Let’s Connect” terminal UI
+- `ContactTerminal.js` — “Let’s Connect” terminal UI (`email` mailto, `github` link, brand-colored `social` pipe links)
 - `TerminalLiveCanvas.js` — live motion inside terminal when terminal-theme live skins active
-- Contact data from `CONTACT` + `TERMINAL_MESSAGES` in `portfolio.js`
+- Contact data from Supabase `portfolio_settings` key `contact` (fallback: `DEFAULT_CONTACT_CONTENT` / legacy `CONTACT` in `portfolio.js`); ticker still uses `TERMINAL_MESSAGES`
 - Smooth scrolling via `lib/smoothScroll.js`
+- Edited at `/dashboard-araf/contact` — migration `015_contact_content.sql`
 
 ---
 
@@ -248,7 +250,7 @@ Activities from `ACTIVITY_ITEMS` in `portfolio.js`:
 | `#gallery` | Gallery.tsx | `GallerySection` | Supabase `portfolio_settings` key `gallery` | **Dynamic** — edited at `/dashboard-araf/gallery` |
 | `#clubing` | Clubing.ts | `ClubingSection` | Supabase `portfolio_settings` key `clubing` | **Dynamic** — edited at `/dashboard-araf/clubing` |
 | `#mentorship` | Mentorship.ts | `MentorshipSection` | Supabase `portfolio_settings` key `mentorship` | **Dynamic** — edited at `/dashboard-araf/mentorship` |
-| `#contact` | Contact.sh | Contact reveal/terminal (IDE layer) | `CONTACT`, `TERMINAL_MESSAGES` | Demo content |
+| `#contact` | Contact.sh | Contact reveal/terminal (IDE layer) | Supabase `portfolio_settings` key `contact` | **Dynamic** — edited at `/dashboard-araf/contact` |
 
 Shared portfolio UI:
 - `SectionHeader.js` — section title + underline rule
@@ -321,9 +323,11 @@ Backgrounds:
 
 - Not real git UI for the repo
 - Represent “uncommitted” **workspace preference changes** vs defaults
-- `lib/sourceControl.js` — collect changes, discard one, discard all (extensions + related prefs)
+- `lib/sourceControl.js` — collect changes, discard one, discard all (extensions, search, layout, **chat thread**)
+- Chat dirty state: `chat:thread` → path `chat/thread` when `isChatSessionDirty()`; discard calls `clearChatSession()`
 - Emits / listens with prefs-changed event from `sidebarPrefs`
 - Dirty state also influences terminal message ticker / status metaphors
+- Expanding Explorer **OUTLINE** / **TIMELINE** flags Source Control changes (`explorer/outline`, `explorer/timeline`); state persists in localStorage until discarded
 
 ---
 
@@ -423,7 +427,12 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 
 **UI / structure:**
 - Left **explorer-style sidebar** (`DashboardSidebar`) listing the same “files” as portfolio nav (`About.tsx` … `Contact.sh`) via `src/data/dashboard.js` + `FileIcon`.
-- **Settings** item in sidebar → opens a second left **Settings** sidebar (smooth width slide on desktop). Items: **Change email**, **Change password**, **AI Context Knowledgebase** (read-only JSON from Supabase `ai_knowledge`). Auth/email/password never touch AI JSON. `/dashboard-araf/settings` redirects to email.
+- **System** block (below content files): **Message**, **AI Chat**, then **Settings**. Message / AI Chat are not in `DASHBOARD_NAV` / not reorderable.
+- **Message inbox (live):** `/dashboard-araf/messages` — opens a second left sidebar (same slide pattern as Settings) listing **senders** by email. Thread route: `/dashboard-araf/messages/[emailKey]`. Contact form submissions stored in Supabase table `contact_messages`. Same visitor email → one chat thread; different emails → separate threads. Mark-read on open; delete conversation. Public form in `ContactTerminal` inserts via `submitContactMessageAction` (service role). Helpers: `contactMessages.js`, `contactMessagesServer.js`, `messageActions.js`. UI: `MessagesSidebar.js`, `MessageThreadView.js`. Migration: `016_contact_messages.sql`. **Never** written to `ai_knowledge`.
+- **AI Chat inbox (live):** `/dashboard-araf/ai-chats` — second sidebar listing **visitors by IP** (display name = IP). Thread route: `/dashboard-araf/ai-chats/[ipKey]`. Each portfolio AI question from `POST /api/chat` is logged (user message only) into Supabase `ai_chat_messages` via service role; same IP → one thread. Mark-read on open; delete conversation. Helpers: `clientIp.js`, `aiChatMessages.js`, `aiChatMessagesServer.js`, `aiChatActions.js`. UI: `AiChatsSidebar.js`, `AiChatThreadView.js`. Migration: `020_ai_chat_messages.sql`. **Never** written to `ai_knowledge`. (Visitor’s local chat thread still stays in localStorage.)
+- **Settings** item in sidebar → opens a second left **Settings** sidebar (smooth width slide on desktop). Items: **Change email**, **Change password**, **Gemini API key**, **AI Context Knowledgebase**. Auth/email/password/API keys never touch AI JSON. `/dashboard-araf/settings` redirects to email.
+- **Gemini API key (live):** `/dashboard-araf/settings/gemini-api` — multiple free Gemini keys in private Supabase table `gemini_api_keys` (authenticated + service_role only; **not** `portfolio_settings`). Up to **5 keys Active** at once; one **In use** checkbox among actives (persisted `is_current`) — green toggle = in use; other actives standby. Chat tries in-use first, then standby; **auto-deactivates** on quota/invalid and promotes next in use. Masked list + runtime errors in settings. Token-lean chat: compact knowledge JSON, short system prompt, 6-turn history, Flash Lite model. Visitors never see key errors — funny fallback. Migrations: `017` (legacy), `018`, `021` (multi-active), `022_gemini_in_use_key.sql`. Helpers: `geminiKey.js`, `geminiKeyServer.js`, `geminiChat.js`, `geminiKeyActions.js`, `GeminiApiKeyForm.js`.
+- **Portfolio chat panel (live):** `ChatPanel` posts to `/api/chat`; server loads `ai_knowledge` + active Gemini key pool with failover; also logs the visitor’s question for the AI Chat inbox. Thread in localStorage (`chatSession.js`); Source Control can discard `chat/thread`. Key never sent to the browser.
 - Aesthetic IDE-themed login (window chrome, soft primary/secondary glows, portfolio tokens).
 - Dashboard explorer items (except `Contact.sh`) support **drag-reorder** via a 3-bar grip on the right; order is stored in Supabase `portfolio_settings` (`key = section_order`), syncs to landing **Explorer**, **top tabs**, and **portfolio content**. Contact stays fixed last. Same-tab `CustomEvent` only (no localStorage for order).
 - **About content (live):** `/dashboard-araf/about` editor (`AboutEditor`) writes hero + summary/interests to `portfolio_settings` (`key = about`). Per-block **show/hide** toggles (`visibility`: image, headline, intro, primaryCta, secondaryCta, summary, interests) control public landing display; hidden content is kept in Supabase. Public `/` SSR-loads it into `HeroSection` / `AboutSection`. Helpers: `src/lib/aboutContent.js`, `aboutContentServer.js`, `aboutActions.js`. Migration seed: `supabase/migrations/002_about_content.sql`. Fallback defaults only if row missing.
@@ -502,24 +511,25 @@ Local mirror removed — production reads the Supabase `portfolio_settings.ai_kn
 **Rules (Part 1 §11):**
 - Public portfolio content only (About, section order today; more sections as CRUD ships).
 - **Never** includes dashboard email, password, password-change fields, or auth secrets.
+- **Never** includes Message inbox / `contact_messages` (visitor form submissions) — private dashboard-only.
+- **Never** includes AI Chat inbox / `ai_chat_messages` (visitor questions by IP) — private dashboard-only.
+- **Never** includes Gemini API keys / `dashboard_secrets`.
 - Always includes `security.password_and_credentials_policy` refusal text: `I am not going to provide you this kind of data`.
-- Settings / auth actions must **never** write to this knowledge blob.
+- Settings / auth / Gemini key actions must **never** write to this knowledge blob.
+- Message inbox and AI Chat inbox save/read/delete must **never** call `syncAiKnowledgeFromDashboard()`.
 
-**Auto-sync:** After every successful write of any dynamic portfolio section (About…Mentorship) or section order, `syncAiKnowledgeFromDashboard()` rebuilds the payload and **upserts** `ai_knowledge` in Supabase. Sync errors are logged and do not fail the dashboard save.
+**Auto-sync:** After every successful write of any dynamic portfolio section (About…Contact) or section order, `syncAiKnowledgeFromDashboard()` rebuilds the payload and **upserts** `ai_knowledge` in Supabase. Sync errors are logged and do not fail the dashboard save.
 
-**Read endpoints (for future ChatPanel / tooling):**
+**Chat:**
+- Next.js: `POST /api/chat` (no-store) — server-only Gemini call grounded on `ai_knowledge`
 - Next.js: `GET /api/ai-knowledge` (no-store)
 - Supabase Edge Function: `supabase/functions/ai-knowledge` — deploy with `supabase functions deploy ai-knowledge` → `https://<project-ref>.supabase.co/functions/v1/ai-knowledge`
 - Migration seed: `supabase/migrations/005_ai_knowledge.sql` (run once in SQL Editor if needed)
 
-**Not wired yet:** ChatPanel still does not call a model (item 7 waiting).
-
 ### 2.17 What is intentionally NOT built yet
 
-- No CRUD yet for **Contact** only (all other middle sections are dynamic)
-- No real AI chat answers (chat is UI shell; knowledge sync to Supabase exists but ChatPanel not wired)
-- Contact still uses demo static data
 - Hero CTAs: primary scrolls to Projects; secondary opens CV PDF in a new tab when uploaded (dashboard upload → Supabase Storage `portfolio-cv`)
+- Streaming / multi-turn tool use beyond portfolio Q&A
 
 ---
 
@@ -549,7 +559,7 @@ Local mirror removed — production reads the Supabase `portfolio_settings.ai_kn
 6. **AI Chat knowledge pipeline:**
    - **Supabase sync LIVE** — dashboard public content upserts `portfolio_settings` key `ai_knowledge` (About + section order today). Readable via `GET /api/ai-knowledge` and Edge Function `ai-knowledge`.
   - (Local JSON mirror removed) Production reads Supabase directly.
-   - Wire ChatPanel to real AI answers using that knowledge — **still waiting**.
+   - Wire ChatPanel to real AI answers using that knowledge — **Done** (localStorage thread + SCM).
    - Expand as each section gets CRUD.
    - **CRITICAL — credentials excluded** (enforced in builder): never dashboard email/password; always include refusal: **"I am not going to provide you this kind of data"**
 
@@ -562,16 +572,16 @@ Local mirror removed — production reads the Supabase `portfolio_settings.ai_kn
 
 | # | Item | Status |
 |---|------|--------|
-| 1 | Per-section: replace demo data with real content + optional design pass | **In progress** — all middle sections except Contact dynamic |
-| 2 | After each section confirmed: add dashboard CRUD fields for that section | **Partial** — Contact waiting; all other sections done |
+| 1 | Per-section: replace demo data with real content + optional design pass | **Done** — all portfolio sections dynamic (Contact terminal included) |
+| 2 | After each section confirmed: add dashboard CRUD fields for that section | **Done** — all sections including Contact |
 | 3 | Create `/dashboard-araf` app route + auth/flow | **Done** (2026-07-14) — login only, no register, no landing links |
 | 4 | Integrate Supabase Auth client + proxy guard | **Done** (2026-07-14) |
 | 4b | Section order in Supabase (`portfolio_settings`) | **Done** (2026-07-14) — run migration SQL once if table missing |
-| 4c | Per-section content tables + dashboard CRUD | **Partial** — all middle sections except Contact in `portfolio_settings` |
-| 5 | Wire portfolio page to load dynamic content (IDE chrome unchanged) | **Partial** — all middle sections except Contact SSR from Supabase |
-| 6 | Auto-generate/update project JSON from dashboard data for AI chat | **Partial** — syncs all dynamic sections to Supabase `ai_knowledge`; Contact waiting. Auth excluded; refusal text included |
-| 7 | Wire ChatPanel to real AI answers using that JSON | Waiting |
-| 8 | Ensure zero static “about me” content remains in site data modules | **Partial** — Contact (+ terminal) still static; all other sections live from DB |
+| 4c | Per-section content tables + dashboard CRUD | **Done** — all sections in `portfolio_settings` (Contact: `015`) |
+| 5 | Wire portfolio page to load dynamic content (IDE chrome unchanged) | **Done** — all sections SSR from Supabase |
+| 6 | Auto-generate/update project JSON from dashboard data for AI chat | **Done** — syncs all sections incl. Contact to Supabase `ai_knowledge`. Auth excluded; refusal text included |
+| 7 | Wire ChatPanel to real AI answers using that JSON | **Done** (2026-07-24) — Gemini via dashboard-managed key + funny fallback on key failure |
+| 8 | Ensure zero static “about me” content remains in site data modules | **Partial** — live content from DB; `portfolio.js` keeps fallbacks only |
 | 9 | Dashboard password-change UI (Supabase Auth only; never writes to AI JSON) | **Done** (2026-07-14) — Settings + forgot-password email flow |
 | 9b | Dashboard email-change UI (verify password → new email; Auth only; never AI JSON) | **Done** (2026-07-17) |
 
@@ -641,5 +651,14 @@ _(Append new future plans here when the user says “I have a plan…” / “no
 | 2026-07-24 | **Awards dynamic:** Dashboard `/dashboard-araf/awards` CRUD (section header title, award title, issuer, year, description, reorder, show/hide) → Supabase `portfolio_settings.awards`. Landing SSR. Search + AI knowledge sync. Migration `010_awards_content.sql`. |
 | 2026-07-24 | **Content workspace Settings:** Dashboard home (`/dashboard-araf`) adds a bottom **System → Settings** link (same destination as sidebar: `/settings/email`). |
 | 2026-07-24 | **Publication dynamic:** Dashboard `/dashboard-araf/publication` CRUD (section header title, title, authors, venue, type, year, optional link, reorder, show/hide) → Supabase `portfolio_settings.publication`. Landing SSR. Search + AI knowledge sync. Migration `011_publication_content.sql`. |
-| 2026-07-24 | **Gallery + Clubing + Mentorship dynamic:** Dashboard CRUD for all three → Supabase keys `gallery` / `clubing` / `mentorship`. Gallery: caption, image URL/alt, wide flag. Clubing: name, role, period, description. Mentorship: stats (mentees/programs/active) + program entries with topics. Landing SSR + search + AI sync. Migrations `012`–`014`. Contact remains placeholder. |
+| 2026-07-24 | **Gallery + Clubing + Mentorship dynamic:** Dashboard CRUD for all three → Supabase keys `gallery` / `clubing` / `mentorship`. Gallery: caption, image URL/alt, wide flag. Clubing: name, role, period, description. Mentorship: stats (mentees/programs/active) + program entries with topics. Landing SSR + search + AI sync. Migrations `012`–`014`. |
+| 2026-07-24 | **Contact dynamic:** Dashboard `/dashboard-araf/contact` CRUD (intro, email mailto, github label/URL, LinkedIn/Facebook/WhatsApp/Telegram URLs) → Supabase `portfolio_settings.contact`. Terminal shows brand-colored pipe-separated socials. Landing SSR + search + AI sync. Migration `015_contact_content.sql`. |
+| 2026-07-24 | **Message inbox:** Dashboard System → **Message** (above Settings) opens a second sidebar of senders (Settings-style slide). Threads at `/dashboard-araf/messages/[emailKey]`; Contact form → `contact_messages`. Migration `016_contact_messages.sql`. **Never** synced to AI knowledge (`AI_KNOWLEDGE_EXCLUDED_KEYS` + security policy). |
+| 2026-07-24 | **AI chat + Gemini key:** Settings → **Gemini API key** stores keys in private `gemini_api_keys` (migration `018`; multi-key + active toggle). ChatPanel → `POST /api/chat`. Key/quota errors surface on settings; visitors get funny fallbacks. Never in `.env` or AI JSON. |
+| 2026-07-24 | **Chat fully functional:** Portfolio system prompt + live `ai_knowledge`. Thread in localStorage (`portfolio-chat-session-v1`). Source Control lists `chat/thread` and can discard/clear it. |
+| 2026-07-24 | **AI Chat inbox:** Dashboard System → **AI Chat** (between Message and Settings). Threads by visitor IP at `/dashboard-araf/ai-chats/[ipKey]`. `POST /api/chat` logs each user question to `ai_chat_messages` (service role). Migration `020_ai_chat_messages.sql`. **Never** synced to AI knowledge. |
+| 2026-07-24 | **Gemini multi-active + failover:** Up to 5 keys Active at once; quota/invalid key auto-toggles off and chat tries the next active key. Migration `021_gemini_multi_active_keys.sql` drops one-active unique index. Chat token cuts: minified knowledge JSON, shorter system prompt, 6-turn / 1200-char history, `gemini-2.0-flash-lite` (+ flash fallback), maxOutputTokens 512. |
+| 2026-07-24 | **Gemini In use checkbox:** Among active keys, one `is_current` (checkbox) picks which key chat uses first; green toggle = in use. Migration `022_gemini_in_use_key.sql`. |
+| 2026-07-24 | **Dashboard thin scrollbars:** Scoped `.dashboard-shell` styles (plus Firefox `scrollbar-width: thin` on `.custom-scrollbar`) so textareas and all overflow areas use the same 4px dark thumb as the rest of the IDE. |
+| 2026-07-24 | **Explorer Outline/Timeline SCM:** Panels stay in Explorer. Expanding them persists in localStorage and shows as Source Control changes (`explorer/outline`, `explorer/timeline`); discard collapses them. |
 

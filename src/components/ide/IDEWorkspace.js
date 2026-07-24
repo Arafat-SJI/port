@@ -52,6 +52,7 @@ export default function IDEWorkspace({
   galleryContent,
   clubingContent,
   mentorshipContent,
+  contactContent,
 } = {}) {
   const mainRef = useRef(null);
   const contactTrackRef = useRef(null);
@@ -409,6 +410,7 @@ export default function IDEWorkspace({
                   galleryContent={galleryContent}
                   clubingContent={clubingContent}
                   mentorshipContent={mentorshipContent}
+                  contactContent={contactContent}
                 />
               </div>
               {!sidebarsFixed && !drawerMode && (
@@ -465,6 +467,7 @@ export default function IDEWorkspace({
                   scrollContainerRef={mainRef}
                   trackRef={contactTrackRef}
                   onCollapse={() => navigateToSection("#mentorship")}
+                  contactContent={contactContent}
                 />
               )}
             </div>

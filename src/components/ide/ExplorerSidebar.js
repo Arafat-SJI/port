@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FileIcon from "@/components/ui/FileIcon";
+import {
+  readExplorerPanels,
+  writeOutlineExpanded,
+  writeTimelineExpanded,
+} from "@/lib/explorerPanels";
+import { PREFS_CHANGED_EVENT } from "@/lib/sidebarPrefs";
 
 function SidebarSection({ title, expanded, onToggle, borderTop = false, children }) {
   return (
@@ -40,6 +46,33 @@ export default function ExplorerSidebar({
   const [timelineExpanded, setTimelineExpanded] = useState(false);
 
   const activeNav = navItems.find((item) => item.href === activeHref) ?? navItems[0];
+
+  useEffect(() => {
+    const sync = () => {
+      const panels = readExplorerPanels();
+      setOutlineExpanded(panels.outlineExpanded);
+      setTimelineExpanded(panels.timelineExpanded);
+    };
+    sync();
+    window.addEventListener(PREFS_CHANGED_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(PREFS_CHANGED_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const toggleOutline = () => {
+    const next = !outlineExpanded;
+    setOutlineExpanded(next);
+    writeOutlineExpanded(next);
+  };
+
+  const toggleTimeline = () => {
+    const next = !timelineExpanded;
+    setTimelineExpanded(next);
+    writeTimelineExpanded(next);
+  };
 
   return (
     <aside className="flex h-full w-full min-h-0 flex-col bg-surface-container-lowest border-r border-border">
@@ -80,7 +113,7 @@ export default function ExplorerSidebar({
           <SidebarSection
             title="OUTLINE"
             expanded={outlineExpanded}
-            onToggle={() => setOutlineExpanded((v) => !v)}
+            onToggle={toggleOutline}
             borderTop
           >
             <div className="py-0.5">
@@ -93,7 +126,7 @@ export default function ExplorerSidebar({
           <SidebarSection
             title="TIMELINE"
             expanded={timelineExpanded}
-            onToggle={() => setTimelineExpanded((v) => !v)}
+            onToggle={toggleTimeline}
             borderTop
           >
             <div className="py-0.5 space-y-0.5">

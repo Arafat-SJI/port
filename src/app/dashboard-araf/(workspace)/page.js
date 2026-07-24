@@ -48,16 +48,40 @@ export default async function DashboardHomePage() {
         <p className="mb-1.5 px-0.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/80">
           System
         </p>
-        <Link
-          href="/dashboard-araf/settings/email"
-          className="group flex cursor-pointer items-center gap-2.5 rounded-lg bg-surface-container-lowest/80 px-3.5 py-3 transition hover:bg-surface-container-low sm:max-w-[calc(50%-0.1875rem)]"
-        >
-          <span className="material-symbols-outlined text-[18px] text-primary/80">settings</span>
-          <span className="text-[13px] text-on-surface group-hover:text-primary">Settings</span>
-          <span className="material-symbols-outlined ml-auto text-[16px] text-on-surface-variant/50 transition group-hover:text-primary">
-            chevron_right
-          </span>
-        </Link>
+        <div className="grid gap-1.5 sm:grid-cols-2">
+          <Link
+            href="/dashboard-araf/messages"
+            className="group flex cursor-pointer items-center gap-2.5 rounded-lg bg-surface-container-lowest/80 px-3.5 py-3 transition hover:bg-surface-container-low"
+          >
+            <span className="material-symbols-outlined text-[18px] text-primary/80">mail</span>
+            <span className="text-[13px] text-on-surface group-hover:text-primary">Message</span>
+            <span className="material-symbols-outlined ml-auto text-[16px] text-on-surface-variant/50 transition group-hover:text-primary">
+              chevron_right
+            </span>
+          </Link>
+          <Link
+            href="/dashboard-araf/ai-chats"
+            className="group flex cursor-pointer items-center gap-2.5 rounded-lg bg-surface-container-lowest/80 px-3.5 py-3 transition hover:bg-surface-container-low"
+          >
+            <span className="material-symbols-outlined text-[18px] text-primary/80">
+              smart_toy
+            </span>
+            <span className="text-[13px] text-on-surface group-hover:text-primary">AI Chat</span>
+            <span className="material-symbols-outlined ml-auto text-[16px] text-on-surface-variant/50 transition group-hover:text-primary">
+              chevron_right
+            </span>
+          </Link>
+          <Link
+            href="/dashboard-araf/settings/email"
+            className="group flex cursor-pointer items-center gap-2.5 rounded-lg bg-surface-container-lowest/80 px-3.5 py-3 transition hover:bg-surface-container-low"
+          >
+            <span className="material-symbols-outlined text-[18px] text-primary/80">settings</span>
+            <span className="text-[13px] text-on-surface group-hover:text-primary">Settings</span>
+            <span className="material-symbols-outlined ml-auto text-[16px] text-on-surface-variant/50 transition group-hover:text-primary">
+              chevron_right
+            </span>
+          </Link>
+        </div>
       </div>
     </main>
   );

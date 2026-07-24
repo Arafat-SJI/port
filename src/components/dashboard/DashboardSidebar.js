@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import FileIcon from "@/components/ui/FileIcon";
-import { DASHBOARD_NAV, isSettingsPath } from "@/data/dashboard";
+import {
+  DASHBOARD_NAV,
+  isAiChatsPath,
+  isMessagesPath,
+  isSettingsPath,
+} from "@/data/dashboard";
 import { logoutAction } from "@/app/dashboard-araf/actions";
 import { saveSectionOrderAction } from "@/app/dashboard-araf/sectionOrderActions";
 import {
@@ -31,6 +36,8 @@ export default function DashboardSidebar({
 }) {
   const pathname = usePathname();
   const settingsActive = isSettingsPath(pathname);
+  const messagesActive = isMessagesPath(pathname);
+  const aiChatsActive = isAiChatsPath(pathname);
   const [order, setAndBroadcast] = useSectionOrder(initialSectionOrder);
   const [dragSlug, setDragSlug] = useState(null);
   const [dropIndex, setDropIndex] = useState(null);
@@ -217,6 +224,32 @@ export default function DashboardSidebar({
           <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/80">
             System
           </p>
+          <Link
+            href="/dashboard-araf/messages"
+            onClick={() => onClose?.()}
+            className={`flex cursor-pointer items-center gap-1.5 px-3 py-[6px] text-[12px] transition-colors ${
+              messagesActive
+                ? "active-tab bg-primary/10 text-secondary"
+                : "text-on-surface-text opacity-75 hover:bg-surface-container-hover-low hover:text-on-surface-variant-hover hover:opacity-100"
+            }`}
+          >
+            <span className="material-symbols-outlined !text-[15px] text-primary/80">mail</span>
+            Message
+          </Link>
+          <Link
+            href="/dashboard-araf/ai-chats"
+            onClick={() => onClose?.()}
+            className={`flex cursor-pointer items-center gap-1.5 px-3 py-[6px] text-[12px] transition-colors ${
+              aiChatsActive
+                ? "active-tab bg-primary/10 text-secondary"
+                : "text-on-surface-text opacity-75 hover:bg-surface-container-hover-low hover:text-on-surface-variant-hover hover:opacity-100"
+            }`}
+          >
+            <span className="material-symbols-outlined !text-[15px] text-primary/80">
+              smart_toy
+            </span>
+            AI Chat
+          </Link>
           <Link
             href="/dashboard-araf/settings/email"
             onClick={() => onClose?.()}

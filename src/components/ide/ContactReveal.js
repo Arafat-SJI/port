@@ -38,6 +38,7 @@ export default function ContactReveal({
   onCollapse,
   scrollContainerRef,
   trackRef,
+  contactContent,
 }) {
   const dockRef = useRef(null);
   const panelRef = useRef(null);
@@ -245,7 +246,7 @@ export default function ContactReveal({
           opacity: 0.12,
         }}
       >
-        <ContactTerminal onCollapse={onCollapse} />
+        <ContactTerminal onCollapse={onCollapse} content={contactContent} />
       </div>
     </div>
   );

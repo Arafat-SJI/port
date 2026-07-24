@@ -13,6 +13,19 @@ import {
   readSearchSession,
 } from "@/lib/searchSession";
 import {
+  clearChatSession,
+  getChatSessionSummary,
+  isChatSessionDirty,
+  readChatSession,
+} from "@/lib/chatSession";
+import {
+  clearExplorerPanels,
+  clearOutlineExpanded,
+  clearTimelineExpanded,
+  isOutlineDirty,
+  isTimelineDirty,
+} from "@/lib/explorerPanels";
+import {
   PREFS_CHANGED_EVENT,
   clearSidebarWidth,
   emitPrefsChanged,
@@ -105,6 +118,34 @@ export function collectWorkspaceChanges(extensionState) {
     });
   }
 
+  const chat = readChatSession();
+  if (isChatSessionDirty(chat)) {
+    changes.push({
+      id: "chat:thread",
+      kind: "chat-session",
+      path: "chat/thread",
+      detail: getChatSessionSummary(chat),
+    });
+  }
+
+  if (isOutlineDirty()) {
+    changes.push({
+      id: "explorer:outline",
+      kind: "explorer-outline",
+      path: "explorer/outline",
+      detail: "Expanded",
+    });
+  }
+
+  if (isTimelineDirty()) {
+    changes.push({
+      id: "explorer:timeline",
+      kind: "explorer-timeline",
+      path: "explorer/timeline",
+      detail: "Expanded",
+    });
+  }
+
   return changes;
 }
 
@@ -171,6 +212,15 @@ export function discardWorkspaceChange(changeId, extensionState) {
   } else if (changeId === "layout:right-sidebar") {
     clearSidebarWidth(layout.right.storageKey, layout.right.defaultWidth);
     keys.push("right-sidebar");
+  } else if (changeId === "chat:thread") {
+    clearChatSession({ emit: false });
+    keys.push("chat-session");
+  } else if (changeId === "explorer:outline") {
+    clearOutlineExpanded({ emit: false });
+    keys.push("explorer-outline");
+  } else if (changeId === "explorer:timeline") {
+    clearTimelineExpanded({ emit: false });
+    keys.push("explorer-timeline");
   }
 
   emitPrefsChanged({ keys, nextExtensionState });
@@ -184,6 +234,9 @@ export function discardAllWorkspaceChanges(extensionState) {
     "extension-search",
     "left-sidebar",
     "right-sidebar",
+    "chat-session",
+    "explorer-outline",
+    "explorer-timeline",
   ];
   const layout = getSidebarLayout();
   let nextExtensionState = resetExtensionActivations(
@@ -193,6 +246,8 @@ export function discardAllWorkspaceChanges(extensionState) {
   applyExtensionStateToDocument(nextExtensionState);
   clearSearchSession();
   clearExtensionSearchSession();
+  clearChatSession({ emit: false });
+  clearExplorerPanels({ emit: false });
   clearSidebarWidth(layout.left.storageKey, layout.left.defaultWidth);
   clearSidebarWidth(layout.right.storageKey, layout.right.defaultWidth);
   emitPrefsChanged({ keys, nextExtensionState });

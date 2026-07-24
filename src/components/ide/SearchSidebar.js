@@ -61,6 +61,7 @@ export default function SearchSidebar({
   galleryContent,
   clubingContent,
   mentorshipContent,
+  contactContent,
 }) {
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
@@ -87,6 +88,7 @@ export default function SearchSidebar({
           galleryContent,
           clubingContent,
           mentorshipContent,
+          contactContent,
         }
       ),
     [
@@ -104,6 +106,7 @@ export default function SearchSidebar({
       galleryContent,
       clubingContent,
       mentorshipContent,
+      contactContent,
     ]
   );
 

@@ -263,7 +263,7 @@ export const CONTACT = {
   email: "hello@arafat.workspace",
   social: "@arafat_dev",
   intro:
-    "Looking for a collaborator, mentor, or engineer? Drop a message or reach out via socials.",
+    "Happy to connect — whether it's a project idea, a quick question, or just saying hello. Reach out anytime.",
 };
 
 export const TERMINAL_MESSAGES = [

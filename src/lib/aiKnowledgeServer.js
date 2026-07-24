@@ -4,11 +4,14 @@ import {
   AI_KNOWLEDGE_SETTINGS_KEY,
   AI_SECURITY_BLOCK,
   buildAiKnowledgePayload,
+  stripExcludedAiKnowledgeKeys,
 } from "@/lib/aiKnowledge";
 import { awardsForAiKnowledge } from "@/lib/awardsContent";
 import { readAwardsContentFromSupabase } from "@/lib/awardsContentServer";
 import { clubingForAiKnowledge } from "@/lib/clubingContent";
 import { readClubingContentFromSupabase } from "@/lib/clubingContentServer";
+import { contactForAiKnowledge } from "@/lib/contactContent";
+import { readContactContentFromSupabase } from "@/lib/contactContentServer";
 import { educationForAiKnowledge } from "@/lib/educationContent";
 import { readEducationContentFromSupabase } from "@/lib/educationContentServer";
 import { experienceForAiKnowledge } from "@/lib/experienceContent";
@@ -40,6 +43,7 @@ const EMPTY_KNOWLEDGE = {
   gallery: { title: "Gallery", items: [] },
   clubing: { title: "Clubing", items: [] },
   mentorship: { title: "Mentorship", stats: {}, items: [] },
+  contact: null,
 };
 
 function coerceSection(value, fallbackTitle, listKey = "items") {
@@ -53,6 +57,7 @@ function coerceSection(value, fallbackTitle, listKey = "items") {
 /**
  * Rebuild AI knowledge from current dashboard public content and upsert to
  * Supabase `portfolio_settings` (`ai_knowledge`).
+ * Never reads or writes Message inbox / contact_messages or AI Chat inbox / ai_chat_messages.
  * Does not throw — dashboard saves must not fail if sync has issues.
  */
 export async function syncAiKnowledgeFromDashboard() {
@@ -68,6 +73,7 @@ export async function syncAiKnowledgeFromDashboard() {
       gallery,
       clubing,
       mentorship,
+      contact,
       sectionOrder,
     ] = await Promise.all([
       readAboutContentFromSupabase(),
@@ -80,9 +86,11 @@ export async function syncAiKnowledgeFromDashboard() {
       readGalleryContentFromSupabase(),
       readClubingContentFromSupabase(),
       readMentorshipContentFromSupabase(),
+      readContactContentFromSupabase(),
       readSectionOrderFromSupabase(),
     ]);
 
+    // Message / AI Chat inboxes intentionally omitted — private, never AI context.
     const payload = buildAiKnowledgePayload({
       about: {
         ...about,
@@ -97,6 +105,7 @@ export async function syncAiKnowledgeFromDashboard() {
       gallery: galleryForAiKnowledge(gallery),
       clubing: clubingForAiKnowledge(clubing),
       mentorship: mentorshipForAiKnowledge(mentorship),
+      contact: contactForAiKnowledge(contact),
       sectionOrder,
     });
 
@@ -124,7 +133,7 @@ export async function syncAiKnowledgeFromDashboard() {
 
 /**
  * Read cached AI knowledge from Supabase.
- * Strips any legacy `visibility` keys so the dashboard viewer stays clean.
+ * Strips visibility flags and any Message-inbox keys so the viewer stays clean.
  */
 export async function readAiKnowledgeFromSupabase() {
   try {
@@ -139,7 +148,7 @@ export async function readAiKnowledgeFromSupabase() {
       return { ...EMPTY_KNOWLEDGE };
     }
 
-    const value = { ...data.value };
+    const value = stripExcludedAiKnowledgeKeys({ ...data.value });
     if (value.about && typeof value.about === "object") {
       const { visibility: _visibility, ...aboutRest } = value.about;
       value.about = aboutRest;
@@ -160,6 +169,7 @@ export async function readAiKnowledgeFromSupabase() {
       gallery: coerceSection(value.gallery, "Gallery"),
       clubing: coerceSection(value.clubing, "Clubing"),
       mentorship: coerceSection(value.mentorship, "Mentorship"),
+      contact: value.contact && typeof value.contact === "object" ? value.contact : null,
     };
   } catch {
     return { ...EMPTY_KNOWLEDGE };
