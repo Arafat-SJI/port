@@ -11,6 +11,12 @@ export default function HomeClient({
   experienceContent,
   skillsContent,
   projectsContent,
+  educationContent,
+  awardsContent,
+  publicationContent,
+  galleryContent,
+  clubingContent,
+  mentorshipContent,
 }) {
   return (
     <ExtensionsProvider>
@@ -22,6 +28,12 @@ export default function HomeClient({
         experienceContent={experienceContent}
         skillsContent={skillsContent}
         projectsContent={projectsContent}
+        educationContent={educationContent}
+        awardsContent={awardsContent}
+        publicationContent={publicationContent}
+        galleryContent={galleryContent}
+        clubingContent={clubingContent}
+        mentorshipContent={mentorshipContent}
       />
     </ExtensionsProvider>
   );

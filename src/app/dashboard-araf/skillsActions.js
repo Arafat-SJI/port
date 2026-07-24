@@ -16,6 +16,7 @@ export async function saveSkillsContentAction(prevState, formData) {
   }
 
   const groupsRaw = formData.get("groups");
+  const titleRaw = formData.get("title");
   let parsed;
   try {
     parsed = typeof groupsRaw === "string" ? JSON.parse(groupsRaw) : groupsRaw;
@@ -23,7 +24,18 @@ export async function saveSkillsContentAction(prevState, formData) {
     return { error: "Invalid skills payload.", success: false, content: null };
   }
 
-  const normalized = normalizeSkillsContent({ groups: parsed });
+  const normalized = normalizeSkillsContent({
+    title: typeof titleRaw === "string" ? titleRaw : "",
+    groups: parsed,
+  });
+
+  if (!normalized.title.trim()) {
+    return {
+      error: "Section header title is required.",
+      success: false,
+      content: null,
+    };
+  }
 
   if (!normalized.groups.length) {
     return {

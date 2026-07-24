@@ -16,6 +16,7 @@ export async function saveExperienceContentAction(prevState, formData) {
   }
 
   const itemsRaw = formData.get("items");
+  const titleRaw = formData.get("title");
   let parsed;
   try {
     parsed = typeof itemsRaw === "string" ? JSON.parse(itemsRaw) : itemsRaw;
@@ -23,7 +24,18 @@ export async function saveExperienceContentAction(prevState, formData) {
     return { error: "Invalid experience payload.", success: false, content: null };
   }
 
-  const normalized = normalizeExperienceContent({ items: parsed });
+  const normalized = normalizeExperienceContent({
+    title: typeof titleRaw === "string" ? titleRaw : "",
+    items: parsed,
+  });
+
+  if (!normalized.title.trim()) {
+    return {
+      error: "Section header title is required.",
+      success: false,
+      content: null,
+    };
+  }
 
   if (!normalized.items.length) {
     return {

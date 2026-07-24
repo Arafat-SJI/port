@@ -20,6 +20,12 @@ export default function ActivitySidebar({
   experienceContent,
   skillsContent,
   projectsContent,
+  educationContent,
+  awardsContent,
+  publicationContent,
+  galleryContent,
+  clubingContent,
+  mentorshipContent,
 }) {
   switch (activeActivity) {
     case "search":
@@ -32,6 +38,12 @@ export default function ActivitySidebar({
           experienceContent={experienceContent}
           skillsContent={skillsContent}
           projectsContent={projectsContent}
+          educationContent={educationContent}
+          awardsContent={awardsContent}
+          publicationContent={publicationContent}
+          galleryContent={galleryContent}
+          clubingContent={clubingContent}
+          mentorshipContent={mentorshipContent}
         />
       );
     case "source-control":

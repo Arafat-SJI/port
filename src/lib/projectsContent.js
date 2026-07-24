@@ -31,6 +31,7 @@ function normalizeTags(raw) {
 
 /** Seed / fallback when Supabase has no projects row yet. */
 export const DEFAULT_PROJECTS_CONTENT = {
+  title: "Selected Projects",
   subtitle: "Tools and platforms engineered for scale.",
   items: [
     {
@@ -134,8 +135,18 @@ export function normalizeProjectsContent(input) {
     .map((item, i) => normalizeProjectsItem(item, i))
     .filter((item) => item.title || item.description || item.tags.length);
 
+  const titleRaw =
+    !Array.isArray(raw) && raw && typeof raw === "object" ? raw.title : undefined;
+
   return {
-    subtitle: String(raw?.subtitle ?? DEFAULT_PROJECTS_CONTENT.subtitle).trim(),
+    title:
+      String(titleRaw ?? DEFAULT_PROJECTS_CONTENT.title).trim() ||
+      DEFAULT_PROJECTS_CONTENT.title,
+    subtitle: String(
+      !Array.isArray(raw) && raw && typeof raw === "object"
+        ? (raw.subtitle ?? DEFAULT_PROJECTS_CONTENT.subtitle)
+        : DEFAULT_PROJECTS_CONTENT.subtitle
+    ).trim(),
     items: items.length
       ? items
       : DEFAULT_PROJECTS_CONTENT.items.map((item, i) => normalizeProjectsItem(item, i)),
@@ -147,9 +158,10 @@ export function getVisibleProjectsItems(content) {
 }
 
 export function projectsSearchLines(content) {
-  const { subtitle, items } = normalizeProjectsContent(content);
+  const { title, subtitle, items } = normalizeProjectsContent(content);
   const visible = items.filter((item) => item.visible);
   return [
+    title,
     subtitle,
     ...visible.flatMap((item) => [
       item.title,
@@ -161,14 +173,19 @@ export function projectsSearchLines(content) {
 }
 
 export function projectsForAiKnowledge(content) {
-  return getVisibleProjectsItems(content).map((item) => ({
-    title: item.title,
-    description: item.description,
-    tags: item.tags,
-    liveUrl: item.liveUrl || null,
-    codeUrl: item.codeUrl || null,
-    imageUrl: item.imageUrl || null,
-  }));
+  const { title, subtitle } = normalizeProjectsContent(content);
+  return {
+    title,
+    subtitle: subtitle || null,
+    items: getVisibleProjectsItems(content).map((item) => ({
+      title: item.title,
+      description: item.description,
+      tags: item.tags,
+      liveUrl: item.liveUrl || null,
+      codeUrl: item.codeUrl || null,
+      imageUrl: item.imageUrl || null,
+    })),
+  };
 }
 
 export function createEmptyProjectsItem() {

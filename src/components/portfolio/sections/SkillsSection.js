@@ -1,14 +1,18 @@
 import SectionHeader from "@/components/portfolio/SectionHeader";
-import { getVisibleSkillsGroups } from "@/lib/skillsContent";
+import {
+  getVisibleSkillsGroups,
+  normalizeSkillsContent,
+} from "@/lib/skillsContent";
 
 export default function SkillsSection({ content }) {
+  const { title } = normalizeSkillsContent(content);
   const groups = getVisibleSkillsGroups(content);
 
   if (!groups.length) return null;
 
   return (
     <section className="space-y-5 scroll-mt-[30px]" id="skills">
-      <SectionHeader>Tech Stack</SectionHeader>
+      <SectionHeader>{title}</SectionHeader>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {groups.map((group) => (
           <div

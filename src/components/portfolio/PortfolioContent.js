@@ -12,18 +12,31 @@ import PublicationSection from "./sections/PublicationSection";
 import SkillsSection from "./sections/SkillsSection";
 import { NAV_ITEMS } from "@/data/portfolio";
 import { DEFAULT_ABOUT_CONTENT } from "@/lib/aboutContent";
+import { DEFAULT_AWARDS_CONTENT } from "@/lib/awardsContent";
+import { DEFAULT_CLUBING_CONTENT } from "@/lib/clubingContent";
+import { DEFAULT_EDUCATION_CONTENT } from "@/lib/educationContent";
 import { DEFAULT_EXPERIENCE_CONTENT } from "@/lib/experienceContent";
+import { DEFAULT_GALLERY_CONTENT } from "@/lib/galleryContent";
+import { DEFAULT_MENTORSHIP_CONTENT } from "@/lib/mentorshipContent";
 import { DEFAULT_PROJECTS_CONTENT } from "@/lib/projectsContent";
+import { DEFAULT_PUBLICATION_CONTENT } from "@/lib/publicationContent";
 import { DEFAULT_SKILLS_CONTENT } from "@/lib/skillsContent";
 import { orderNavItems } from "@/lib/sectionOrder";
 
-function createSectionRenderers(
-  aboutContent,
-  experienceContent,
-  skillsContent,
-  projectsContent,
-  onNavigateSection
-) {
+function createSectionRenderers(content, onNavigateSection) {
+  const {
+    aboutContent,
+    experienceContent,
+    skillsContent,
+    projectsContent,
+    educationContent,
+    awardsContent,
+    publicationContent,
+    galleryContent,
+    clubingContent,
+    mentorshipContent,
+  } = content;
+
   return {
     about: (searchHighlight) => (
       <SectionSearchTarget sectionHref="#about" searchHighlight={searchHighlight}>
@@ -50,32 +63,32 @@ function createSectionRenderers(
     ),
     education: (searchHighlight) => (
       <SectionSearchTarget sectionHref="#education" searchHighlight={searchHighlight}>
-        <EducationSection />
+        <EducationSection content={educationContent} />
       </SectionSearchTarget>
     ),
     awards: (searchHighlight) => (
       <SectionSearchTarget sectionHref="#awards" searchHighlight={searchHighlight}>
-        <AwardsSection />
+        <AwardsSection content={awardsContent} />
       </SectionSearchTarget>
     ),
     publication: (searchHighlight) => (
       <SectionSearchTarget sectionHref="#publication" searchHighlight={searchHighlight}>
-        <PublicationSection />
+        <PublicationSection content={publicationContent} />
       </SectionSearchTarget>
     ),
     gallery: (searchHighlight) => (
       <SectionSearchTarget sectionHref="#gallery" searchHighlight={searchHighlight}>
-        <GallerySection />
+        <GallerySection content={galleryContent} />
       </SectionSearchTarget>
     ),
     clubing: (searchHighlight) => (
       <SectionSearchTarget sectionHref="#clubing" searchHighlight={searchHighlight}>
-        <ClubingSection />
+        <ClubingSection content={clubingContent} />
       </SectionSearchTarget>
     ),
     mentorship: (searchHighlight) => (
       <SectionSearchTarget sectionHref="#mentorship" searchHighlight={searchHighlight}>
-        <MentorshipSection />
+        <MentorshipSection content={mentorshipContent} />
       </SectionSearchTarget>
     ),
   };
@@ -88,16 +101,30 @@ export default function PortfolioContent({
   experienceContent = DEFAULT_EXPERIENCE_CONTENT,
   skillsContent = DEFAULT_SKILLS_CONTENT,
   projectsContent = DEFAULT_PROJECTS_CONTENT,
+  educationContent = DEFAULT_EDUCATION_CONTENT,
+  awardsContent = DEFAULT_AWARDS_CONTENT,
+  publicationContent = DEFAULT_PUBLICATION_CONTENT,
+  galleryContent = DEFAULT_GALLERY_CONTENT,
+  clubingContent = DEFAULT_CLUBING_CONTENT,
+  mentorshipContent = DEFAULT_MENTORSHIP_CONTENT,
   onNavigateSection,
 }) {
   const ordered = orderNavItems(NAV_ITEMS, sectionOrder).filter(
     (item) => item.href !== "#contact"
   );
   const renderers = createSectionRenderers(
-    aboutContent,
-    experienceContent,
-    skillsContent,
-    projectsContent,
+    {
+      aboutContent,
+      experienceContent,
+      skillsContent,
+      projectsContent,
+      educationContent,
+      awardsContent,
+      publicationContent,
+      galleryContent,
+      clubingContent,
+      mentorshipContent,
+    },
     onNavigateSection
   );
 

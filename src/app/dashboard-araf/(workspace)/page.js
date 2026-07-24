@@ -23,20 +23,41 @@ export default async function DashboardHomePage() {
         </p>
       </header>
 
-      <div className="grid gap-1.5 sm:grid-cols-2">
-        {items.map((item) => (
-          <Link
-            key={item.slug}
-            href={item.href}
-            className="group flex cursor-pointer items-center gap-2.5 rounded-lg bg-surface-container-lowest/80 px-3.5 py-3 transition hover:bg-surface-container-low"
-          >
-            <FileIcon ext={item.ext} size={16} />
-            <span className="text-[13px] text-on-surface group-hover:text-primary">{item.label}</span>
-            <span className="material-symbols-outlined ml-auto text-[16px] text-on-surface-variant/50 transition group-hover:text-primary">
-              chevron_right
-            </span>
-          </Link>
-        ))}
+      <div>
+        <p className="mb-1.5 px-0.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/80">
+          Files
+        </p>
+        <div className="grid gap-1.5 sm:grid-cols-2">
+          {items.map((item) => (
+            <Link
+              key={item.slug}
+              href={item.href}
+              className="group flex cursor-pointer items-center gap-2.5 rounded-lg bg-surface-container-lowest/80 px-3.5 py-3 transition hover:bg-surface-container-low"
+            >
+              <FileIcon ext={item.ext} size={16} />
+              <span className="text-[13px] text-on-surface group-hover:text-primary">{item.label}</span>
+              <span className="material-symbols-outlined ml-auto text-[16px] text-on-surface-variant/50 transition group-hover:text-primary">
+                chevron_right
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <p className="mb-1.5 px-0.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/80">
+          System
+        </p>
+        <Link
+          href="/dashboard-araf/settings/email"
+          className="group flex cursor-pointer items-center gap-2.5 rounded-lg bg-surface-container-lowest/80 px-3.5 py-3 transition hover:bg-surface-container-low sm:max-w-[calc(50%-0.1875rem)]"
+        >
+          <span className="material-symbols-outlined text-[18px] text-primary/80">settings</span>
+          <span className="text-[13px] text-on-surface group-hover:text-primary">Settings</span>
+          <span className="material-symbols-outlined ml-auto text-[16px] text-on-surface-variant/50 transition group-hover:text-primary">
+            chevron_right
+          </span>
+        </Link>
       </div>
     </main>
   );

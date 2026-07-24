@@ -55,6 +55,12 @@ export default function SearchSidebar({
   experienceContent,
   skillsContent,
   projectsContent,
+  educationContent,
+  awardsContent,
+  publicationContent,
+  galleryContent,
+  clubingContent,
+  mentorshipContent,
 }) {
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
@@ -70,10 +76,18 @@ export default function SearchSidebar({
       searchPortfolio(
         query,
         { matchCase, wholeWord, useRegex },
-        aboutContent,
-        experienceContent,
-        skillsContent,
-        projectsContent
+        {
+          aboutContent,
+          experienceContent,
+          skillsContent,
+          projectsContent,
+          educationContent,
+          awardsContent,
+          publicationContent,
+          galleryContent,
+          clubingContent,
+          mentorshipContent,
+        }
       ),
     [
       query,
@@ -84,6 +98,12 @@ export default function SearchSidebar({
       experienceContent,
       skillsContent,
       projectsContent,
+      educationContent,
+      awardsContent,
+      publicationContent,
+      galleryContent,
+      clubingContent,
+      mentorshipContent,
     ]
   );
 

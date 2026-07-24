@@ -5,7 +5,7 @@ import {
 } from "@/lib/projectsContent";
 
 export default function ProjectsSection({ content }) {
-  const { subtitle } = normalizeProjectsContent(content);
+  const { title, subtitle } = normalizeProjectsContent(content);
   const items = getVisibleProjectsItems(content);
 
   if (!items.length) return null;
@@ -14,7 +14,7 @@ export default function ProjectsSection({ content }) {
     <section className="space-y-5 scroll-mt-[30px]" id="projects">
       <div className="flex justify-between items-end">
         <div>
-          <SectionHeader>Selected Projects</SectionHeader>
+          <SectionHeader>{title}</SectionHeader>
           {subtitle ? (
             <p className="text-sm text-on-surface-variant mt-2">{subtitle}</p>
           ) : null}

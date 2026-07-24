@@ -58,6 +58,7 @@ export default function SkillsEditor({ initialContent }) {
 
   const updateGroup = (id, patch) => {
     setContent((prev) => ({
+      ...prev,
       groups: prev.groups.map((group) =>
         group.id === id ? { ...group, ...patch } : group
       ),
@@ -75,6 +76,7 @@ export default function SkillsEditor({ initialContent }) {
     if (!pendingRemove) return;
     const label = pendingRemove.label;
     setContent((prev) => ({
+      ...prev,
       groups: prev.groups.filter((group) => group.id !== pendingRemove.id),
     }));
     setPendingRemove(null);
@@ -87,6 +89,7 @@ export default function SkillsEditor({ initialContent }) {
 
   const addGroup = () => {
     setContent((prev) => ({
+      ...prev,
       groups: [...prev.groups, createEmptySkillsGroup()],
     }));
   };
@@ -100,7 +103,7 @@ export default function SkillsEditor({ initialContent }) {
       if (next < 0 || next >= groups.length) return prev;
       const [moved] = groups.splice(index, 1);
       groups.splice(next, 0, moved);
-      return { groups };
+      return { ...prev, groups };
     });
   };
 
@@ -109,7 +112,32 @@ export default function SkillsEditor({ initialContent }) {
   return (
     <div className="space-y-6">
       <form action={formAction} className="space-y-5">
+        <input type="hidden" name="title" value={content.title} />
         <input type="hidden" name="groups" value={JSON.stringify(content.groups)} />
+
+        <section className="space-y-3 rounded-xl bg-surface-container-lowest/90 p-4 sm:p-5">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-primary">
+              title
+            </span>
+            <h2 className="text-[15px] font-medium text-on-surface">Section header</h2>
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="skills-title">
+              Header title
+            </label>
+            <input
+              id="skills-title"
+              value={content.title}
+              onChange={(e) =>
+                setContent((prev) => ({ ...prev, title: e.target.value }))
+              }
+              className={fieldClass}
+              placeholder="Tech Stack"
+              required
+            />
+          </div>
+        </section>
 
         <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
           {content.groups.map((group, index) => (

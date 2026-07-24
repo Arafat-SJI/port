@@ -11,6 +11,7 @@ function createId() {
 
 /** Seed / fallback when Supabase has no skills row yet. */
 export const DEFAULT_SKILLS_CONTENT = {
+  title: "Tech Stack",
   groups: [
     {
       id: "skill-frontend",
@@ -83,7 +84,13 @@ export function normalizeSkillsContent(input) {
     .map((group, i) => normalizeSkillsGroup(group, i))
     .filter((group) => group.title || group.items.length);
 
+  const titleRaw =
+    !Array.isArray(raw) && raw && typeof raw === "object" ? raw.title : undefined;
+
   return {
+    title:
+      String(titleRaw ?? DEFAULT_SKILLS_CONTENT.title).trim() ||
+      DEFAULT_SKILLS_CONTENT.title,
     groups: groups.length
       ? groups
       : DEFAULT_SKILLS_CONTENT.groups.map((group, i) => normalizeSkillsGroup(group, i)),
@@ -97,15 +104,23 @@ export function getVisibleSkillsGroups(content) {
 
 /** Lines used by portfolio search for #skills. */
 export function skillsSearchLines(content) {
-  return getVisibleSkillsGroups(content).flatMap((group) => [group.title, ...group.items]);
+  const { title } = normalizeSkillsContent(content);
+  return [
+    title,
+    ...getVisibleSkillsGroups(content).flatMap((group) => [group.title, ...group.items]),
+  ];
 }
 
 /** Public fields for AI knowledge (visible groups only). */
 export function skillsForAiKnowledge(content) {
-  return getVisibleSkillsGroups(content).map((group) => ({
-    title: group.title,
-    items: group.items,
-  }));
+  const { title } = normalizeSkillsContent(content);
+  return {
+    title,
+    groups: getVisibleSkillsGroups(content).map((group) => ({
+      title: group.title,
+      items: group.items,
+    })),
+  };
 }
 
 export function createEmptySkillsGroup() {

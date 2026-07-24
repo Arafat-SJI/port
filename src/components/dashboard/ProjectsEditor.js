@@ -119,7 +119,22 @@ export default function ProjectsEditor({ initialContent }) {
             <span className="material-symbols-outlined text-[18px] text-primary">
               title
             </span>
-            <h2 className="text-[15px] font-medium text-on-surface">Section intro</h2>
+            <h2 className="text-[15px] font-medium text-on-surface">Section header</h2>
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="projects-title">
+              Header title
+            </label>
+            <input
+              id="projects-title"
+              value={content.title}
+              onChange={(e) =>
+                setContent((prev) => ({ ...prev, title: e.target.value }))
+              }
+              className={fieldClass}
+              placeholder="Selected Projects"
+              required
+            />
           </div>
           <div>
             <label className={labelClass} htmlFor="projects-subtitle">
@@ -137,147 +152,145 @@ export default function ProjectsEditor({ initialContent }) {
           </div>
         </section>
 
-        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
-          {content.items.map((item, index) => (
-            <section
-              key={item.id}
-              className={`space-y-4 rounded-xl bg-surface-container-lowest/90 p-4 sm:p-5 ${
-                item.visible ? "" : "opacity-70"
-              }`}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="material-symbols-outlined text-[18px] text-primary">
-                    folder_code
-                  </span>
-                  <h2 className="truncate text-[15px] font-medium text-on-surface">
-                    {item.title || `Project ${index + 1}`}
-                  </h2>
-                </div>
-                <ItemActionsMenu
-                  label={item.title || `Project ${index + 1}`}
-                  visible={item.visible !== false}
-                  onToggleVisible={(next) => updateItem(item.id, { visible: next })}
-                  onDelete={() => requestRemoveItem(item, index)}
-                  onMoveUp={() => moveItem(item.id, -1)}
-                  onMoveDown={() => moveItem(item.id, 1)}
-                  canMoveUp={index > 0}
-                  canMoveDown={index < content.items.length - 1}
-                />
+        {content.items.map((item, index) => (
+          <section
+            key={item.id}
+            className={`space-y-4 rounded-xl bg-surface-container-lowest/90 p-4 sm:p-5 ${
+              item.visible ? "" : "opacity-70"
+            }`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="material-symbols-outlined text-[18px] text-primary">
+                  folder_code
+                </span>
+                <h2 className="truncate text-[15px] font-medium text-on-surface">
+                  {item.title || `Project ${index + 1}`}
+                </h2>
               </div>
+              <ItemActionsMenu
+                label={item.title || `Project ${index + 1}`}
+                visible={item.visible !== false}
+                onToggleVisible={(next) => updateItem(item.id, { visible: next })}
+                onDelete={() => requestRemoveItem(item, index)}
+                onMoveUp={() => moveItem(item.id, -1)}
+                onMoveDown={() => moveItem(item.id, 1)}
+                canMoveUp={index > 0}
+                canMoveDown={index < content.items.length - 1}
+              />
+            </div>
 
+            <div>
+              <label className={labelClass} htmlFor={`title-${item.id}`}>
+                Title
+              </label>
+              <input
+                id={`title-${item.id}`}
+                value={item.title}
+                onChange={(e) => updateItem(item.id, { title: e.target.value })}
+                className={fieldClass}
+                placeholder="Nexus IDE"
+                required
+              />
+            </div>
+
+            <div>
+              <label className={labelClass} htmlFor={`description-${item.id}`}>
+                Description
+              </label>
+              <textarea
+                id={`description-${item.id}`}
+                rows={3}
+                value={item.description}
+                onChange={(e) =>
+                  updateItem(item.id, { description: e.target.value })
+                }
+                className={`${fieldClass} min-h-[80px] resize-y`}
+                placeholder="Short project summary…"
+              />
+            </div>
+
+            <div>
+              <label className={labelClass} htmlFor={`tags-${item.id}`}>
+                Tags (one per line)
+              </label>
+              <textarea
+                id={`tags-${item.id}`}
+                rows={3}
+                value={item.tags.join("\n")}
+                onChange={(e) =>
+                  updateItem(item.id, { tags: e.target.value.split("\n") })
+                }
+                className={`${fieldClass} min-h-[72px] resize-y`}
+                placeholder={"React\nNext.js"}
+              />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className={labelClass} htmlFor={`title-${item.id}`}>
-                  Title
+                <label className={labelClass} htmlFor={`liveUrl-${item.id}`}>
+                  Live URL (optional)
                 </label>
                 <input
-                  id={`title-${item.id}`}
-                  value={item.title}
-                  onChange={(e) => updateItem(item.id, { title: e.target.value })}
-                  className={fieldClass}
-                  placeholder="Nexus IDE"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className={labelClass} htmlFor={`description-${item.id}`}>
-                  Description
-                </label>
-                <textarea
-                  id={`description-${item.id}`}
-                  rows={3}
-                  value={item.description}
-                  onChange={(e) =>
-                    updateItem(item.id, { description: e.target.value })
-                  }
-                  className={`${fieldClass} min-h-[80px] resize-y`}
-                  placeholder="Short project summary…"
-                />
-              </div>
-
-              <div>
-                <label className={labelClass} htmlFor={`tags-${item.id}`}>
-                  Tags (one per line)
-                </label>
-                <textarea
-                  id={`tags-${item.id}`}
-                  rows={3}
-                  value={item.tags.join("\n")}
-                  onChange={(e) =>
-                    updateItem(item.id, { tags: e.target.value.split("\n") })
-                  }
-                  className={`${fieldClass} min-h-[72px] resize-y`}
-                  placeholder={"React\nNext.js"}
-                />
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <label className={labelClass} htmlFor={`liveUrl-${item.id}`}>
-                    Live URL (optional)
-                  </label>
-                  <input
-                    id={`liveUrl-${item.id}`}
-                    type="url"
-                    value={item.liveUrl}
-                    onChange={(e) => updateItem(item.id, { liveUrl: e.target.value })}
-                    className={fieldClass}
-                    placeholder="https://…"
-                  />
-                </div>
-                <div>
-                  <label className={labelClass} htmlFor={`codeUrl-${item.id}`}>
-                    Code URL (optional)
-                  </label>
-                  <input
-                    id={`codeUrl-${item.id}`}
-                    type="url"
-                    value={item.codeUrl}
-                    onChange={(e) => updateItem(item.id, { codeUrl: e.target.value })}
-                    className={fieldClass}
-                    placeholder="https://github.com/…"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className={labelClass} htmlFor={`imageUrl-${item.id}`}>
-                  Image URL
-                </label>
-                <input
-                  id={`imageUrl-${item.id}`}
-                  value={item.imageUrl}
-                  onChange={(e) => updateItem(item.id, { imageUrl: e.target.value })}
+                  id={`liveUrl-${item.id}`}
+                  type="url"
+                  value={item.liveUrl}
+                  onChange={(e) => updateItem(item.id, { liveUrl: e.target.value })}
                   className={fieldClass}
                   placeholder="https://…"
                 />
               </div>
-
               <div>
-                <label className={labelClass} htmlFor={`imageAlt-${item.id}`}>
-                  Image alt text
+                <label className={labelClass} htmlFor={`codeUrl-${item.id}`}>
+                  Code URL (optional)
                 </label>
                 <input
-                  id={`imageAlt-${item.id}`}
-                  value={item.imageAlt}
-                  onChange={(e) => updateItem(item.id, { imageAlt: e.target.value })}
+                  id={`codeUrl-${item.id}`}
+                  type="url"
+                  value={item.codeUrl}
+                  onChange={(e) => updateItem(item.id, { codeUrl: e.target.value })}
                   className={fieldClass}
-                  placeholder="Describe the image"
+                  placeholder="https://github.com/…"
                 />
               </div>
+            </div>
 
-              {item.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={item.imageUrl}
-                  alt={item.imageAlt || item.title || ""}
-                  className="h-28 w-full rounded-lg object-cover bg-surface-container"
-                />
-              ) : null}
-            </section>
-          ))}
-        </div>
+            <div>
+              <label className={labelClass} htmlFor={`imageUrl-${item.id}`}>
+                Image URL
+              </label>
+              <input
+                id={`imageUrl-${item.id}`}
+                value={item.imageUrl}
+                onChange={(e) => updateItem(item.id, { imageUrl: e.target.value })}
+                className={fieldClass}
+                placeholder="https://…"
+              />
+            </div>
+
+            <div>
+              <label className={labelClass} htmlFor={`imageAlt-${item.id}`}>
+                Image alt text
+              </label>
+              <input
+                id={`imageAlt-${item.id}`}
+                value={item.imageAlt}
+                onChange={(e) => updateItem(item.id, { imageAlt: e.target.value })}
+                className={fieldClass}
+                placeholder="Describe the image"
+              />
+            </div>
+
+            {item.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={item.imageUrl}
+                alt={item.imageAlt || item.title || ""}
+                className="h-28 w-full rounded-lg object-cover bg-surface-container"
+              />
+            ) : null}
+          </section>
+        ))}
 
         <div className="flex items-center justify-end gap-3">
           <button

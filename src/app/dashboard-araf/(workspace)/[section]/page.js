@@ -9,12 +9,18 @@ export default async function DashboardSectionPage({ params }) {
 
   if (RESERVED.has(section)) notFound();
 
-  // Dedicated editors
+  // Dedicated editors — Contact remains placeholder
   if (
     section === "about" ||
     section === "experience" ||
     section === "skills" ||
-    section === "projects"
+    section === "projects" ||
+    section === "education" ||
+    section === "awards" ||
+    section === "publication" ||
+    section === "gallery" ||
+    section === "clubing" ||
+    section === "mentorship"
   ) {
     notFound();
   }

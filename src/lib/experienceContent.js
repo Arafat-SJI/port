@@ -32,6 +32,7 @@ function createId() {
 
 /** Seed / fallback when Supabase has no experience row yet. */
 export const DEFAULT_EXPERIENCE_CONTENT = {
+  title: "Experience",
   items: [
     {
       id: "exp-sj-innovation",
@@ -230,7 +231,13 @@ export function normalizeExperienceContent(input) {
     (item) => item.company || item.role || item.bullets.length
   );
 
+  const titleRaw =
+    !Array.isArray(raw) && raw && typeof raw === "object" ? raw.title : undefined;
+
   return {
+    title:
+      String(titleRaw ?? DEFAULT_EXPERIENCE_CONTENT.title).trim() ||
+      DEFAULT_EXPERIENCE_CONTENT.title,
     items: items.length ? items : DEFAULT_EXPERIENCE_CONTENT.items.map((item, i) =>
       normalizeExperienceItem(item, i)
     ),
@@ -244,30 +251,38 @@ export function getVisibleExperienceItems(content) {
 
 /** Lines used by portfolio search for #experience. */
 export function experienceSearchLines(content) {
-  return getVisibleExperienceItems(content).flatMap((item) => [
-    formatExperienceRole(item),
-    item.company,
-    item.employmentType,
-    item.workMode,
-    formatExperiencePeriod(item),
-    item.location,
-    ...item.bullets,
-  ]);
+  const { title } = normalizeExperienceContent(content);
+  return [
+    title,
+    ...getVisibleExperienceItems(content).flatMap((item) => [
+      formatExperienceRole(item),
+      item.company,
+      item.employmentType,
+      item.workMode,
+      formatExperiencePeriod(item),
+      item.location,
+      ...item.bullets,
+    ]),
+  ];
 }
 
 /** Public fields for AI knowledge (visible entries only; no UI-only flags). */
 export function experienceForAiKnowledge(content) {
-  return getVisibleExperienceItems(content).map((item) => ({
-    company: item.company,
-    companyUrl: item.companyUrl || null,
-    role: formatExperienceRole(item),
-    employmentType: item.employmentType,
-    workMode: item.workMode || null,
-    period: formatExperiencePeriod(item),
-    location: item.location,
-    current: item.current,
-    bullets: item.bullets,
-  }));
+  const { title } = normalizeExperienceContent(content);
+  return {
+    title,
+    items: getVisibleExperienceItems(content).map((item) => ({
+      company: item.company,
+      companyUrl: item.companyUrl || null,
+      role: formatExperienceRole(item),
+      employmentType: item.employmentType,
+      workMode: item.workMode || null,
+      period: formatExperiencePeriod(item),
+      location: item.location,
+      current: item.current,
+      bullets: item.bullets,
+    })),
+  };
 }
 
 export function createEmptyExperienceItem() {

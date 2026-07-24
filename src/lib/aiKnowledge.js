@@ -15,6 +15,14 @@ export const AI_SECURITY_BLOCK = {
     "If the user asks about password, login credentials, dashboard email/password, or any secret account data, reply exactly or equivalently: I am not going to provide you this kind of data",
 };
 
+function asSection(value, fallbackTitle, listKey = "items") {
+  if (value && typeof value === "object" && !Array.isArray(value)) return value;
+  return {
+    title: fallbackTitle,
+    [listKey]: Array.isArray(value) ? value : [],
+  };
+}
+
 /**
  * Build knowledge from dashboard public content only.
  * Omits visibility flags and any hidden About fields to keep tokens lean.
@@ -24,6 +32,12 @@ export function buildAiKnowledgePayload({
   experience,
   skills,
   projects,
+  education,
+  awards,
+  publication,
+  gallery,
+  clubing,
+  mentorship,
   sectionOrder,
 }) {
   const a = about && typeof about === "object" ? about : {};
@@ -63,8 +77,14 @@ export function buildAiKnowledgePayload({
     updatedAt: new Date().toISOString(),
     sectionOrder: Array.isArray(sectionOrder) ? [...sectionOrder] : [],
     about: aboutOut,
-    experience: Array.isArray(experience) ? experience : [],
-    skills: Array.isArray(skills) ? skills : [],
-    projects: Array.isArray(projects) ? projects : [],
+    experience: asSection(experience, "Experience"),
+    skills: asSection(skills, "Tech Stack", "groups"),
+    projects: asSection(projects, "Selected Projects"),
+    education: asSection(education, "Education"),
+    awards: asSection(awards, "Awards"),
+    publication: asSection(publication, "Publication"),
+    gallery: asSection(gallery, "Gallery"),
+    clubing: asSection(clubing, "Clubing"),
+    mentorship: asSection(mentorship, "Mentorship"),
   };
 }

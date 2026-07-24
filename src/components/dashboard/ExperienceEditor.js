@@ -133,6 +133,7 @@ export default function ExperienceEditor({ initialContent }) {
 
   const updateItem = (id, patch) => {
     setContent((prev) => ({
+      ...prev,
       items: prev.items.map((item) =>
         item.id === id ? { ...item, ...patch } : item
       ),
@@ -150,6 +151,7 @@ export default function ExperienceEditor({ initialContent }) {
     if (!pendingRemove) return;
     const label = pendingRemove.label;
     setContent((prev) => ({
+      ...prev,
       items: prev.items.filter((item) => item.id !== pendingRemove.id),
     }));
     setPendingRemove(null);
@@ -162,6 +164,7 @@ export default function ExperienceEditor({ initialContent }) {
 
   const addItem = () => {
     setContent((prev) => ({
+      ...prev,
       items: [...prev.items, createEmptyExperienceItem()],
     }));
   };
@@ -175,7 +178,7 @@ export default function ExperienceEditor({ initialContent }) {
       if (next < 0 || next >= items.length) return prev;
       const [moved] = items.splice(index, 1);
       items.splice(next, 0, moved);
-      return { items };
+      return { ...prev, items };
     });
   };
 
@@ -184,7 +187,32 @@ export default function ExperienceEditor({ initialContent }) {
   return (
     <div className="space-y-6">
       <form action={formAction} className="space-y-5">
+        <input type="hidden" name="title" value={content.title} />
         <input type="hidden" name="items" value={JSON.stringify(content.items)} />
+
+        <section className="space-y-3 rounded-xl bg-surface-container-lowest/90 p-4 sm:p-5">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-primary">
+              title
+            </span>
+            <h2 className="text-[15px] font-medium text-on-surface">Section header</h2>
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="experience-title">
+              Header title
+            </label>
+            <input
+              id="experience-title"
+              value={content.title}
+              onChange={(e) =>
+                setContent((prev) => ({ ...prev, title: e.target.value }))
+              }
+              className={fieldClass}
+              placeholder="Experience"
+              required
+            />
+          </div>
+        </section>
 
         {content.items.map((item, index) => (
           <section

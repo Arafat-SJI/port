@@ -5,14 +5,50 @@ import {
   AI_SECURITY_BLOCK,
   buildAiKnowledgePayload,
 } from "@/lib/aiKnowledge";
+import { awardsForAiKnowledge } from "@/lib/awardsContent";
+import { readAwardsContentFromSupabase } from "@/lib/awardsContentServer";
+import { clubingForAiKnowledge } from "@/lib/clubingContent";
+import { readClubingContentFromSupabase } from "@/lib/clubingContentServer";
+import { educationForAiKnowledge } from "@/lib/educationContent";
+import { readEducationContentFromSupabase } from "@/lib/educationContentServer";
 import { experienceForAiKnowledge } from "@/lib/experienceContent";
 import { readExperienceContentFromSupabase } from "@/lib/experienceContentServer";
+import { galleryForAiKnowledge } from "@/lib/galleryContent";
+import { readGalleryContentFromSupabase } from "@/lib/galleryContentServer";
+import { mentorshipForAiKnowledge } from "@/lib/mentorshipContent";
+import { readMentorshipContentFromSupabase } from "@/lib/mentorshipContentServer";
 import { projectsForAiKnowledge } from "@/lib/projectsContent";
 import { readProjectsContentFromSupabase } from "@/lib/projectsContentServer";
+import { publicationForAiKnowledge } from "@/lib/publicationContent";
+import { readPublicationContentFromSupabase } from "@/lib/publicationContentServer";
 import { skillsForAiKnowledge } from "@/lib/skillsContent";
 import { readSkillsContentFromSupabase } from "@/lib/skillsContentServer";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { readSectionOrderFromSupabase } from "@/lib/sectionOrderServer";
+
+const EMPTY_KNOWLEDGE = {
+  security: { ...AI_SECURITY_BLOCK },
+  updatedAt: null,
+  sectionOrder: [],
+  about: null,
+  experience: { title: "Experience", items: [] },
+  skills: { title: "Tech Stack", groups: [] },
+  projects: { title: "Selected Projects", subtitle: null, items: [] },
+  education: { title: "Education", items: [] },
+  awards: { title: "Awards", items: [] },
+  publication: { title: "Publication", items: [] },
+  gallery: { title: "Gallery", items: [] },
+  clubing: { title: "Clubing", items: [] },
+  mentorship: { title: "Mentorship", stats: {}, items: [] },
+};
+
+function coerceSection(value, fallbackTitle, listKey = "items") {
+  if (Array.isArray(value)) {
+    return { title: fallbackTitle, [listKey]: value };
+  }
+  if (value && typeof value === "object") return value;
+  return { title: fallbackTitle, [listKey]: [] };
+}
 
 /**
  * Rebuild AI knowledge from current dashboard public content and upsert to
@@ -21,11 +57,29 @@ import { readSectionOrderFromSupabase } from "@/lib/sectionOrderServer";
  */
 export async function syncAiKnowledgeFromDashboard() {
   try {
-    const [about, experience, skills, projects, sectionOrder] = await Promise.all([
+    const [
+      about,
+      experience,
+      skills,
+      projects,
+      education,
+      awards,
+      publication,
+      gallery,
+      clubing,
+      mentorship,
+      sectionOrder,
+    ] = await Promise.all([
       readAboutContentFromSupabase(),
       readExperienceContentFromSupabase(),
       readSkillsContentFromSupabase(),
       readProjectsContentFromSupabase(),
+      readEducationContentFromSupabase(),
+      readAwardsContentFromSupabase(),
+      readPublicationContentFromSupabase(),
+      readGalleryContentFromSupabase(),
+      readClubingContentFromSupabase(),
+      readMentorshipContentFromSupabase(),
       readSectionOrderFromSupabase(),
     ]);
 
@@ -37,6 +91,12 @@ export async function syncAiKnowledgeFromDashboard() {
       experience: experienceForAiKnowledge(experience),
       skills: skillsForAiKnowledge(skills),
       projects: projectsForAiKnowledge(projects),
+      education: educationForAiKnowledge(education),
+      awards: awardsForAiKnowledge(awards),
+      publication: publicationForAiKnowledge(publication),
+      gallery: galleryForAiKnowledge(gallery),
+      clubing: clubingForAiKnowledge(clubing),
+      mentorship: mentorshipForAiKnowledge(mentorship),
       sectionOrder,
     });
 
@@ -76,15 +136,7 @@ export async function readAiKnowledgeFromSupabase() {
       .maybeSingle();
 
     if (error || !data?.value || typeof data.value !== "object") {
-      return {
-        security: { ...AI_SECURITY_BLOCK },
-        updatedAt: null,
-        sectionOrder: [],
-        about: null,
-        experience: [],
-        skills: [],
-        projects: [],
-      };
+      return { ...EMPTY_KNOWLEDGE };
     }
 
     const value = { ...data.value };
@@ -99,19 +151,17 @@ export async function readAiKnowledgeFromSupabase() {
         ...AI_SECURITY_BLOCK,
         ...(value.security && typeof value.security === "object" ? value.security : {}),
       },
-      experience: Array.isArray(value.experience) ? value.experience : [],
-      skills: Array.isArray(value.skills) ? value.skills : [],
-      projects: Array.isArray(value.projects) ? value.projects : [],
+      experience: coerceSection(value.experience, "Experience"),
+      skills: coerceSection(value.skills, "Tech Stack", "groups"),
+      projects: coerceSection(value.projects, "Selected Projects"),
+      education: coerceSection(value.education, "Education"),
+      awards: coerceSection(value.awards, "Awards"),
+      publication: coerceSection(value.publication, "Publication"),
+      gallery: coerceSection(value.gallery, "Gallery"),
+      clubing: coerceSection(value.clubing, "Clubing"),
+      mentorship: coerceSection(value.mentorship, "Mentorship"),
     };
   } catch {
-    return {
-      security: { ...AI_SECURITY_BLOCK },
-      updatedAt: null,
-      sectionOrder: [],
-      about: null,
-      experience: [],
-      skills: [],
-      projects: [],
-    };
+    return { ...EMPTY_KNOWLEDGE };
   }
 }

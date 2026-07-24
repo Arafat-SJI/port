@@ -46,6 +46,12 @@ export default function IDEWorkspace({
   experienceContent,
   skillsContent,
   projectsContent,
+  educationContent,
+  awardsContent,
+  publicationContent,
+  galleryContent,
+  clubingContent,
+  mentorshipContent,
 } = {}) {
   const mainRef = useRef(null);
   const contactTrackRef = useRef(null);
@@ -397,6 +403,12 @@ export default function IDEWorkspace({
                   experienceContent={experienceContent}
                   skillsContent={skillsContent}
                   projectsContent={projectsContent}
+                  educationContent={educationContent}
+                  awardsContent={awardsContent}
+                  publicationContent={publicationContent}
+                  galleryContent={galleryContent}
+                  clubingContent={clubingContent}
+                  mentorshipContent={mentorshipContent}
                 />
               </div>
               {!sidebarsFixed && !drawerMode && (
@@ -431,6 +443,12 @@ export default function IDEWorkspace({
                       experienceContent={experienceContent}
                       skillsContent={skillsContent}
                       projectsContent={projectsContent}
+                      educationContent={educationContent}
+                      awardsContent={awardsContent}
+                      publicationContent={publicationContent}
+                      galleryContent={galleryContent}
+                      clubingContent={clubingContent}
+                      mentorshipContent={mentorshipContent}
                       onNavigateSection={navigateToSection}
                     />
                     <SectionSearchTarget

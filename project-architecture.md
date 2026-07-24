@@ -2,7 +2,7 @@
 
 > **Mandatory for every Cursor agent session:** Read this entire file before writing or changing any code. After finishing work from a user prompt, update this file so office PC and home PC sessions stay in sync.
 
-**Last updated:** 2026-07-20 (Projects section dynamic + dashboard CRUD)
+**Last updated:** 2026-07-24 (Gallery + Clubing + Mentorship dynamic CRUD)
 
 ---
 
@@ -242,12 +242,12 @@ Activities from `ACTIVITY_ITEMS` in `portfolio.js`:
 | `#experience` | Experience.json | `ExperienceSection` | Supabase `portfolio_settings` key `experience` | **Dynamic** — edited at `/dashboard-araf/experience` |
 | `#skills` | Skills.ts | `SkillsSection` | Supabase `portfolio_settings` key `skills` | **Dynamic** — edited at `/dashboard-araf/skills` |
 | `#projects` | Projects.tsx | `ProjectsSection` | Supabase `portfolio_settings` key `projects` | **Dynamic** — edited at `/dashboard-araf/projects` |
-| `#education` | Education.json | `EducationSection` | `EDUCATION` | Demo content |
-| `#awards` | Awards.md | `AwardsSection` | `AWARDS` | Demo content |
-| `#publication` | Publication.md | `PublicationSection` | `PUBLICATIONS` | Demo content |
-| `#gallery` | Gallery.tsx | `GallerySection` | `GALLERY` | Demo content |
-| `#clubing` | Clubing.ts | `ClubingSection` | `CLUBS` | Demo content |
-| `#mentorship` | Mentorship.ts | `MentorshipSection` | `MENTORSHIP` | Demo content |
+| `#education` | Education.json | `EducationSection` | Supabase `portfolio_settings` key `education` | **Dynamic** — edited at `/dashboard-araf/education` |
+| `#awards` | Awards.md | `AwardsSection` | Supabase `portfolio_settings` key `awards` | **Dynamic** — edited at `/dashboard-araf/awards` |
+| `#publication` | Publication.md | `PublicationSection` | Supabase `portfolio_settings` key `publication` | **Dynamic** — edited at `/dashboard-araf/publication` |
+| `#gallery` | Gallery.tsx | `GallerySection` | Supabase `portfolio_settings` key `gallery` | **Dynamic** — edited at `/dashboard-araf/gallery` |
+| `#clubing` | Clubing.ts | `ClubingSection` | Supabase `portfolio_settings` key `clubing` | **Dynamic** — edited at `/dashboard-araf/clubing` |
+| `#mentorship` | Mentorship.ts | `MentorshipSection` | Supabase `portfolio_settings` key `mentorship` | **Dynamic** — edited at `/dashboard-araf/mentorship` |
 | `#contact` | Contact.sh | Contact reveal/terminal (IDE layer) | `CONTACT`, `TERMINAL_MESSAGES` | Demo content |
 
 Shared portfolio UI:
@@ -368,6 +368,12 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 | `skillsContentServer.js` | Read/write Skills in Supabase `portfolio_settings`; triggers AI knowledge sync |
 | `projectsContent.js` | Normalize Projects payload; defaults; search/AI helpers |
 | `projectsContentServer.js` | Read/write Projects in Supabase `portfolio_settings`; triggers AI knowledge sync |
+| `educationContent.js` | Normalize Education payload; defaults; search/AI helpers |
+| `educationContentServer.js` | Read/write Education in Supabase `portfolio_settings`; triggers AI knowledge sync |
+| `awardsContent.js` | Normalize Awards payload; defaults; search/AI helpers |
+| `awardsContentServer.js` | Read/write Awards in Supabase `portfolio_settings`; triggers AI knowledge sync |
+| `publicationContent.js` | Normalize Publication payload; defaults; search/AI helpers |
+| `publicationContentServer.js` | Read/write Publication in Supabase `portfolio_settings`; triggers AI knowledge sync |
 | `aiKnowledge.js` | Build AI chat knowledge payload + security refusal constants (no auth fields) |
 | `aiKnowledgeServer.js` | Sync/read `portfolio_settings.ai_knowledge`; optional local JSON mirror |
 | `extensionStorage.js` | Read/write extension + workspace localStorage; apply DOM attributes |
@@ -421,9 +427,15 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 - Aesthetic IDE-themed login (window chrome, soft primary/secondary glows, portfolio tokens).
 - Dashboard explorer items (except `Contact.sh`) support **drag-reorder** via a 3-bar grip on the right; order is stored in Supabase `portfolio_settings` (`key = section_order`), syncs to landing **Explorer**, **top tabs**, and **portfolio content**. Contact stays fixed last. Same-tab `CustomEvent` only (no localStorage for order).
 - **About content (live):** `/dashboard-araf/about` editor (`AboutEditor`) writes hero + summary/interests to `portfolio_settings` (`key = about`). Per-block **show/hide** toggles (`visibility`: image, headline, intro, primaryCta, secondaryCta, summary, interests) control public landing display; hidden content is kept in Supabase. Public `/` SSR-loads it into `HeroSection` / `AboutSection`. Helpers: `src/lib/aboutContent.js`, `aboutContentServer.js`, `aboutActions.js`. Migration seed: `supabase/migrations/002_about_content.sql`. Fallback defaults only if row missing.
-- **Experience content (live):** `/dashboard-araf/experience` editor (`ExperienceEditor`) writes jobs (company, optional company URL, role, On-site/Remote dropdown, employment type as plain text, start/end date pickers displaying `June 25, 2024`, location, bullets, per-entry show/hide) to `portfolio_settings` (`key = experience`). Company name links open `companyUrl` when set. Hidden entries stay in Supabase but are omitted from the public portfolio, search, and AI knowledge. Remove actions use shared `ConfirmModal` (“Are you sure?”). Public `/` SSR-loads into `ExperienceSection`. Helpers: `experienceContent.js`, `experienceContentServer.js`, `experienceActions.js`. Migration seed: `supabase/migrations/006_experience_content.sql`.
-- **Skills content (live):** `/dashboard-araf/skills` editor (`SkillsEditor`) writes skill groups (title, items one-per-line, reorder, per-group show/hide) to `portfolio_settings` (`key = skills`). Hidden groups stay in Supabase but are omitted from the public portfolio, search, and AI knowledge. Public `/` SSR-loads into `SkillsSection`. Helpers: `skillsContent.js`, `skillsContentServer.js`, `skillsActions.js`. Migration seed: `supabase/migrations/007_skills_content.sql`.
-- **Projects content (live):** `/dashboard-araf/projects` editor (`ProjectsEditor`) writes projects (subtitle, title, description, tags, live/code URLs, image URL/alt, reorder, per-item show/hide) to `portfolio_settings` (`key = projects`). Live/code icons open URLs when set. Hidden projects stay in Supabase but are omitted from public portfolio, search, and AI knowledge. Public `/` SSR-loads into `ProjectsSection`. Helpers: `projectsContent.js`, `projectsContentServer.js`, `projectsActions.js`. Migration seed: `supabase/migrations/008_projects_content.sql`.
+- **Experience content (live):** `/dashboard-araf/experience` editor (`ExperienceEditor`) writes section header `title` (landing `SectionHeader`, default `Experience`) + jobs (company, optional company URL, role, On-site/Remote dropdown, employment type as plain text, start/end date pickers displaying `June 25, 2024`, location, bullets, per-entry show/hide) to `portfolio_settings` (`key = experience`). Company name links open `companyUrl` when set. Hidden entries stay in Supabase but are omitted from the public portfolio, search, and AI knowledge. Remove actions use shared `ConfirmModal` (“Are you sure?”). Public `/` SSR-loads into `ExperienceSection`. Helpers: `experienceContent.js`, `experienceContentServer.js`, `experienceActions.js`. Migration seed: `supabase/migrations/006_experience_content.sql`.
+- **Skills content (live):** `/dashboard-araf/skills` editor (`SkillsEditor`) writes section header `title` (landing `SectionHeader`, default `Tech Stack`) + skill groups (title, items one-per-line, reorder, per-group show/hide) to `portfolio_settings` (`key = skills`). Hidden groups stay in Supabase but are omitted from the public portfolio, search, and AI knowledge. Public `/` SSR-loads into `SkillsSection`. Helpers: `skillsContent.js`, `skillsContentServer.js`, `skillsActions.js`. Migration seed: `supabase/migrations/007_skills_content.sql`.
+- **Projects content (live):** `/dashboard-araf/projects` editor (`ProjectsEditor`) writes section header `title` (landing `SectionHeader`, default `Selected Projects`), subtitle, and projects (item title, description, tags, live/code URLs, image URL/alt, reorder, per-item show/hide) to `portfolio_settings` (`key = projects`). Live/code icons open URLs when set. Hidden projects stay in Supabase but are omitted from public portfolio, search, and AI knowledge. Public `/` SSR-loads into `ProjectsSection`. Helpers: `projectsContent.js`, `projectsContentServer.js`, `projectsActions.js`. Migration seed: `supabase/migrations/008_projects_content.sql`.
+- **Education content (live):** `/dashboard-araf/education` editor (`EducationEditor`) writes section header `title` (default `Education`) + entries (degree, institution, period, optional GPA, highlights one-per-line, reorder, per-entry show/hide) to `portfolio_settings` (`key = education`). Layout matches Experience (full-width stacked cards). Hidden entries stay in Supabase but are omitted from public portfolio, search, and AI knowledge. Public `/` SSR-loads into `EducationSection`. Helpers: `educationContent.js`, `educationContentServer.js`, `educationActions.js`. Migration seed: `supabase/migrations/009_education_content.sql`.
+- **Awards content (live):** `/dashboard-araf/awards` editor (`AwardsEditor`) writes section header `title` (default `Awards`) + entries (title, issuer, year, description, reorder, per-entry show/hide) to `portfolio_settings` (`key = awards`). Layout matches Experience (full-width stacked cards). Hidden entries stay in Supabase but are omitted from public portfolio, search, and AI knowledge. Public `/` SSR-loads into `AwardsSection` (2-col card grid). Helpers: `awardsContent.js`, `awardsContentServer.js`, `awardsActions.js`. Migration seed: `supabase/migrations/010_awards_content.sql`.
+- **Publication content (live):** `/dashboard-araf/publication` editor (`PublicationEditor`) writes section header `title` (default `Publication`) + entries (title, authors, venue, type, year, optional link, reorder, per-entry show/hide) to `portfolio_settings` (`key = publication`). Layout matches Experience (full-width stacked cards). Hidden entries stay in Supabase but are omitted from public portfolio, search, and AI knowledge. Public `/` SSR-loads into `PublicationSection` (Read link only when URL set). Helpers: `publicationContent.js`, `publicationContentServer.js`, `publicationActions.js`. Migration seed: `supabase/migrations/011_publication_content.sql`.
+- **Gallery content (live):** `/dashboard-araf/gallery` — caption, image URL/alt, wide layout flag, reorder, show/hide → `portfolio_settings.gallery`. Migration `012_gallery_content.sql`.
+- **Clubing content (live):** `/dashboard-araf/clubing` — name, role, period, description, reorder, show/hide → `portfolio_settings.clubing`. Migration `013_clubing_content.sql`.
+- **Mentorship content (live):** `/dashboard-araf/mentorship` — summary stats (mentees/programs/active) + entries (program, role, period, mentees, topics, description, reorder, show/hide) → `portfolio_settings.mentorship`. Migration `014_mentorship_content.sql`.
 - `src/lib/sectionOrder.js` / `sectionOrderServer.js`, `src/hooks/useSectionOrder.js`, `GET /api/section-order`, `saveSectionOrderAction`
 - Migration SQL: `supabase/migrations/001_portfolio_settings.sql` (must be run once in Supabase SQL Editor). Fallback defaults only: `src/data/sectionOrder.json`.
 
@@ -447,14 +459,23 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 - `src/app/dashboard-araf/(workspace)/experience/page.js` — **Experience CRUD editor**
 - `src/app/dashboard-araf/(workspace)/skills/page.js` — **Skills CRUD editor**
 - `src/app/dashboard-araf/(workspace)/projects/page.js` — **Projects CRUD editor**
-- `src/app/dashboard-araf/(workspace)/[section]/page.js` — placeholders for other sections (about + experience + skills + projects excluded)
+- `src/app/dashboard-araf/(workspace)/education/page.js` — **Education CRUD editor**
+- `src/app/dashboard-araf/(workspace)/awards/page.js` — **Awards CRUD editor**
+- `src/app/dashboard-araf/(workspace)/publication/page.js` — **Publication CRUD editor**
+- `src/app/dashboard-araf/(workspace)/[section]/page.js` — placeholders for other sections (about + experience + skills + projects + education + awards + publication excluded)
 - `src/app/dashboard-araf/experienceActions.js` — `saveExperienceContentAction`
 - `src/app/dashboard-araf/skillsActions.js` — `saveSkillsContentAction`
 - `src/app/dashboard-araf/projectsActions.js` — `saveProjectsContentAction`
+- `src/app/dashboard-araf/educationActions.js` — `saveEducationContentAction`
+- `src/app/dashboard-araf/awardsActions.js` — `saveAwardsContentAction`
+- `src/app/dashboard-araf/publicationActions.js` — `savePublicationContentAction`
 - `src/components/dashboard/ExperienceEditor.js` — Experience form UI
 - `src/components/dashboard/SkillsEditor.js` — Skills form UI
 - `src/components/dashboard/ProjectsEditor.js` — Projects form UI
-- `src/components/dashboard/ItemActionsMenu.js` — ⋮ menu (show/hide, delete, move) for Experience/Skills/Projects cards
+- `src/components/dashboard/EducationEditor.js` — Education form UI
+- `src/components/dashboard/AwardsEditor.js` — Awards form UI
+- `src/components/dashboard/PublicationEditor.js` — Publication form UI
+- `src/components/dashboard/ItemActionsMenu.js` — ⋮ menu (show/hide, delete, move) for Experience/Skills/Projects/Education/Awards/Publication cards
 - `src/components/dashboard/Modal.js` — shared `Modal` shell + `ConfirmModal` + `StatusModal` (blurred backdrop)
 - `src/components/dashboard/SettingsSidebar.js` — nested settings nav (email / password) with back control
 - `src/components/dashboard/ChangeEmailForm.js` / `ChangePasswordForm.js` — separate settings forms
@@ -484,7 +505,7 @@ Local mirror removed — production reads the Supabase `portfolio_settings.ai_kn
 - Always includes `security.password_and_credentials_policy` refusal text: `I am not going to provide you this kind of data`.
 - Settings / auth actions must **never** write to this knowledge blob.
 
-**Auto-sync:** After every successful write of About (`writeAboutContentToSupabase`) or section order (`writeSectionOrderToSupabase`), `syncAiKnowledgeFromDashboard()` rebuilds the payload and **upserts** `ai_knowledge` in Supabase. Sync errors are logged and do not fail the dashboard save.
+**Auto-sync:** After every successful write of any dynamic portfolio section (About…Mentorship) or section order, `syncAiKnowledgeFromDashboard()` rebuilds the payload and **upserts** `ai_knowledge` in Supabase. Sync errors are logged and do not fail the dashboard save.
 
 **Read endpoints (for future ChatPanel / tooling):**
 - Next.js: `GET /api/ai-knowledge` (no-store)
@@ -495,9 +516,9 @@ Local mirror removed — production reads the Supabase `portfolio_settings.ai_kn
 
 ### 2.17 What is intentionally NOT built yet
 
-- No CRUD yet for sections other than **About**, **Experience**, **Skills**, and **Projects** (Education…Contact still placeholders)
+- No CRUD yet for **Contact** only (all other middle sections are dynamic)
 - No real AI chat answers (chat is UI shell; knowledge sync to Supabase exists but ChatPanel not wired)
-- Remaining middle sections still use demo static data
+- Contact still uses demo static data
 - Hero CTAs: primary scrolls to Projects; secondary opens CV PDF in a new tab when uploaded (dashboard upload → Supabase Storage `portfolio-cv`)
 
 ---
@@ -541,16 +562,16 @@ Local mirror removed — production reads the Supabase `portfolio_settings.ai_kn
 
 | # | Item | Status |
 |---|------|--------|
-| 1 | Per-section: replace demo data with real content + optional design pass | **In progress** — About + Experience + Skills + Projects dynamic; other sections waiting |
-| 2 | After each section confirmed: add dashboard CRUD fields for that section | **Partial** — About + Experience + Skills + Projects done; others waiting |
+| 1 | Per-section: replace demo data with real content + optional design pass | **In progress** — all middle sections except Contact dynamic |
+| 2 | After each section confirmed: add dashboard CRUD fields for that section | **Partial** — Contact waiting; all other sections done |
 | 3 | Create `/dashboard-araf` app route + auth/flow | **Done** (2026-07-14) — login only, no register, no landing links |
 | 4 | Integrate Supabase Auth client + proxy guard | **Done** (2026-07-14) |
 | 4b | Section order in Supabase (`portfolio_settings`) | **Done** (2026-07-14) — run migration SQL once if table missing |
-| 4c | Per-section content tables + dashboard CRUD | **Partial** — About + Experience + Skills + Projects in `portfolio_settings`; other sections waiting |
-| 5 | Wire portfolio page to load dynamic content (IDE chrome unchanged) | **Partial** — About + Experience + Skills + Projects + section order SSR; other sections still static |
-| 6 | Auto-generate/update project JSON from dashboard data for AI chat | **Partial** — syncs About + Experience + Skills + Projects to Supabase `ai_knowledge`; expands as more sections get CRUD. Auth excluded; refusal text included |
+| 4c | Per-section content tables + dashboard CRUD | **Partial** — all middle sections except Contact in `portfolio_settings` |
+| 5 | Wire portfolio page to load dynamic content (IDE chrome unchanged) | **Partial** — all middle sections except Contact SSR from Supabase |
+| 6 | Auto-generate/update project JSON from dashboard data for AI chat | **Partial** — syncs all dynamic sections to Supabase `ai_knowledge`; Contact waiting. Auth excluded; refusal text included |
 | 7 | Wire ChatPanel to real AI answers using that JSON | Waiting |
-| 8 | Ensure zero static “about me” content remains in site data modules | **Partial** — About + Experience + Skills + Projects live from DB; static modules remain fallbacks for other sections |
+| 8 | Ensure zero static “about me” content remains in site data modules | **Partial** — Contact (+ terminal) still static; all other sections live from DB |
 | 9 | Dashboard password-change UI (Supabase Auth only; never writes to AI JSON) | **Done** (2026-07-14) — Settings + forgot-password email flow |
 | 9b | Dashboard email-change UI (verify password → new email; Auth only; never AI JSON) | **Done** (2026-07-17) |
 
@@ -614,4 +635,11 @@ _(Append new future plans here when the user says “I have a plan…” / “no
 | 2026-07-18 | **Dashboard modals unified:** `src/components/dashboard/Modal.js` — base `Modal` + `ConfirmModal` + `StatusModal` (same panel UI). Backdrop dim overlay (`bg-black/70`, no blur) + modal panel shadow/border so it reads against matching surface colors. Portaled to `document.body` at `z-[100]`. About + Experience success/error use `StatusModal`. |
 | 2026-07-18 | **Skills dynamic:** Dashboard `/dashboard-araf/skills` CRUD (skill groups: title, items, reorder, show/hide) → Supabase `portfolio_settings.skills`. Landing SSR. Search + AI knowledge sync. Migration `007_skills_content.sql`. |
 | 2026-07-20 | **Projects dynamic:** Dashboard `/dashboard-araf/projects` CRUD (subtitle, title, description, tags, live/code URLs, image URL/alt, reorder, show/hide) → Supabase `portfolio_settings.projects`. Landing SSR + real link icons. Search + AI knowledge sync. Migration `008_projects_content.sql`. |
+| 2026-07-24 | **Projects dashboard layout:** `ProjectsEditor` cards switched from Skills-style 2-column grid to Experience-style full-width stacked sections. Fields/actions unchanged. |
+| 2026-07-24 | **Dynamic section headers:** Experience / Skills / Projects store a section `title` in Supabase (defaults: Experience, Tech Stack, Selected Projects). Editable in each dashboard editor; landing `SectionHeader` + search + AI knowledge use it. About hero headline already dynamic (unchanged). |
+| 2026-07-24 | **Education dynamic:** Dashboard `/dashboard-araf/education` CRUD (section header title, degree, institution, period, GPA, highlights, reorder, show/hide) → Supabase `portfolio_settings.education`. Landing SSR. Search + AI knowledge sync. Migration `009_education_content.sql`. |
+| 2026-07-24 | **Awards dynamic:** Dashboard `/dashboard-araf/awards` CRUD (section header title, award title, issuer, year, description, reorder, show/hide) → Supabase `portfolio_settings.awards`. Landing SSR. Search + AI knowledge sync. Migration `010_awards_content.sql`. |
+| 2026-07-24 | **Content workspace Settings:** Dashboard home (`/dashboard-araf`) adds a bottom **System → Settings** link (same destination as sidebar: `/settings/email`). |
+| 2026-07-24 | **Publication dynamic:** Dashboard `/dashboard-araf/publication` CRUD (section header title, title, authors, venue, type, year, optional link, reorder, show/hide) → Supabase `portfolio_settings.publication`. Landing SSR. Search + AI knowledge sync. Migration `011_publication_content.sql`. |
+| 2026-07-24 | **Gallery + Clubing + Mentorship dynamic:** Dashboard CRUD for all three → Supabase keys `gallery` / `clubing` / `mentorship`. Gallery: caption, image URL/alt, wide flag. Clubing: name, role, period, description. Mentorship: stats (mentees/programs/active) + program entries with topics. Landing SSR + search + AI sync. Migrations `012`–`014`. Contact remains placeholder. |
 

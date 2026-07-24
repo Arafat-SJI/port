@@ -25,6 +25,14 @@ export async function saveProjectsContentAction(prevState, formData) {
 
   const normalized = normalizeProjectsContent(parsed);
 
+  if (!normalized.title.trim()) {
+    return {
+      error: "Section header title is required.",
+      success: false,
+      content: null,
+    };
+  }
+
   if (!normalized.items.length) {
     return {
       error: "Add at least one project.",

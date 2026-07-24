@@ -5,6 +5,7 @@ import {
   CONTACT,
   EDUCATION,
   EXPERIENCE,
+  GALLERY,
   MENTORSHIP,
   NAV_ITEMS,
   PROJECTS,
@@ -12,17 +13,30 @@ import {
   SKILLS,
 } from "@/data/portfolio";
 import { aboutSearchLines } from "@/lib/aboutContent";
+import { awardsSearchLines } from "@/lib/awardsContent";
+import { clubingSearchLines } from "@/lib/clubingContent";
+import { educationSearchLines } from "@/lib/educationContent";
 import { experienceSearchLines } from "@/lib/experienceContent";
+import { gallerySearchLines } from "@/lib/galleryContent";
+import { mentorshipSearchLines } from "@/lib/mentorshipContent";
 import { projectsSearchLines } from "@/lib/projectsContent";
+import { publicationSearchLines } from "@/lib/publicationContent";
 import { skillsSearchLines } from "@/lib/skillsContent";
 
-function linesForHref(
-  href,
-  aboutContent,
-  experienceContent,
-  skillsContent,
-  projectsContent
-) {
+function linesForHref(href, content = {}) {
+  const {
+    aboutContent,
+    experienceContent,
+    skillsContent,
+    projectsContent,
+    educationContent,
+    awardsContent,
+    publicationContent,
+    galleryContent,
+    clubingContent,
+    mentorshipContent,
+  } = content;
+
   switch (href) {
     case "#about":
       return aboutContent
@@ -41,40 +55,41 @@ function linesForHref(
         ? projectsSearchLines(projectsContent)
         : PROJECTS.flatMap((p) => [p.title, p.description, ...p.tags]);
     case "#education":
-      return EDUCATION.flatMap((e) => [e.degree, e.institution, ...e.highlights]);
+      return educationContent
+        ? educationSearchLines(educationContent)
+        : EDUCATION.flatMap((e) => [e.degree, e.institution, ...e.highlights]);
     case "#awards":
-      return AWARDS.flatMap((a) => [a.title, a.issuer, a.description]);
+      return awardsContent
+        ? awardsSearchLines(awardsContent)
+        : AWARDS.flatMap((a) => [a.title, a.issuer, a.description]);
     case "#publication":
-      return PUBLICATIONS.flatMap((p) => [p.title, p.authors, p.venue]);
+      return publicationContent
+        ? publicationSearchLines(publicationContent)
+        : PUBLICATIONS.flatMap((p) => [p.title, p.authors, p.venue]);
+    case "#gallery":
+      return galleryContent
+        ? gallerySearchLines(galleryContent)
+        : GALLERY.flatMap((g) => [g.caption, g.alt]);
     case "#clubing":
-      return CLUBS.flatMap((c) => [c.name, c.role, c.description]);
+      return clubingContent
+        ? clubingSearchLines(clubingContent)
+        : CLUBS.flatMap((c) => [c.name, c.role, c.description]);
     case "#mentorship":
-      return MENTORSHIP.flatMap((m) => [m.program, m.role, m.description, ...m.topics]);
+      return mentorshipContent
+        ? mentorshipSearchLines(mentorshipContent)
+        : MENTORSHIP.flatMap((m) => [m.program, m.role, m.description, ...m.topics]);
     case "#contact":
       return [CONTACT.intro, CONTACT.email, CONTACT.social];
-    case "#gallery":
-      return ["Gallery images and event highlights"];
     default:
       return [];
   }
 }
 
-export function buildSearchIndex(
-  aboutContent,
-  experienceContent,
-  skillsContent,
-  projectsContent
-) {
+export function buildSearchIndex(content = {}) {
   return NAV_ITEMS.map((item) => ({
     ...item,
     path: `portfolio/src/sections/${item.label}`,
-    lines: linesForHref(
-      item.href,
-      aboutContent,
-      experienceContent,
-      skillsContent,
-      projectsContent
-    ),
+    lines: linesForHref(item.href, content),
   }));
 }
 
@@ -103,26 +118,12 @@ export function buildSearchMatcher(query, options) {
   return buildMatcher(query.trim(), options);
 }
 
-export function searchPortfolio(
-  query,
-  options,
-  aboutContent,
-  experienceContent,
-  skillsContent,
-  projectsContent
-) {
+export function searchPortfolio(query, options, content = {}) {
   const matcher = buildMatcher(query.trim(), options);
   if (!matcher) return [];
 
-  const index =
-    aboutContent || experienceContent || skillsContent || projectsContent
-      ? buildSearchIndex(
-          aboutContent,
-          experienceContent,
-          skillsContent,
-          projectsContent
-        )
-      : SEARCH_INDEX;
+  const hasLiveContent = Object.values(content).some(Boolean);
+  const index = hasLiveContent ? buildSearchIndex(content) : SEARCH_INDEX;
 
   return index.flatMap((file) => {
     const matches = [];

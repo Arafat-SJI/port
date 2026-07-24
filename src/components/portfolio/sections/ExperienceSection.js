@@ -4,16 +4,18 @@ import {
   formatExperiencePeriod,
   formatExperienceRole,
   getVisibleExperienceItems,
+  normalizeExperienceContent,
 } from "@/lib/experienceContent";
 
 export default function ExperienceSection({ content }) {
+  const { title } = normalizeExperienceContent(content);
   const items = getVisibleExperienceItems(content);
 
   if (!items.length) return null;
 
   return (
     <section className="space-y-5 scroll-mt-[30px]" id="experience">
-      <SectionHeader>Experience</SectionHeader>
+      <SectionHeader>{title}</SectionHeader>
       <div className="relative space-y-8 pb-2">
         {items.map((exp) => {
           const period = formatExperiencePeriod(exp);
