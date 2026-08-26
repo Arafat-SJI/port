@@ -18,9 +18,10 @@ export default function HomeClient({
   clubingContent,
   mentorshipContent,
   contactContent,
+  uiExtensions,
 }) {
   return (
-    <ExtensionsProvider>
+    <ExtensionsProvider siteDefaults={uiExtensions}>
       <ShaderBackground />
       <LiveAnimationBackground />
       <IDEWorkspace

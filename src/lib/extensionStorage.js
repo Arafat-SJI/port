@@ -1,28 +1,31 @@
-import { DEFAULT_INSTALLED_EXTENSION_IDS } from "@/data/extensions";
+import {
+  FALLBACK_UI_EXTENSIONS,
+  UI_DEFAULTS_REVISION_KEY,
+  cloneUiExtensions,
+  normalizeUiExtensions,
+} from "@/lib/uiExtensions";
 
 export const EXTENSIONS_STORAGE_KEY = "portfolio-extensions-v7";
 export const WORKSPACE_STORAGE_KEY = "portfolio-workspace-v1";
 
-export const DEFAULT_EXTENSION_STATE = {
-  installed: [...DEFAULT_INSTALLED_EXTENSION_IDS],
-  activeTypography: false,
-  activeThemeSource: "default",
-  packTheme: "default",
-  fontPack: "inter",
-  macVariant: "sonoma",
-  macTrafficLights: true,
-  liveAnimation: "aurora",
-  activeTerminalTheme: false,
-  terminalTheme: "slate",
-  activeChatTheme: false,
-  chatTheme: "midnight",
-};
+/** @deprecated Prefer site defaults from Supabase; kept as offline fallback alias. */
+export const DEFAULT_EXTENSION_STATE = FALLBACK_UI_EXTENSIONS;
 
 export const DEFAULT_WORKSPACE_STATE = {
   openExtensionTabs: [],
   activeTab: "#about",
   activeActivity: "explorer",
 };
+
+const EXTENSION_STATE_KEYS = [
+  EXTENSIONS_STORAGE_KEY,
+  "portfolio-extensions-v6",
+  "portfolio-extensions-v5",
+  "portfolio-extensions-v4",
+  "portfolio-extensions-v3",
+  "portfolio-extensions-v2",
+  "portfolio-extensions-v1",
+];
 
 function safeParse(raw) {
   try {
@@ -32,20 +35,52 @@ function safeParse(raw) {
   }
 }
 
-export function readExtensionState() {
-  if (typeof window === "undefined") return DEFAULT_EXTENSION_STATE;
+function resolveDefaults(siteDefaults) {
+  return normalizeUiExtensions(siteDefaults ?? DEFAULT_EXTENSION_STATE);
+}
 
-  const keys = [
-    EXTENSIONS_STORAGE_KEY,
-    "portfolio-extensions-v6",
-    "portfolio-extensions-v5",
-    "portfolio-extensions-v4",
-    "portfolio-extensions-v3",
-    "portfolio-extensions-v2",
-    "portfolio-extensions-v1",
-  ];
+export function readStoredUiDefaultsRevision() {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(UI_DEFAULTS_REVISION_KEY) || "";
+}
 
-  for (const key of keys) {
+export function writeStoredUiDefaultsRevision(revision) {
+  if (typeof window === "undefined") return;
+  if (revision) localStorage.setItem(UI_DEFAULTS_REVISION_KEY, String(revision));
+  else localStorage.removeItem(UI_DEFAULTS_REVISION_KEY);
+}
+
+/**
+ * When dashboard site defaults get a new `revision`, wipe visitor extension
+ * localStorage so they see the new defaults (they can customize again after).
+ */
+export function invalidateVisitorExtensionsIfDefaultsChanged(siteDefaults) {
+  if (typeof window === "undefined") return false;
+  const defaults = resolveDefaults(siteDefaults);
+  const siteRev = defaults.revision || "";
+  if (!siteRev) return false;
+  const localRev = readStoredUiDefaultsRevision();
+  if (localRev === siteRev) return false;
+  clearExtensionState();
+  writeStoredUiDefaultsRevision(siteRev);
+  return true;
+}
+
+/**
+ * Read visitor extension prefs from localStorage.
+ * If none exist — or site defaults revision changed — return site defaults.
+ */
+export function readExtensionState(siteDefaults) {
+  const defaults = resolveDefaults(siteDefaults);
+  if (typeof window === "undefined") return cloneUiExtensions(defaults);
+
+  invalidateVisitorExtensionsIfDefaultsChanged(defaults);
+
+  if (!readStoredUiDefaultsRevision() && defaults.revision) {
+    writeStoredUiDefaultsRevision(defaults.revision);
+  }
+
+  for (const key of EXTENSION_STATE_KEYS) {
     const raw = localStorage.getItem(key);
     if (!raw) continue;
     const parsed = safeParse(raw);
@@ -54,47 +89,47 @@ export function readExtensionState() {
     const installed =
       key === EXTENSIONS_STORAGE_KEY && Array.isArray(parsed.installed)
         ? parsed.installed
-        : [...DEFAULT_EXTENSION_STATE.installed];
+        : [...defaults.installed];
 
-    return {
-      ...DEFAULT_EXTENSION_STATE,
+    return normalizeUiExtensions({
+      ...defaults,
+      ...parsed,
       installed,
-      activeTypography: Boolean(parsed.activeTypography),
-      activeThemeSource: parsed.activeThemeSource ?? DEFAULT_EXTENSION_STATE.activeThemeSource,
-      packTheme: parsed.packTheme ?? DEFAULT_EXTENSION_STATE.packTheme,
-      fontPack: parsed.fontPack ?? DEFAULT_EXTENSION_STATE.fontPack,
-      macVariant: parsed.macVariant ?? DEFAULT_EXTENSION_STATE.macVariant,
-      macTrafficLights: parsed.macTrafficLights ?? DEFAULT_EXTENSION_STATE.macTrafficLights,
-      liveAnimation: parsed.liveAnimation ?? DEFAULT_EXTENSION_STATE.liveAnimation,
-      activeTerminalTheme: Boolean(parsed.activeTerminalTheme),
-      terminalTheme: parsed.terminalTheme ?? DEFAULT_EXTENSION_STATE.terminalTheme,
-      activeChatTheme: Boolean(parsed.activeChatTheme),
-      chatTheme: parsed.chatTheme ?? DEFAULT_EXTENSION_STATE.chatTheme,
-    };
+      revision: defaults.revision,
+    });
   }
 
-  return DEFAULT_EXTENSION_STATE;
+  return cloneUiExtensions(defaults);
 }
 
 export function writeExtensionState(state) {
   if (typeof window === "undefined") return;
+  const normalized = normalizeUiExtensions(state);
   localStorage.setItem(
     EXTENSIONS_STORAGE_KEY,
     JSON.stringify({
-      installed: state.installed,
-      activeTypography: state.activeTypography,
-      activeThemeSource: state.activeThemeSource,
-      packTheme: state.packTheme,
-      fontPack: state.fontPack,
-      macVariant: state.macVariant,
-      macTrafficLights: state.macTrafficLights,
-      liveAnimation: state.liveAnimation,
-      activeTerminalTheme: state.activeTerminalTheme,
-      terminalTheme: state.terminalTheme,
-      activeChatTheme: state.activeChatTheme,
-      chatTheme: state.chatTheme,
+      installed: normalized.installed,
+      activeTypography: normalized.activeTypography,
+      activeThemeSource: normalized.activeThemeSource,
+      packTheme: normalized.packTheme,
+      fontPack: normalized.fontPack,
+      macVariant: normalized.macVariant,
+      macTrafficLights: normalized.macTrafficLights,
+      liveAnimation: normalized.liveAnimation,
+      activeTerminalTheme: normalized.activeTerminalTheme,
+      terminalTheme: normalized.terminalTheme,
+      activeChatTheme: normalized.activeChatTheme,
+      chatTheme: normalized.chatTheme,
     })
   );
+}
+
+/** Remove stored prefs so the next read falls back to site defaults. Keeps revision key. */
+export function clearExtensionState() {
+  if (typeof window === "undefined") return;
+  for (const key of EXTENSION_STATE_KEYS) {
+    localStorage.removeItem(key);
+  }
 }
 
 export function readWorkspaceState() {

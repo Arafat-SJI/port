@@ -43,6 +43,7 @@ export default function SourceControlSidebar() {
       packTheme: extensions.packTheme,
       fontPack: extensions.fontPack,
       macVariant: extensions.macVariant,
+      macTrafficLights: extensions.macTrafficLights,
       liveAnimation: extensions.liveAnimation,
       activeTerminalTheme: extensions.activeTerminalTheme,
       terminalTheme: extensions.terminalTheme,
@@ -56,6 +57,7 @@ export default function SourceControlSidebar() {
       extensions.packTheme,
       extensions.fontPack,
       extensions.macVariant,
+      extensions.macTrafficLights,
       extensions.liveAnimation,
       extensions.activeTerminalTheme,
       extensions.terminalTheme,
@@ -65,8 +67,8 @@ export default function SourceControlSidebar() {
   );
 
   const changes = useMemo(
-    () => collectWorkspaceChanges(extensionSnapshot),
-    [extensionSnapshot, tick]
+    () => collectWorkspaceChanges(extensionSnapshot, extensions.siteDefaults),
+    [extensionSnapshot, extensions.siteDefaults, tick]
   );
 
   useEffect(() => {
@@ -85,14 +87,21 @@ export default function SourceControlSidebar() {
   };
 
   const handleDiscard = (changeId) => {
-    const { nextExtensionState } = discardWorkspaceChange(changeId, extensionSnapshot);
+    const { nextExtensionState } = discardWorkspaceChange(
+      changeId,
+      extensionSnapshot,
+      extensions.siteDefaults
+    );
     applyExtensionState(nextExtensionState);
     setTick((n) => n + 1);
   };
 
   const handleDiscardAll = () => {
     if (changes.length === 0) return;
-    const { nextExtensionState } = discardAllWorkspaceChanges(extensionSnapshot);
+    const { nextExtensionState } = discardAllWorkspaceChanges(
+      extensionSnapshot,
+      extensions.siteDefaults
+    );
     applyExtensionState(nextExtensionState);
     setTick((n) => n + 1);
   };

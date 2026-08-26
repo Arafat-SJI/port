@@ -25,6 +25,9 @@ export const AI_KNOWLEDGE_EXCLUDED_KEYS = [
   "apiKey",
   "api_key",
   "dashboard_secrets",
+  "ui_extensions",
+  "ui_extension",
+  "default_extensions",
 ];
 
 export const AI_CREDENTIALS_REFUSAL =

@@ -43,6 +43,13 @@ export const SETTINGS_NAV = [
     icon: "database",
     group: "AI",
   },
+  {
+    slug: "extension",
+    href: "/dashboard-araf/settings/extension",
+    label: "Extension",
+    icon: "extension",
+    group: "UI",
+  },
 ];
 
 export function getDashboardNavItem(slug) {

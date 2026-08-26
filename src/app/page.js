@@ -11,6 +11,7 @@ import { readProjectsContentFromSupabase } from "@/lib/projectsContentServer";
 import { readPublicationContentFromSupabase } from "@/lib/publicationContentServer";
 import { readSectionOrderFromSupabase } from "@/lib/sectionOrderServer";
 import { readSkillsContentFromSupabase } from "@/lib/skillsContentServer";
+import { readUiExtensionsFromSupabase } from "@/lib/uiExtensionsServer";
 
 /** Always read shared portfolio data from Supabase so first paint matches dashboard. */
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ export default async function Home() {
     clubingContent,
     mentorshipContent,
     contactContent,
+    uiExtensions,
   ] = await Promise.all([
     readSectionOrderFromSupabase(),
     readAboutContentFromSupabase(),
@@ -42,6 +44,7 @@ export default async function Home() {
     readClubingContentFromSupabase(),
     readMentorshipContentFromSupabase(),
     readContactContentFromSupabase(),
+    readUiExtensionsFromSupabase(),
   ]);
   return (
     <HomeClient
@@ -57,6 +60,7 @@ export default async function Home() {
       clubingContent={clubingContent}
       mentorshipContent={mentorshipContent}
       contactContent={contactContent}
+      uiExtensions={uiExtensions}
     />
   );
 }

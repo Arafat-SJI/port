@@ -8,19 +8,47 @@ import {
   readExtensionState,
   writeExtensionState,
 } from "@/lib/extensionStorage";
+import {
+  cloneUiExtensions,
+  isExtensionActiveInState,
+  normalizeUiExtensions,
+  setCachedSiteUiDefaults,
+} from "@/lib/uiExtensions";
 
 const ExtensionsContext = createContext(null);
 
-export function ExtensionsProvider({ children }) {
-  const [state, setState] = useState(DEFAULT_EXTENSION_STATE);
+const WORKSPACE_THEME_IDS = new Set([
+  "default-theme",
+  "theme-pack",
+  "macintosh-theme",
+  "live-animation",
+]);
+
+function siteWorkspaceThemeSource(defaults) {
+  return defaults?.activeThemeSource || "default";
+}
+
+export function ExtensionsProvider({ children, siteDefaults }) {
+  const defaultsKey = JSON.stringify(siteDefaults ?? null);
+  const defaults = useMemo(
+    () => normalizeUiExtensions(siteDefaults ?? DEFAULT_EXTENSION_STATE),
+    // Intentionally key off serialized defaults so SSR object identity does not re-hydrate forever.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [defaultsKey]
+  );
+
+  useLayoutEffect(() => {
+    setCachedSiteUiDefaults(defaults);
+  }, [defaults]);
+  const [state, setState] = useState(() => cloneUiExtensions(defaults));
   const [hydrated, setHydrated] = useState(false);
 
   useLayoutEffect(() => {
-    const saved = readExtensionState();
+    const saved = readExtensionState(defaults);
     setState(saved);
     applyExtensionStateToDocument(saved);
     setHydrated(true);
-  }, []);
+  }, [defaults]);
 
   useLayoutEffect(() => {
     if (!hydrated) return;
@@ -66,14 +94,15 @@ export function ExtensionsProvider({ children }) {
       if (id === "typograph" && next.activeTypography) {
         next = { ...next, activeTypography: false };
       }
+      const siteTheme = siteWorkspaceThemeSource(defaults);
       if (id === "theme-pack" && next.activeThemeSource === "theme-pack") {
-        next = { ...next, activeThemeSource: "default" };
+        next = { ...next, activeThemeSource: siteTheme };
       }
       if (id === "macintosh-theme" && next.activeThemeSource === "macintosh-theme") {
-        next = { ...next, activeThemeSource: "default" };
+        next = { ...next, activeThemeSource: siteTheme };
       }
       if (id === "live-animation" && next.activeThemeSource === "live-animation") {
-        next = { ...next, activeThemeSource: "default" };
+        next = { ...next, activeThemeSource: siteTheme };
       }
       if (id === "terminal-theme" && next.activeTerminalTheme) {
         next = { ...next, activeTerminalTheme: false };
@@ -83,7 +112,7 @@ export function ExtensionsProvider({ children }) {
       }
       return next;
     });
-  }, []);
+  }, [defaults]);
 
   const activate = useCallback((id) => {
     setState((prev) => {
@@ -120,17 +149,21 @@ export function ExtensionsProvider({ children }) {
 
   const deactivate = useCallback((id) => {
     setState((prev) => {
-      if (id === "default-theme") return prev;
       if (id === "typograph") {
         return { ...prev, activeTypography: false };
       }
-      if (
-        id === "theme-pack" ||
-        id === "macintosh-theme" ||
-        id === "live-animation"
-      ) {
-        if (prev.activeThemeSource !== id) return prev;
-        return { ...prev, activeThemeSource: "default" };
+      if (WORKSPACE_THEME_IDS.has(id)) {
+        const sourceKey = id === "default-theme" ? "default" : id;
+        if (prev.activeThemeSource !== sourceKey) return prev;
+        // Fall back to dashboard site default theme (not hardcoded Cursor Dark).
+        return {
+          ...prev,
+          activeThemeSource: siteWorkspaceThemeSource(defaults),
+          packTheme: defaults.packTheme,
+          macVariant: defaults.macVariant,
+          macTrafficLights: defaults.macTrafficLights,
+          liveAnimation: defaults.liveAnimation,
+        };
       }
       if (id === "terminal-theme") {
         return { ...prev, activeTerminalTheme: false };
@@ -140,7 +173,12 @@ export function ExtensionsProvider({ children }) {
       }
       return prev;
     });
-  }, []);
+  }, [defaults]);
+
+  const isSiteDefault = useCallback(
+    (id) => isExtensionActiveInState(defaults, id),
+    [defaults]
+  );
 
   const setFontPack = useCallback((fontPack) => {
     setState((prev) => ({ ...prev, fontPack }));
@@ -172,7 +210,7 @@ export function ExtensionsProvider({ children }) {
 
   const applyExternalState = useCallback((next) => {
     if (!next) return;
-    setState((prev) => ({ ...prev, ...next }));
+    setState((prev) => normalizeUiExtensions({ ...prev, ...next }));
   }, []);
 
   const uiTheme = computeUiTheme(state);
@@ -182,8 +220,10 @@ export function ExtensionsProvider({ children }) {
       ...state,
       uiTheme,
       hydrated,
+      siteDefaults: defaults,
       isInstalled,
       isActive,
+      isSiteDefault,
       install,
       uninstall,
       activate,
@@ -201,8 +241,10 @@ export function ExtensionsProvider({ children }) {
       state,
       uiTheme,
       hydrated,
+      defaults,
       isInstalled,
       isActive,
+      isSiteDefault,
       install,
       uninstall,
       activate,

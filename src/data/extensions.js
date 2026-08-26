@@ -5,19 +5,18 @@ export const EXTENSIONS = [
     publisher: "arafat.workspace",
     tagline: "The default portfolio workspace theme.",
     description:
-      "The built-in dark theme powering this portfolio IDE — soft blue accents, deep charcoal surfaces, and the same look you see on first load.",
+      "The original dark theme for this portfolio IDE — soft blue accents, deep charcoal surfaces, and layered editor chrome.",
     longDescription: `Cursor Dark is the native theme for arafat.workspace. It uses a carefully tuned palette with **#adc6ff** accent blue, layered surface containers, and subtle borders designed for long reading sessions.
 
-This theme ships with the workspace and requires no installation. Activate it anytime to reset colors back to the original design.`,
+This theme ships with the workspace. Activate it anytime to use the original Cursor Dark palette — or set another theme as the site default from the dashboard.`,
     version: "1.0.0",
     icon: "dark_mode",
     iconColor: "#adc6ff",
-    downloads: "Built-in",
+    downloads: "Core",
     rating: 5,
     category: "Themes",
     identifier: "arafat.workspace.cursor-dark",
     published: "2024-01-01",
-    builtin: true,
     features: [
       "Native portfolio color tokens",
       "Soft blue primary accent",
@@ -372,7 +371,7 @@ export function getExtensionById(id) {
   return EXTENSIONS.find((ext) => ext.id === id) ?? null;
 }
 
-/** Non-builtin extensions that ship pre-installed. */
-export const DEFAULT_INSTALLED_EXTENSION_IDS = EXTENSIONS.filter((ext) => !ext.builtin).map(
-  (ext) => ext.id
-);
+/** Themes that ship pre-installed for visitors (all marketplace themes). */
+export const DEFAULT_INSTALLED_EXTENSION_IDS = EXTENSIONS.filter(
+  (ext) => ext.id !== "default-theme"
+).map((ext) => ext.id);

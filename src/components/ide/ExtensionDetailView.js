@@ -463,7 +463,15 @@ function DefaultThemePreview() {
 
 export default function ExtensionDetailView({ extensionId }) {
   const extension = getExtensionById(extensionId);
-  const { isInstalled, isActive, install, uninstall, activate, deactivate } = useExtensions();
+  const {
+    isInstalled,
+    isActive,
+    isSiteDefault,
+    install,
+    uninstall,
+    activate,
+    deactivate,
+  } = useExtensions();
   const [tab, setTab] = useState("DETAILS");
 
   if (!extension) {
@@ -476,14 +484,15 @@ export default function ExtensionDetailView({ extensionId }) {
 
   const installed = isInstalled(extension.id);
   const active = isActive(extension.id);
-  const builtin = extension.builtin;
+  const siteDefault = isSiteDefault(extension.id);
+  const alwaysInstalled = extension.id === "default-theme";
 
   const handleInstall = () => {
-    if (!installed && !builtin) install(extension.id);
+    if (!installed && !alwaysInstalled) install(extension.id);
   };
 
   const handleActivate = () => {
-    if (!installed && !builtin) return;
+    if (!installed && !alwaysInstalled) return;
     activate(extension.id);
   };
 
@@ -520,31 +529,29 @@ export default function ExtensionDetailView({ extensionId }) {
             <p className="text-[13px] text-on-surface-variant mt-1">{extension.tagline}</p>
 
             <div className="flex items-center gap-2 mt-3 flex-wrap">
-              {!builtin && (
-                <button
-                  type="button"
-                  onClick={handleInstall}
-                  disabled={installed}
-                  className={`h-[26px] px-4 rounded text-[12px] font-medium transition-all ${
-                    installed
-                      ? "bg-surface-container-high text-on-surface-variant cursor-default"
-                      : "bg-primary text-on-primary hover:brightness-110"
-                  }`}
-                >
-                  {installed ? "Installed" : "Install"}
-                </button>
-              )}
-              {builtin && (
+              <button
+                type="button"
+                onClick={handleInstall}
+                disabled={installed || alwaysInstalled}
+                className={`h-[26px] px-4 rounded text-[12px] font-medium transition-all ${
+                  installed || alwaysInstalled
+                    ? "bg-surface-container-high text-on-surface-variant cursor-default"
+                    : "bg-primary text-on-primary hover:brightness-110"
+                }`}
+              >
+                {installed || alwaysInstalled ? "Installed" : "Install"}
+              </button>
+              {siteDefault && active ? (
                 <span className="text-[11px] text-on-surface-variant px-2 py-1 bg-surface-container-low rounded border border-border h-[26px] flex items-center">
-                  Built-in
+                  Site default
                 </span>
-              )}
-              {(installed || builtin) && (
+              ) : null}
+              {(installed || alwaysInstalled) && (
                 active ? (
                   <button
                     type="button"
                     onClick={handleDeactivate}
-                    disabled={builtin && active}
+                    disabled={siteDefault && active}
                     className="h-[26px] px-4 rounded text-[12px] font-medium bg-surface-container-highest text-on-surface hover:bg-surface-bright transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Deactivate
@@ -559,7 +566,7 @@ export default function ExtensionDetailView({ extensionId }) {
                   </button>
                 )
               )}
-              {!builtin && installed && (
+              {!alwaysInstalled && installed && (
                 <button
                   type="button"
                   onClick={() => uninstall(extension.id)}

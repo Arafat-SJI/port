@@ -1,5 +1,6 @@
 import { Inter, JetBrains_Mono } from "next/font/google";
 import ThemeBootScript from "@/components/ThemeBootScript";
+import { readUiExtensionsFromSupabase } from "@/lib/uiExtensionsServer";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,7 +21,9 @@ export const metadata = {
     "Arafat — Software Engineer building high-performance AI-driven experiences and scalable backend architectures.",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const siteDefaults = await readUiExtensionsFromSupabase();
+
   return (
     <html
       lang="en"
@@ -38,7 +41,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="font-body-md text-on-background selection:bg-primary selection:text-on-primary">
-        <ThemeBootScript />
+        <ThemeBootScript siteDefaults={siteDefaults} />
         {children}
       </body>
     </html>

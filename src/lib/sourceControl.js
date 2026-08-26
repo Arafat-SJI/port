@@ -1,9 +1,10 @@
 import { EXTENSIONS } from "@/data/extensions";
 import {
-  DEFAULT_EXTENSION_STATE,
+  applyExtensionStateToDocument,
+  clearExtensionState,
   readExtensionState,
   writeExtensionState,
-  applyExtensionStateToDocument,
+  writeStoredUiDefaultsRevision,
 } from "@/lib/extensionStorage";
 import {
   clearExtensionSearchSession,
@@ -32,39 +33,107 @@ import {
   getSidebarLayout,
   readSidebarWidth,
 } from "@/lib/sidebarPrefs";
+import {
+  cloneUiExtensions,
+  getCachedSiteUiDefaults,
+  isExtensionActiveInState,
+  normalizeUiExtensions,
+} from "@/lib/uiExtensions";
+
+const TRACKED_EXTENSION_IDS = [
+  "default-theme",
+  "typograph",
+  "theme-pack",
+  "macintosh-theme",
+  "live-animation",
+  "terminal-theme",
+  "chat-theme",
+];
+
+export const WORKSPACE_THEME_EXTENSION_IDS = [
+  "default-theme",
+  "theme-pack",
+  "macintosh-theme",
+  "live-animation",
+];
 
 function extensionName(id) {
   return EXTENSIONS.find((ext) => ext.id === id)?.name ?? id;
 }
 
-function getActiveExtensionIds(state) {
-  const ids = [];
-  if (state.activeTypography) ids.push("typograph");
-  if (state.activeThemeSource === "theme-pack") ids.push("theme-pack");
-  if (state.activeThemeSource === "macintosh-theme") ids.push("macintosh-theme");
-  if (state.activeThemeSource === "live-animation") ids.push("live-animation");
-  if (state.activeTerminalTheme) ids.push("terminal-theme");
-  if (state.activeChatTheme) ids.push("chat-theme");
-  return ids;
+function resolveSiteDefaults(siteDefaults) {
+  if (siteDefaults) return normalizeUiExtensions(siteDefaults);
+  return getCachedSiteUiDefaults();
+}
+
+/** Option-level drift while an extension stays active on both sides. */
+function extensionOptionsDetail(id, visitor, site) {
+  if (id === "typograph" && visitor.fontPack !== site.fontPack) {
+    return `Font pack → ${visitor.fontPack}`;
+  }
+  if (id === "theme-pack" && visitor.packTheme !== site.packTheme) {
+    return `Theme → ${visitor.packTheme}`;
+  }
+  if (id === "macintosh-theme") {
+    const bits = [];
+    if (visitor.macVariant !== site.macVariant) bits.push(`Variant → ${visitor.macVariant}`);
+    if (Boolean(visitor.macTrafficLights) !== Boolean(site.macTrafficLights)) {
+      bits.push(visitor.macTrafficLights ? "Traffic lights on" : "Traffic lights off");
+    }
+    return bits.length ? bits.join(" · ") : null;
+  }
+  if (id === "live-animation" && visitor.liveAnimation !== site.liveAnimation) {
+    return `Animation → ${visitor.liveAnimation}`;
+  }
+  if (id === "terminal-theme" && visitor.terminalTheme !== site.terminalTheme) {
+    return `Skin → ${visitor.terminalTheme}`;
+  }
+  if (id === "chat-theme" && visitor.chatTheme !== site.chatTheme) {
+    return `Skin → ${visitor.chatTheme}`;
+  }
+  return null;
 }
 
 /**
- * Collect working-tree style changes vs portfolio defaults.
- * Pass live extension state when available so the SCM view stays in sync.
+ * Collect working-tree style changes vs site (dashboard) defaults.
+ * Lists visitor activations / option changes vs dashboard — not the site
+ * default they left (e.g. Aqua→Cursor Dark only shows Cursor Dark Activated).
  */
-export function collectWorkspaceChanges(extensionState) {
+export function collectWorkspaceChanges(extensionState, siteDefaults) {
   const changes = [];
-  const extState = extensionState ?? readExtensionState();
+  const defaults = resolveSiteDefaults(siteDefaults);
+  const extState = extensionState ?? readExtensionState(defaults);
   const layout = getSidebarLayout();
 
-  for (const id of getActiveExtensionIds(extState)) {
-    changes.push({
-      id: `extension:${id}`,
-      kind: "extension",
-      extensionId: id,
-      path: `extensions/${extensionName(id)}`,
-      detail: "Activated",
-    });
+  for (const id of TRACKED_EXTENSION_IDS) {
+    const visitorOn = isExtensionActiveInState(extState, id);
+    const siteOn = isExtensionActiveInState(defaults, id);
+
+    // Only surface what the visitor turned on / changed — not the site default they left.
+    if (visitorOn && !siteOn) {
+      const opt = extensionOptionsDetail(id, extState, defaults);
+      changes.push({
+        id: `extension:${id}`,
+        kind: "extension",
+        extensionId: id,
+        path: `extensions/${extensionName(id)}`,
+        detail: opt ? `Activated · ${opt}` : "Activated",
+      });
+      continue;
+    }
+
+    if (visitorOn && siteOn) {
+      const opt = extensionOptionsDetail(id, extState, defaults);
+      if (opt) {
+        changes.push({
+          id: `extension:${id}`,
+          kind: "extension",
+          extensionId: id,
+          path: `extensions/${extensionName(id)}`,
+          detail: opt,
+        });
+      }
+    }
   }
 
   const search = readSearchSession();
@@ -149,54 +218,65 @@ export function collectWorkspaceChanges(extensionState) {
   return changes;
 }
 
-function deactivateExtensionInState(state, id) {
+/** Restore one extension activation back to site defaults. */
+function restoreExtensionToSiteDefaults(state, id, siteDefaults) {
+  const defaults = resolveSiteDefaults(siteDefaults);
   let next = { ...state };
+
   if (id === "typograph") {
-    next = { ...next, activeTypography: false };
+    next = {
+      ...next,
+      activeTypography: defaults.activeTypography,
+      fontPack: defaults.fontPack,
+    };
   } else if (
+    id === "default-theme" ||
     id === "theme-pack" ||
     id === "macintosh-theme" ||
     id === "live-animation"
   ) {
-    if (next.activeThemeSource === id) {
-      next = { ...next, activeThemeSource: "default" };
-    }
+    next = {
+      ...next,
+      activeThemeSource: defaults.activeThemeSource,
+      packTheme: defaults.packTheme,
+      macVariant: defaults.macVariant,
+      macTrafficLights: defaults.macTrafficLights,
+      liveAnimation: defaults.liveAnimation,
+    };
   } else if (id === "terminal-theme") {
-    next = { ...next, activeTerminalTheme: false };
+    next = {
+      ...next,
+      activeTerminalTheme: defaults.activeTerminalTheme,
+      terminalTheme: defaults.terminalTheme,
+    };
   } else if (id === "chat-theme") {
-    next = { ...next, activeChatTheme: false };
+    next = {
+      ...next,
+      activeChatTheme: defaults.activeChatTheme,
+      chatTheme: defaults.chatTheme,
+    };
   }
-  return next;
-}
 
-function resetExtensionActivations(state) {
-  return {
-    ...state,
-    activeTypography: DEFAULT_EXTENSION_STATE.activeTypography,
-    activeThemeSource: DEFAULT_EXTENSION_STATE.activeThemeSource,
-    packTheme: DEFAULT_EXTENSION_STATE.packTheme,
-    fontPack: DEFAULT_EXTENSION_STATE.fontPack,
-    macVariant: DEFAULT_EXTENSION_STATE.macVariant,
-    liveAnimation: DEFAULT_EXTENSION_STATE.liveAnimation,
-    activeTerminalTheme: DEFAULT_EXTENSION_STATE.activeTerminalTheme,
-    terminalTheme: DEFAULT_EXTENSION_STATE.terminalTheme,
-    activeChatTheme: DEFAULT_EXTENSION_STATE.activeChatTheme,
-    chatTheme: DEFAULT_EXTENSION_STATE.chatTheme,
-  };
+  return normalizeUiExtensions(next);
 }
 
 /**
  * Discard one change. Returns keys that UI listeners should refresh.
  * For extension discards, also returns `nextExtensionState` for the provider.
  */
-export function discardWorkspaceChange(changeId, extensionState) {
+export function discardWorkspaceChange(changeId, extensionState, siteDefaults) {
   const keys = [];
-  let nextExtensionState = extensionState ?? readExtensionState();
+  const defaults = resolveSiteDefaults(siteDefaults);
+  let nextExtensionState = extensionState ?? readExtensionState(defaults);
   const layout = getSidebarLayout();
 
   if (changeId.startsWith("extension:")) {
     const extensionId = changeId.slice("extension:".length);
-    nextExtensionState = deactivateExtensionInState(nextExtensionState, extensionId);
+    nextExtensionState = restoreExtensionToSiteDefaults(
+      nextExtensionState,
+      extensionId,
+      defaults
+    );
     writeExtensionState(nextExtensionState);
     applyExtensionStateToDocument(nextExtensionState);
     keys.push("extensions");
@@ -227,7 +307,7 @@ export function discardWorkspaceChange(changeId, extensionState) {
   return { keys, nextExtensionState };
 }
 
-export function discardAllWorkspaceChanges(extensionState) {
+export function discardAllWorkspaceChanges(extensionState, siteDefaults) {
   const keys = [
     "extensions",
     "file-search",
@@ -239,9 +319,10 @@ export function discardAllWorkspaceChanges(extensionState) {
     "explorer-timeline",
   ];
   const layout = getSidebarLayout();
-  let nextExtensionState = resetExtensionActivations(
-    extensionState ?? readExtensionState()
-  );
+  const defaults = resolveSiteDefaults(siteDefaults);
+  const nextExtensionState = cloneUiExtensions(defaults);
+  clearExtensionState();
+  if (defaults.revision) writeStoredUiDefaultsRevision(defaults.revision);
   writeExtensionState(nextExtensionState);
   applyExtensionStateToDocument(nextExtensionState);
   clearSearchSession();

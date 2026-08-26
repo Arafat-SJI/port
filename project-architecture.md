@@ -2,7 +2,7 @@
 
 > **Mandatory for every Cursor agent session:** Read this entire file before writing or changing any code. After finishing work from a user prompt, update this file so office PC and home PC sessions stay in sync.
 
-**Last updated:** 2026-07-24 (Explorer Outline/Timeline SCM)
+**Last updated:** 2026-08-26 (Dashboard Extension UX polish)
 
 ---
 
@@ -43,7 +43,7 @@ These rules are non-negotiable. Follow them on every prompt.
 | Bucket | What belongs here | Examples |
 |--------|-------------------|----------|
 | **localStorage** | Existing IDE chrome & design prefs (already built; keep) | Extensions install/activate + theme/font/skin options; Search query/session; Source Control “discard prefs”; sidebar widths; workspace/activity tabs; glass / live animation; **AI chat thread** |
-| **Supabase** | Everything dashboard-related / public shared content | Auth; `portfolio_settings.section_order`; future About/Experience/… content; anything editable under `/dashboard-araf` that drives the landing page |
+| **Supabase** | Everything dashboard-related / public shared content | Auth; `portfolio_settings.section_order`; portfolio section content; **`portfolio_settings.ui_extensions`** (site default IDE theme/extensions); anything editable under `/dashboard-araf` that drives the landing page |
 
 **Agent reminder:** Do not “upgrade” Extensions, Search, or Source Control to Supabase unless the user explicitly asks. Do not store dashboard section order or portfolio content in localStorage.
 
@@ -92,7 +92,7 @@ d:\port\
 ├── README.md                      # Stock create-next-app text (not accurate product docs)
 ├── project-architecture.md        # THIS FILE — living project memory
 ├── package.json / package-lock.json
-├── next.config.mjs                # Default / empty config
+├── next.config.mjs                # serverActions bodySizeLimit + turbopack.root
 ├── postcss.config.mjs             # Tailwind v4 PostCSS plugin
 ├── eslint.config.mjs
 ├── jsconfig.json
@@ -265,7 +265,7 @@ Shared portfolio UI:
 
 ### 2.7 Extensions marketplace system
 
-**Persistence: localStorage only** (IDE design layer — do not migrate to Supabase).
+**Persistence:** Visitor overrides stay in **localStorage** (`portfolio-extensions-v7`). **Site defaults** live in Supabase `portfolio_settings` key `ui_extensions` (dashboard Settings → UI → Extension), with a `revision` stamp. First visit / empty localStorage / Source Control discard → site defaults. When the dashboard owner changes defaults, `revision` bumps and visitors’ extension localStorage is cleared on next load so they see the new defaults (then they can customize again). Frontend Extensions marketplace behavior otherwise unchanged.
 
 Defined in `src/data/extensions.js`, behavior in `hooks/useExtensions.js` + `lib/extensionStorage.js`, applied to `document.documentElement` via data attributes, styled in `globals.css`.
 
@@ -382,7 +382,8 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 | `aiKnowledgeServer.js` | Sync/read `portfolio_settings.ai_knowledge`; optional local JSON mirror |
 | `extensionStorage.js` | Read/write extension + workspace localStorage; apply DOM attributes |
 | `sidebarPrefs.js` | Breakpoints, layouts, width persistence, prefs-changed event |
-| `sourceControl.js` | Preference change detection & discard |
+| `sourceControl.js` | Preference change detection & discard vs **site UI defaults** (`ui_extensions`) |
+| `uiExtensions.js` / `uiExtensionsServer.js` | Normalize + read/write site default extension state (`portfolio_settings.ui_extensions`); no AI sync |
 | `searchIndex.js` | Portfolio search index & query |
 | `searchSession.js` | Persist search UI state |
 | `searchScroll.js` | Scroll main pane to match |
@@ -430,7 +431,7 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 - **System** block (below content files): **Message**, **AI Chat**, then **Settings**. Message / AI Chat are not in `DASHBOARD_NAV` / not reorderable.
 - **Message inbox (live):** `/dashboard-araf/messages` — opens a second left sidebar (same slide pattern as Settings) listing **senders** by email. Thread route: `/dashboard-araf/messages/[emailKey]`. Contact form submissions stored in Supabase table `contact_messages`. Same visitor email → one chat thread; different emails → separate threads. Mark-read on open; delete conversation. Public form in `ContactTerminal` inserts via `submitContactMessageAction` (service role). Helpers: `contactMessages.js`, `contactMessagesServer.js`, `messageActions.js`. UI: `MessagesSidebar.js`, `MessageThreadView.js`. Migration: `016_contact_messages.sql`. **Never** written to `ai_knowledge`.
 - **AI Chat inbox (live):** `/dashboard-araf/ai-chats` — second sidebar listing **visitors by IP** (display name = IP). Thread route: `/dashboard-araf/ai-chats/[ipKey]`. Each portfolio AI question from `POST /api/chat` is logged (user message only) into Supabase `ai_chat_messages` via service role; same IP → one thread. Mark-read on open; delete conversation. Helpers: `clientIp.js`, `aiChatMessages.js`, `aiChatMessagesServer.js`, `aiChatActions.js`. UI: `AiChatsSidebar.js`, `AiChatThreadView.js`. Migration: `020_ai_chat_messages.sql`. **Never** written to `ai_knowledge`. (Visitor’s local chat thread still stays in localStorage.)
-- **Settings** item in sidebar → opens a second left **Settings** sidebar (smooth width slide on desktop). Items: **Change email**, **Change password**, **Gemini API key**, **AI Context Knowledgebase**. Auth/email/password/API keys never touch AI JSON. `/dashboard-araf/settings` redirects to email.
+- **Settings** item in sidebar → opens a second left **Settings** sidebar (smooth width slide on desktop). Items: **Change email**, **Change password**, **Gemini API key**, **AI Context Knowledgebase**, **UI → Extension** (site default themes/skins). Auth/email/password/API keys/UI defaults never touch AI JSON. `/dashboard-araf/settings` redirects to email.
 - **Gemini API key (live):** `/dashboard-araf/settings/gemini-api` — multiple free Gemini keys in private Supabase table `gemini_api_keys` (authenticated + service_role only; **not** `portfolio_settings`). Up to **5 keys Active** at once; one **In use** checkbox among actives (persisted `is_current`) — green toggle = in use; other actives standby. Chat tries in-use first, then standby; **auto-deactivates** on quota/invalid and promotes next in use. Masked list + runtime errors in settings. Token-lean chat: compact knowledge JSON, short system prompt, 6-turn history, Flash Lite model. Visitors never see key errors — funny fallback. Migrations: `017` (legacy), `018`, `021` (multi-active), `022_gemini_in_use_key.sql`. Helpers: `geminiKey.js`, `geminiKeyServer.js`, `geminiChat.js`, `geminiKeyActions.js`, `GeminiApiKeyForm.js`.
 - **Portfolio chat panel (live):** `ChatPanel` posts to `/api/chat`; server loads `ai_knowledge` + active Gemini key pool with failover; also logs the visitor’s question for the AI Chat inbox. Thread in localStorage (`chatSession.js`); Source Control can discard `chat/thread`. Key never sent to the browser.
 - Aesthetic IDE-themed login (window chrome, soft primary/secondary glows, portfolio tokens).
@@ -459,7 +460,7 @@ Visual direction: dark IDE-first workspace with soft blue accent (`#adc6ff` on d
 - `src/components/dashboard/DashboardSidebar.js` — explorer + drag-reorder (grip hidden on very small screens); closes drawer on navigate
 - `src/components/dashboard/AboutEditor.js` — About form UI
 - `src/components/dashboard/PasswordField.js` — password input with show/hide eye toggle
-- `src/app/dashboard-araf/layout.js` — root shell + noindex
+- `src/app/dashboard-araf/layout.js` — root shell + noindex + `DashboardThemeLock` (fixed Cursor Dark; ignores portfolio themes)
 - `src/app/dashboard-araf/(public)/login/page.js` — login + stealth `b` link
 - `src/app/dashboard-araf/(public)/forgot-password/page.js` — email reset request
 - `src/app/dashboard-araf/(workspace)/layout.js` — sidebar + main pane
@@ -514,6 +515,7 @@ Local mirror removed — production reads the Supabase `portfolio_settings.ai_kn
 - **Never** includes Message inbox / `contact_messages` (visitor form submissions) — private dashboard-only.
 - **Never** includes AI Chat inbox / `ai_chat_messages` (visitor questions by IP) — private dashboard-only.
 - **Never** includes Gemini API keys / `dashboard_secrets`.
+- **Never** includes UI extension defaults / `ui_extensions` (IDE chrome, not résumé content).
 - Always includes `security.password_and_credentials_policy` refusal text: `I am not going to provide you this kind of data`.
 - Settings / auth / Gemini key actions must **never** write to this knowledge blob.
 - Message inbox and AI Chat inbox save/read/delete must **never** call `syncAiKnowledgeFromDashboard()`.
@@ -661,4 +663,13 @@ _(Append new future plans here when the user says “I have a plan…” / “no
 | 2026-07-24 | **Gemini In use checkbox:** Among active keys, one `is_current` (checkbox) picks which key chat uses first; green toggle = in use. Migration `022_gemini_in_use_key.sql`. |
 | 2026-07-24 | **Dashboard thin scrollbars:** Scoped `.dashboard-shell` styles (plus Firefox `scrollbar-width: thin` on `.custom-scrollbar`) so textareas and all overflow areas use the same 4px dark thumb as the rest of the IDE. |
 | 2026-07-24 | **Explorer Outline/Timeline SCM:** Panels stay in Explorer. Expanding them persists in localStorage and shows as Source Control changes (`explorer/outline`, `explorer/timeline`); discard collapses them. |
+| 2026-08-26 | **Fix — Turbopack “Next.js package not found”:** Dev server FATAL panics after a partial `npm audit fix`. Cleared `.next` + reinstalled `node_modules`; set `turbopack.root` to project `__dirname` in `next.config.mjs` so Turbopack always resolves `next` from this app. |
+| 2026-08-26 | **Dashboard UI → Extension defaults:** Settings `/dashboard-araf/settings/extension` auto-saves site-wide extension/UI defaults to Supabase `portfolio_settings.ui_extensions` (migration `023`). First visit + ThemeBoot + Source Control discard use those defaults (no hardcoded Cursor Dark as source of truth). Visitor localStorage overrides unchanged. Excluded from AI knowledge. |
+| 2026-08-26 | **Dashboard Extension UX:** Full extension catalog (all marketplace extensions) with color swatches, font samples, and a live mini IDE preview of visitor first-paint. Wider settings page (`max-w-5xl`). |
+| 2026-08-26 | **Dashboard theme lock:** Portfolio extension / site-default themes never restyle `/dashboard-araf`. Theme boot skips dashboard paths; `DashboardThemeLock` forces Cursor Dark tokens while in dashboard and restores portfolio theme on leave. |
+| 2026-08-26 | **UI defaults revision wipe:** Saving changed Extension defaults bumps `ui_extensions.revision`. Visitors whose localStorage rev differs get extension prefs cleared and see the new site default; they can change UI again afterward. |
+| 2026-08-26 | **Site default = SCM baseline:** Cursor Dark is no longer a hardcoded built-in. Dashboard-set theme is the baseline (“Site default”). Switching to Cursor Dark (or any other non-site theme) shows in Source Control; deactivate falls back to site default theme. |
+| 2026-08-26 | **SCM theme switch:** Switching theme-A→theme-B only lists theme-B Activated (not theme-A Deactivated). |
+| 2026-08-26 | **Dashboard Extension UX:** List+detail layout (one extension at a time), compact ash toggles matching About, fixed autosave double-click (no settings-page revalidate; ignore server props while dirty). |
+| 2026-08-26 | **Dashboard Extension preview:** Live Animation shows real motion canvas behind Cursor Dark chrome; Mac uses wallpaper + glass; Terminal/Chat previews use real `contact-terminal` / `chat-panel` skin classes + live layers/canvas. |
 

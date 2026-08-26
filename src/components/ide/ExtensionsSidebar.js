@@ -13,9 +13,10 @@ const searchInputClass =
   "w-full h-[26px] bg-surface-container-high/80 border border-border/50 rounded-[3px] pl-2 text-[12px] text-on-surface placeholder:text-on-surface-variant/45 focus:outline-none focus:border-primary/35";
 
 function ExtensionRow({ extension, selected, onSelect }) {
-  const { isInstalled, isActive } = useExtensions();
+  const { isInstalled, isActive, isSiteDefault } = useExtensions();
   const installed = isInstalled(extension.id);
   const active = isActive(extension.id);
+  const siteDefault = isSiteDefault(extension.id);
 
   return (
     <button
@@ -40,8 +41,10 @@ function ExtensionRow({ extension, selected, onSelect }) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <p className="text-[12px] text-white opacity-70 leading-tight truncate">{extension.name}</p>
-          {extension.builtin && (
-            <span className="text-[9px] text-on-surface-variant/70 opacity-70 uppercase shrink-0">built-in</span>
+          {siteDefault && (
+            <span className="text-[9px] text-on-surface-variant/70 opacity-70 uppercase shrink-0">
+              site default
+            </span>
           )}
           {active && (
             <span className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0" title="Active" />
@@ -53,7 +56,7 @@ function ExtensionRow({ extension, selected, onSelect }) {
         </p>
       </div>
 
-      {installed && !extension.builtin && (
+      {installed && (
         <span className="shrink-0 opacity-70 self-start flex items-center gap-1 text-[9px] text-on-surface-variant/80 uppercase">
           <span className="material-symbols-outlined !text-[14px] text-[#7ee8b8] opacity-4s0">
             select_check_box
@@ -69,7 +72,7 @@ export default function ExtensionsSidebar({ selectedExtensionId, onExtensionSele
   const inputRef = useRef(null);
   const initialQuery = useMemo(() => readExtensionSearchSession(), []);
   const [query, setQuery] = useState(initialQuery);
-  const { installed } = useExtensions();
+  const { installed, isSiteDefault } = useExtensions();
 
   const sorted = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -83,11 +86,12 @@ export default function ExtensionsSidebar({ selectedExtensionId, onExtensionSele
       );
     }
     return list.sort((a, b) => {
-      if (a.builtin) return -1;
-      if (b.builtin) return 1;
+      const aSite = isSiteDefault(a.id) ? 0 : 1;
+      const bSite = isSiteDefault(b.id) ? 0 : 1;
+      if (aSite !== bSite) return aSite - bSite;
       return 0;
     });
-  }, [query]);
+  }, [query, isSiteDefault]);
 
   useEffect(() => {
     writeExtensionSearchSession(query);

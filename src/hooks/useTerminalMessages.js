@@ -3,10 +3,12 @@ import { TERMINAL_MESSAGES } from "@/data/portfolio";
 import { readExtensionState } from "@/lib/extensionStorage";
 import { PREFS_CHANGED_EVENT } from "@/lib/sidebarPrefs";
 import { collectWorkspaceChanges } from "@/lib/sourceControl";
+import { getCachedSiteUiDefaults } from "@/lib/uiExtensions";
 
 function readChangeCount() {
   if (typeof window === "undefined") return 0;
-  return collectWorkspaceChanges(readExtensionState()).length;
+  const defaults = getCachedSiteUiDefaults();
+  return collectWorkspaceChanges(readExtensionState(defaults), defaults).length;
 }
 
 function formatGitStatus(count) {
